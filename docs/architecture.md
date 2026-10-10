@@ -25,9 +25,9 @@ Não há cron nem banco de dados: o tráfego dos usuários é o gatilho das atua
 | ----------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
 | Domínio     | `packages/domain`                           | Tipos (`Tally`, `Scope`), UFs/regiões, ranking, liderança, agregação. Sem I/O.   |
 | Contrato    | `packages/contracts`                        | Schema zod/mini da resposta pública; front e back usam o mesmo tipo.             |
-| Porta       | `apps/api/src/ports/results-source.ts`      | `ResultsSource.fetchSnapshot()`                                                  |
-| Adaptadores | `apps/api/src/adapters`                     | `TseResultsSource` (+ loaders HTTP e fixture), `SimulatedResultsSource`          |
-| Caso de uso | `apps/api/src/use-cases/get-results.ts`     | Deduplica chamadas concorrentes e serve o último snapshot bom se o TSE falhar.   |
+| Porta       | `apps/api/src/ports/`                       | `ResultsSource.fetchSnapshot()`, `AbroadSource.fetchCountries()`                 |
+| Adaptadores | `apps/api/src/adapters`                     | `TseResultsSource`, `TseAbroadSource` (+ loaders), versões simuladas             |
+| Caso de uso | `apps/api/src/use-cases/`                   | `GetResults`/`GetAbroad` sobre `GetLatest`: deduplica e serve o último dado bom. |
 | HTTP        | `apps/api/src/http`                         | Handler Fetch API (`Request → Response`) + adaptador para Node.                  |
 | Composição  | `apps/api/src/container.ts`                 | Uma fonte e um `GetResults` por turno, conforme o `DATA_SOURCE`; monta as rotas. |
 | Entradas    | `apps/api/src/dev-server.ts`, `src/vercel/` | Servidor local e função da Vercel, ambos sobre o mesmo handler.                  |
@@ -46,7 +46,7 @@ O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é val
 `pnpm build` gera `.vercel/output` com `scripts/build-vercel-output.mjs`:
 
 - `static/` — build do Vite; `/assets/*` com cache imutável de 1 ano.
-- `functions/api/results.func/` — função empacotada pelo esbuild (`index.mjs`, Node 22).
+- `functions/api/results.func/` e `functions/api/abroad.func/` — funções empacotadas pelo esbuild (`index.mjs`, Node 22).
 - `config.json` — cabeçalhos de segurança, fallback SPA para `index.html` e 404 para `/api/*` desconhecido.
 
 Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de pacotes do workspace (ver [ADR 0003](adr/0003-build-output-api.md)). Para conferir localmente, rode `pnpm build` e importe `index.mjs` num servidor `node:http`.
