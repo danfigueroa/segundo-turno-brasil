@@ -1,3 +1,4 @@
+@import '@fontsource-variable/schibsted-grotesk/wght.css';
 @import './tokens.css';
 
 *,
@@ -19,13 +20,19 @@ body {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
 button,
+input,
 select {
   font: inherit;
   color: inherit;
+}
+
+a {
+  color: var(--brand-text);
 }
 
 :focus-visible {
@@ -49,7 +56,27 @@ select {
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+}
+
+/* Green and yellow flag stripe: a 3:1 split, used at the top of the page and in the footer. */
+.flag-stripe {
+  display: flex;
+  height: 5px;
+}
+
+.flag-stripe::before,
+.flag-stripe::after {
+  content: '';
+}
+
+.flag-stripe::before {
+  flex: 3;
+  background: var(--brand);
+}
+
+.flag-stripe::after {
+  flex: 1;
+  background: var(--flag-yellow);
 }
 
 @media (prefers-reduced-motion: reduce) {
