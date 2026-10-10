@@ -48,7 +48,8 @@ export function App() {
 
   const tally = resolveTally(data, selection);
   const title = selectionTitle(selection);
-  const stateOpen = selection.kind === 'state';
+  // States and abroad open the bottom sheet on mobile, keeping the map in view.
+  const sheetOpen = selection.kind === 'state' || selection.kind === 'abroad';
   const getShareContent = () => shareContentFrom(data, selection, finalists, window.location.host);
 
   return (
@@ -69,10 +70,10 @@ export function App() {
         </div>
       </main>
       <Footer />
-      <ShareButton getContent={getShareContent} variant="floating" hidden={stateOpen} />
+      <ShareButton getContent={getShareContent} variant="floating" hidden={sheetOpen} />
       <StateSheet
-        title={stateOpen ? title : undefined}
-        tally={stateOpen ? tally : undefined}
+        title={sheetOpen ? title : undefined}
+        tally={sheetOpen ? tally : undefined}
         finalists={finalists}
         onClose={() => select(COUNTRY)}
       >
