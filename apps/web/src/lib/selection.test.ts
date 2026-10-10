@@ -6,6 +6,7 @@ describe('selection hash', () => {
     ['', { kind: 'country' }],
     ['#/sp', { kind: 'state', code: 'SP' }],
     ['#/regiao/ne', { kind: 'region', code: 'NE' }],
+    ['#/exterior', { kind: 'abroad' }],
   ];
 
   it.each(cases)('round-trips %j', (hash, selection) => {
@@ -24,5 +25,6 @@ describe('selectionTitle', () => {
     expect(selectionTitle({ kind: 'country' })).toBe('Brasil');
     expect(selectionTitle({ kind: 'region', code: 'CO' })).toBe('Região Centro-Oeste');
     expect(selectionTitle({ kind: 'state', code: 'PI' })).toBe('Piauí');
+    expect(selectionTitle({ kind: 'abroad' })).toBe('Exterior');
   });
 });
