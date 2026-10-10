@@ -99,15 +99,17 @@ export function ResultCard({
         <div className={styles.barLabel}>{headline.barLabel}</div>
       </div>
 
-      <dl className={styles.stats}>
-        {headline.stats.map((stat) => (
-          <div key={stat.label} className={styles.stat}>
-            <dt>{stat.label}</dt>
-            <dd className={styles.statValue}>{stat.value}</dd>
-            {stat.note && <dd className={styles.statNote}>{stat.note}</dd>}
-          </div>
-        ))}
-      </dl>
+      {[headline.stats, headline.turnoutStats].map((row) => (
+        <dl key={row[0]?.label} className={styles.stats}>
+          {row.map((stat) => (
+            <div key={stat.label} className={styles.stat}>
+              <dt>{stat.label}</dt>
+              <dd className={styles.statValue}>{stat.value}</dd>
+              {stat.note && <dd className={styles.statNote}>{stat.note}</dd>}
+            </div>
+          ))}
+        </dl>
+      ))}
 
       {headline.others.length > 0 && (
         <div className={styles.others}>

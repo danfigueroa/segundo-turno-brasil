@@ -54,6 +54,8 @@ export interface Headline {
   readonly bar: readonly BarSegment[];
   readonly barLabel: string;
   readonly stats: readonly Stat[];
+  /** Second row: valid votes, turnout and blank plus null votes. */
+  readonly turnoutStats: readonly Stat[];
   /** Counted sections in the selection, 0–100. */
   readonly counted: number;
   /** Everyone else on the ballot, most voted first; empty in the runoff. */
@@ -89,6 +91,34 @@ function sectionsStat(tally: Tally, final: boolean): Stat {
   };
 }
 
+/** `part` as a percentage of `whole`, or a dash before anyone has voted. */
+function percentOf(part: number, whole: number): string {
+  return whole > 0 ? formatPercent((part / whole) * 100) : '—';
+}
+
+/** Second row of key figures: who voted and how, in every scope and round. */
+export function turnoutStats(tally: Tally): Stat[] {
+  const { electorate, turnout, votes } = tally;
+  const blankAndNull = votes.blank + votes.null;
+  return [
+    {
+      label: 'Votos válidos',
+      value: formatVotes(votes.valid),
+      note: turnout > 0 ? `${percentOf(votes.valid, turnout)} do comparecimento` : '',
+    },
+    {
+      label: 'Comparecimento',
+      value: percentOf(turnout, electorate),
+      note: `${formatVotes(turnout)} eleitores`,
+    },
+    {
+      label: 'Brancos e nulos',
+      value: percentOf(blankAndNull, turnout),
+      note: `${formatVotes(blankAndNull)} votos`,
+    },
+  ];
+}
+
 const statesText = (n: number) => (n === 1 ? '1 estado' : `${n} estados`);
 
 /** Third key figure abroad: in how many countries anyone voted, and who won where. */
@@ -117,7 +147,7 @@ function tallyHeadline(
   tally: Tally,
   final: boolean,
   countries: readonly CountryResult[] | undefined,
-): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats' | 'others'> {
+): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats' | 'turnoutStats' | 'others'> {
   const { round } = data;
   const regionLeads =
     selection.kind === 'region'
@@ -132,14 +162,14 @@ function tallyHeadline(
   const [first, second] = results;
   const gap = first && second ? Math.abs(first.votes - second.votes) : 0;
 
-  const turnoutShare = tally.electorate > 0 ? (tally.turnout / tally.electorate) * 100 : 0;
+  const abstention = Math.max(tally.electorate - tally.turnout, 0);
   const secondStat: Stat =
     round === 1
       ? { label: 'Demais candidatos', value: formatPercent(othersShare), note: '' }
       : {
-          label: 'Comparecimento',
-          value: formatPercent(turnoutShare),
-          note: `${formatVotes(tally.turnout)} eleitores`,
+          label: 'Abstenção',
+          value: percentOf(abstention, tally.electorate),
+          note: `${formatVotes(abstention)} eleitores`,
         };
 
   return {
@@ -181,6 +211,7 @@ function tallyHeadline(
         ? countriesStat(countries, finalists)
         : sectionsStat(tally, final),
     ],
+    turnoutStats: turnoutStats(tally),
   };
 }
 
