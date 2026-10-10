@@ -15,6 +15,7 @@
   "dependencies": {
     "@stb/contracts": "workspace:*",
     "@stb/domain": "workspace:*",
+    "@vercel/blob": "2.8.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
