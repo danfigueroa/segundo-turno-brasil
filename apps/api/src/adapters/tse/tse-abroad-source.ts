@@ -6,6 +6,7 @@ import {
 } from '@stb/domain';
 import type { AbroadSource } from '../../ports/abroad-source';
 import { ABROAD_CITIES, type AbroadCity } from './abroad-cities';
+import { mapWithLimit } from './map-with-limit';
 import { toTally } from './mapper';
 import { tseResultFileSchema } from './schema';
 import { TseParseError, type TseFileLoader } from './tse-results-source';
@@ -13,24 +14,6 @@ import { TseParseError, type TseFileLoader } from './tse-results-source';
 /** TSE scope code of a city abroad: `zz` + its city code. */
 export function abroadCityScope(cityCode: string): string {
   return `zz${cityCode}`;
-}
-
-/** Runs `task` over `items` with at most `limit` in flight, keeping the order. */
-async function mapWithLimit<T, R>(
-  items: readonly T[],
-  limit: number,
-  task: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  const worker = async () => {
-    while (next < items.length) {
-      const index = next++;
-      results[index] = await task(items[index] as T);
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
-  return results;
 }
 
 export interface TseAbroadSourceOptions {
