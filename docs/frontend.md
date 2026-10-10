@@ -32,10 +32,15 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 2. **Barra de abrangência** fixa no topo (`features/scope-chips`): Brasil, regiões e Exterior. Com um estado selecionado, o chip da região dele fica marcado como "pai".
 3. **Card de resultado** (`features/result-card`): migalhas (Brasil › Nordeste › Bahia) e % apurado; avatares com a foto oficial do TSE num anel da cor do candidato (`components/CandidateAvatar`, ADR 0009; iniciais se faltar a foto), selo "Lidera"/"Mais votado"; barra com o marcador de 50%; três números-chave e o botão "Compartilhar …". A lógica fica em `headline.ts` (testada).
 4. **Mapa** (`features/map`): seletor de estado (com Exterior) e legenda em grade.
-5. **Lista de estados** (`features/states-list`): cartões no celular, grade tipo tabela no desktop; no Brasil começa recolhida (8 no celular, 10 no desktop). Em região/estado mostra os estados da região. Escondida no Exterior.
+5. **Análise da apuração** (`features/insights`, chunk carregado sob demanda, ADR 0012):
+   - **Ainda dá virada?** — votos válidos que faltam (estimativa pelas seções pendentes), vantagem do líder e quanto o segundo colocado precisa do que falta, numa barra com marcador de 50%. Selo "Decidido" quando a vantagem supera todos os eleitores ainda não apurados (`outlook`). Some com 100% apurado.
+   - **Como a apuração evoluiu** — curva da participação de cada finalista conforme as seções são apuradas, eixo vertical centrado em 50% (zoom de 5 em 5 p.p.), marcador "Virada · X%" quando a liderança muda, ritmo (seções/min) e previsão de 100% (`paceOf`). Junta o histórico de `GET /api/history` (uma busca por abrangência) com os snapshots do polling (`live-history.ts`).
+   - **De onde vem a vantagem** — barras divergentes com o saldo de votos de cada estado (e do exterior, no Brasil), o primeiro finalista à esquerda; 10 linhas até "Ver todos". Tocar numa linha seleciona o estado. Também no 1º turno.
+   - **Do 1º para o 2º turno** — participação de cada finalista nos dois turnos (variação em p.p.), votos dos demais candidatos no 1º turno e estados que mudaram de líder (tocar seleciona).
+6. **Lista de estados** (`features/states-list`): cartões no celular, grade tipo tabela no desktop; no Brasil começa recolhida (8 no celular, 10 no desktop). Em região/estado mostra os estados da região. Escondida no Exterior.
 
-6. **Votação por país** (`features/countries`, só no Exterior): resumo ("Lula venceu em 64 países, Flávio em 36 e houve 1 empate…", abstenção), busca sem acento, filtro por continente e uma linha por país com os votos dos dois finalistas; 12 países no celular e 20 no desktop até "Ver todos". Dados de `GET /api/abroad`, buscados só com o Exterior aberto (`api/abroad.ts`, polling de 60 s no 2º turno).
-7. **Rodapé:** horário dos dados (fonte TSE) e "Desenvolvido por @danmfigueroa" (Instagram).
+7. **Votação por país** (`features/countries`, só no Exterior): resumo ("Lula venceu em 64 países, Flávio em 36 e houve 1 empate…", abstenção), busca sem acento, filtro por continente e uma linha por país com os votos dos dois finalistas; 12 países no celular e 20 no desktop até "Ver todos". Dados de `GET /api/abroad`, buscados só com o Exterior aberto (`api/abroad.ts`, polling de 60 s no 2º turno).
+8. **Rodapé:** horário dos dados (fonte TSE) e "Desenvolvido por @danmfigueroa" (Instagram).
 
 **Percentual e total de votos aparecem sempre**, em qualquer abrangência. No 1º turno, o card lista também os demais candidatos (nome, partido, % e votos). Numa região, o card mostra o % e os votos de cada finalista na região e, abaixo, em quantos estados cada um venceu (ou lidera). No Exterior, o terceiro número-chave é "Países com votos".
 
@@ -78,4 +83,4 @@ Não existe API web para postar direto nos Stories; a folha nativa do sistema of
 
 ## Orçamento de performance
 
-JS inicial ≈ 118 KB gzip (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB, Vercel Analytics ≈ 1,4 KB — ADR 0010), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento é um chunk separado.
+JS inicial ≈ 118 KB gzip (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB, Vercel Analytics ≈ 1,4 KB — ADR 0010), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento e a seção de análise (~5,5 KB) são chunks separados.
