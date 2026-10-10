@@ -1,16 +1,85 @@
 # Segundo Turno Brasil
 
-Acompanhe **ao vivo** a apuração do 2º turno da eleição presidencial de **25/10/2026**: placar nacional, por região e por estado, num mapa do Brasil interativo e animado, com imagens prontas para compartilhar nos Stories.
+Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~20 segundos.
 
-- Mapa coroplético: cada estado na cor de quem lidera, mais intenso quanto maior a vantagem.
-- Abas **2º turno** (ao vivo) e **1º turno** (resultado final); antes da apuração do 2º turno, o site abre no 1º.
-- Percentual e total de votos sempre visíveis; numa região, também quantos estados cada um venceu.
-- Exterior por país (busca e filtro por continente), somando as 186 cidades publicadas pelo TSE.
-- Navegação Brasil / Região / Estado / Exterior, com link compartilhável (`/#/sp`, `/#/regiao/ne`, `/#/exterior`).
-- Mobile first: barra de abrangência fixa, tocar num estado leva ao resultado dele, alvos de toque de 44px.
-- Antes da apuração do 2º turno: contagem regressiva até 17h de 25/10.
-- Compartilhamento: imagem 1080×1920 (Stories) ou 1080×1350 (Feed) gerada no aparelho, enviada pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou baixada.
-- Dados oficiais do TSE, atualizados a cada ~20s, com fallback quando o TSE oscila.
+![Apuração ao vivo do 2º turno: placar nacional e mapa do Brasil com cada estado na cor de quem lidera](docs/images/ao-vivo.png)
+
+<sub>2º turno em modo de simulação (`DATA_SOURCE=simulation`), com 74% das seções apuradas. As demais imagens usam o resultado oficial do 1º turno.</sub>
+
+## O que dá para fazer no site
+
+### Ver o placar de qualquer lugar do Brasil
+
+Percentual e total de votos de cada finalista aparecem sempre, em qualquer abrangência. Logo abaixo vêm a diferença em pontos percentuais e em votos, as seções apuradas, os votos válidos, o comparecimento e os brancos e nulos. No 1º turno, o card lista também os demais candidatos.
+
+O mapa pinta cada estado com a cor de quem lidera, mais forte quanto maior a vantagem (5 faixas, de menos de 2 a mais de 20 pontos). As cores seguem o candidato, foram escolhidas para quem tem daltonismo e sempre vêm acompanhadas de números e rótulos.
+
+![Resultado final do 1º turno no Brasil: card com o placar e os números-chave, mapa dos estados e legenda das faixas de vantagem](docs/images/brasil-1turno.png)
+
+### Descer até a sua cidade
+
+Tocar num estado abre o resultado dele, e o mapa passa a mostrar **os municípios do estado**. A lista "Votação por cidade" tem busca. Cada cidade tem seu próprio card (com as migalhas Brasil › Norte › Acre › Rio Branco) e um link próprio para compartilhar, como `/#/ac/1200401`.
+
+![Acre selecionado: mapa dos 22 municípios na cor de quem lidera em cada um e lista de cidades com busca](docs/images/estado-municipios.png)
+
+### Acompanhar o voto no exterior
+
+Os votos de brasileiros no exterior já entram no total do Brasil e também podem ser vistos à parte. Há um **mapa-múndi com um ponto por cidade** com seção eleitoral (186), do tamanho do eleitorado de cada uma. Também há uma lista por país com busca e filtro por continente.
+
+![Exterior: mapa-múndi com um ponto por cidade, colorido por quem lidera, ao lado do card com o resultado no exterior](docs/images/exterior-mapa-mundi.png)
+
+### Entender a apuração
+
+Na noite do 2º turno, a seção de análise responde às perguntas mais comuns:
+
+- **Ainda dá virada?** Mostra quanto dos votos que faltam apurar quem está atrás precisa conquistar.
+- **Como a apuração evoluiu:** a curva de cada finalista, o ritmo em seções por minuto e a previsão de quando a apuração chega a 100%.
+- **De onde vem a vantagem:** o saldo de votos estado a estado.
+- **Do 1º para o 2º turno:** quanto cada finalista cresceu e onde o líder mudou.
+
+![Análise da apuração: chance de virada, curva da apuração com ritmo e previsão, saldo por estado e comparação com o 1º turno](docs/images/analise-apuracao.png)
+
+### Usar no celular e compartilhar
+
+O site foi feito primeiro para o celular: barra de abrangência fixa, alvos de toque de pelo menos 44px, e tocar num estado ou numa cidade leva direto ao resultado. O botão **Compartilhar** gera, no próprio aparelho, uma imagem com o placar do momento:
+
+- formatos Stories (1080×1920) ou Feed (1080×1350);
+- envio pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou download da imagem.
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/images/celular-brasil.png" alt="Placar nacional no celular" /><br /><sub>Placar no celular</sub></td>
+    <td align="center" width="33%"><img src="docs/images/celular-cidade.png" alt="Resultado de Rio Branco no celular" /><br /><sub>Resultado de uma cidade</sub></td>
+    <td align="center" width="33%"><img src="docs/images/compartilhar-stories.png" alt="Imagem gerada para os Stories com o resultado da Bahia" /><br /><sub>Imagem para os Stories</sub></td>
+  </tr>
+</table>
+
+### Outros detalhes
+
+- **Abas 2º turno e 1º turno:** até a apuração do 2º turno começar, o site abre no resultado final do 1º. Antes das 17h de 25/10, mostra uma contagem regressiva.
+- **Links compartilháveis:** o turno e a abrangência ficam na URL (`/#/sp`, `/#/regiao/ne`, `/#/exterior`, `/#/1turno/ba/2927408`).
+- **Confiável na noite da eleição:**
+  - o CDN da Vercel absorve o tráfego, e a API só consulta o TSE quando o cache expira;
+  - se o TSE oscilar, o site continua mostrando o último dado bom com o horário dele.
+- **Leve e acessível:** cerca de 116 KB de JS inicial (gzip). Os mapas carregam sob demanda, o mapa navega por teclado, há contraste AA e o site respeita `prefers-reduced-motion`.
+
+## Como funciona
+
+```
+Navegador (React)  ──polling ~20s──▶  CDN Vercel  ──cache expirado──▶  Função /api/* (TypeScript)  ──▶  TSE
+```
+
+- **API** (`apps/api`): funções da Vercel que leem os JSON públicos do TSE, validam com zod e respondem num contrato próprio. Não há banco de dados nem cron, e o cache do CDN define o ritmo das consultas. Rotas:
+  - `/api/results`: Brasil, exterior e as 27 UFs;
+  - `/api/abroad`: exterior por país e por cidade;
+  - `/api/cities`: municípios de uma UF, com busca incremental;
+  - `/api/history`: curva da apuração.
+- **Web** (`apps/web`): React + Vite.
+  - Os mapas são pré-projetados no build a partir das malhas do IBGE e do Natural Earth, então nada de d3 vai para o navegador.
+  - A imagem de compartilhamento é desenhada em Canvas no próprio aparelho.
+- **Contrato e domínio** (`packages/`): tipos e regras compartilhados entre back e front.
+
+Detalhes em [docs/architecture.md](docs/architecture.md) e nas [ADRs](docs/adr/).
 
 ## Como rodar
 
