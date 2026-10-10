@@ -31,5 +31,15 @@ describe('shareContentFrom', () => {
     expect(state.title).toBe('Bahia');
     expect(state.leaderNumber).toBe('13');
     expect([...state.focus]).toEqual(['BA']);
+    expect(state.abroadInFocus).toBe(false);
+  });
+
+  it('focuses only on the abroad tile for abroad votes', () => {
+    const abroad = shareContentFrom(data, { kind: 'abroad' }, finalists, 'x');
+    expect(abroad.title).toBe('Exterior');
+    expect(abroad.focus.size).toBe(0);
+    expect(abroad.abroadInFocus).toBe(true);
+    // Abroad fixture: Flávio 20 x Lula 10 → 33 p.p. margin, widest blue step.
+    expect(abroad.abroadFill).toBe(SHARE_PALETTE.ramps.blue[4]);
   });
 });
