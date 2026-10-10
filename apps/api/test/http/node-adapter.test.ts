@@ -2,6 +2,7 @@ import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import { toNodeListener } from '../../src/http/node-adapter';
+import { currentOidcToken } from '../../src/http/request-context';
 
 let server: Server | undefined;
 
@@ -28,5 +29,13 @@ describe('toNodeListener', () => {
     expect(response.status).toBe(201);
     expect(response.headers.get('x-test')).toBe('yes');
     expect(await response.json()).toEqual({ path: '/api/results', accept: 'text/plain' });
+  });
+
+  it('makes the Vercel OIDC token of the request available to the handler', async () => {
+    const base = await serve(
+      toNodeListener(async () => Response.json({ token: currentOidcToken() })),
+    );
+    const response = await fetch(base, { headers: { 'x-vercel-oidc-token': 'oidc-abc' } });
+    expect(await response.json()).toEqual({ token: 'oidc-abc' });
   });
 });
