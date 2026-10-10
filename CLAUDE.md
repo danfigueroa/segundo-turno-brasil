@@ -44,7 +44,7 @@ resultados.tse.jus.br (JSON público do TSE)
 ```
 
 - **Sem cron e sem banco de dados.** O CDN absorve o tráfego; a função só executa quando o cache expira. O próprio acesso dos usuários dispara a atualização.
-- **Endpoint:** `GET /api/results` — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). Regiões são agregadas no cliente com `aggregateRegion`.
+- **Endpoint:** `GET /api/results?round=1|2` (padrão 2) — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). O 1º turno é final e fica 1h em cache. Regiões são agregadas no cliente com `aggregateRegion`.
 - **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003).
@@ -94,10 +94,10 @@ Regras:
 - Base: `https://resultados.tse.jus.br/oficial/`
 - Configuração das eleições: `comum/config/ele-c.json` (lista códigos de eleição).
 - Arquivo por abrangência: `{base}/ele2026/{eleição}/dados/{abr}/{abr}-c0001-e{eleição:06}-u.json` (`br`, `zz` = exterior, UFs em minúsculas). Detalhes em `docs/tse-data.md`.
-- Códigos confirmados: **6258 = 2º turno presidencial de 2026** (padrão), 6257 = 1º turno.
+- Códigos confirmados: **6258 = 2º turno presidencial de 2026** (`TSE_ELECTION_CODE`), **6257 = 1º turno** (`TSE_FIRST_ROUND_ELECTION_CODE`).
 - Variáveis de ambiente (`apps/api/.env.example`):
   - `DATA_SOURCE` = `tse` | `fixture` | `simulation`
-  - `TSE_BASE_URL`, `TSE_ELECTION_CODE`, `TSE_TIMEOUT_MS`
+  - `TSE_BASE_URL`, `TSE_ELECTION_CODE`, `TSE_FIRST_ROUND_ELECTION_CODE`, `TSE_TIMEOUT_MS`
   - `FIXTURES_DIR`, `SIMULATION_DURATION_MINUTES`
 - Fixtures reais em `apps/api/test/fixtures/`: `ele2026-6257` (1º turno, final) e `ele2026-6258-pre` (2º turno zerado).
 - **Nunca** chamar o TSE diretamente do navegador.
@@ -106,7 +106,8 @@ Regras:
 
 - Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
-- Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL (`#/sp`, `#/regiao/ne`, `#/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (bloco no mapa, chip, tabela, compartilhamento).
+- **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
+- Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (bloco no mapa, chip, tabela, compartilhamento).
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; `motion` só para entrada/saída (bottom sheet).
 - Barra de progresso de **% de seções apuradas** sempre visível.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
