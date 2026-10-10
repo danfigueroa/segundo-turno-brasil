@@ -56,6 +56,11 @@ describe('createHistoryStore', () => {
     expect(store).toBeInstanceOf(BlobHistoryStore);
   });
 
+  it('uses Vercel Blob with OIDC when only the store id is set', () => {
+    const store = createHistoryStore(loadConfig({ BLOB_STORE_ID: 'store_abc' }));
+    expect(store).toBeInstanceOf(BlobHistoryStore);
+  });
+
   it('stays in memory without a token or outside the live TSE count', () => {
     expect(createHistoryStore(loadConfig({}))).toBeInstanceOf(MemoryHistoryStore);
     const simulation = loadConfig({ DATA_SOURCE: 'simulation', BLOB_READ_WRITE_TOKEN: 'x' });
