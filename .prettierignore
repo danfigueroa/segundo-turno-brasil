@@ -3,3 +3,4 @@ pnpm-lock.yaml
 **/coverage
 **/*.generated.*
 apps/api/test/fixtures
+apps/web/data/municipios

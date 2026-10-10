@@ -11,6 +11,7 @@
     "test": "vitest run",
     "map:build": "tsx scripts/build-map.ts",
     "map:world": "tsx scripts/build-world-map.ts",
+    "map:cities": "tsx scripts/build-city-maps.ts",
     "photos:fetch": "tsx scripts/fetch-candidate-photos.ts"
   },
   "dependencies": {
