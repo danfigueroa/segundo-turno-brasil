@@ -20,6 +20,7 @@ Princípios:
 | Camada     | Tecnologia                                                           |
 | ---------- | -------------------------------------------------------------------- |
 | Frontend   | React + Vite + TypeScript, TanStack Query, Schibsted Grotesk         |
+| Métricas   | Vercel Web Analytics (`@vercel/analytics/react`, sem cookies)        |
 | Backend    | Vercel Functions em TypeScript (Node 22), empacotadas com esbuild    |
 | Contrato   | `zod/mini` compartilhado entre back e front (`zod` no adaptador TSE) |
 | Hospedagem | Vercel (plano Hobby, gratuito)                                       |
@@ -120,7 +121,7 @@ Regras:
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
-- **Orçamento:** JS inicial ≈ 115 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
+- **Orçamento:** JS inicial ≈ 118 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 
 ## Mobile first (requisito crítico)
 
