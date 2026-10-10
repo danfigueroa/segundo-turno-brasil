@@ -11,10 +11,19 @@ describe('TseAbroadSource', () => {
     expect(Object.keys(ABROAD_CITIES)).toHaveLength(186);
   });
 
+  it('places every city on the globe, once', () => {
+    const places = Object.values(ABROAD_CITIES).map(({ lat, lon }) => `${lat},${lon}`);
+    for (const { city, lat, lon } of Object.values(ABROAD_CITIES)) {
+      expect(Math.abs(lat), city).toBeLessThanOrEqual(90);
+      expect(Math.abs(lon), city).toBeLessThanOrEqual(180);
+    }
+    expect(new Set(places).size).toBe(places.length);
+  });
+
   it('adds the cities of a country together', async () => {
-    const countries = await new TseAbroadSource(
+    const { countries } = await new TseAbroadSource(
       createFixtureLoader(FIRST_ROUND_2026),
-    ).fetchCountries();
+    ).fetchAbroad();
     const usa = countries.find((c) => c.name === 'Estados Unidos');
     expect(usa?.continent).toBe('AM');
     // Eleven consulates: Atlanta, Boston, Chicago, Hartford, Houston, Los Angeles, Miami,
@@ -27,31 +36,49 @@ describe('TseAbroadSource', () => {
 
   it('adds up to the official abroad total (real TSE files)', async () => {
     const loader = createFixtureLoader(FIRST_ROUND_2026);
-    const [countries, snapshot] = await Promise.all([
-      new TseAbroadSource(loader).fetchCountries(),
+    const [{ countries, cities }, snapshot] = await Promise.all([
+      new TseAbroadSource(loader).fetchAbroad(),
       new TseResultsSource(loader).fetchSnapshot(),
     ]);
-    for (const candidate of snapshot.abroad.candidates) {
-      const sum = countries.reduce((acc, c) => acc + (c.votes[candidate.number] ?? 0), 0);
-      expect(sum, candidate.name).toBe(candidate.votes);
+    for (const level of [countries, cities]) {
+      for (const candidate of snapshot.abroad.candidates) {
+        const sum = level.reduce((acc, c) => acc + (c.votes[candidate.number] ?? 0), 0);
+        expect(sum, candidate.name).toBe(candidate.votes);
+      }
+      const sections = level.reduce((acc, c) => acc + c.sections.total, 0);
+      expect(sections).toBe(snapshot.abroad.sections.total);
     }
-    const sections = countries.reduce((acc, c) => acc + c.sections.total, 0);
-    expect(sections).toBe(snapshot.abroad.sections.total);
+    const electorate = cities.reduce((acc, c) => acc + c.electorate, 0);
+    expect(electorate).toBe(snapshot.abroad.electorate);
+  });
+
+  it('keeps each city with its place and electorate', async () => {
+    const { cities } = await new TseAbroadSource(
+      createFixtureLoader(FIRST_ROUND_2026),
+    ).fetchAbroad();
+    expect(cities).toHaveLength(186);
+    const lisbon = cities.find((c) => c.name === 'LISBOA');
+    expect(lisbon).toMatchObject({ country: 'Portugal', continent: 'EU' });
+    expect(lisbon?.lat).toBeCloseTo(38.7, 0);
+    expect(lisbon?.lon).toBeCloseTo(-9.1, 0);
+    expect(lisbon?.electorate).toBeGreaterThan(0);
   });
 
   it('reads the runoff files published with zero votes', async () => {
-    const countries = await new TseAbroadSource(
+    const { countries } = await new TseAbroadSource(
       createFixtureLoader(RUNOFF_2026_BEFORE_COUNT),
-    ).fetchCountries();
+    ).fetchAbroad();
     expect(countries.every((c) => Object.values(c.votes).every((v) => v === 0))).toBe(true);
     expect(Object.keys(countries[0]?.votes ?? {}).sort()).toEqual(['13', '22']);
   });
 
   it('fails as a whole when one city file is invalid', async () => {
     const source = new TseAbroadSource(async () => ({ foo: 1 }), {
-      cities: { '29254': { city: 'ABIDJÃ', country: 'Costa do Marfim', continent: 'AF' } },
+      cities: {
+        '29254': { city: 'ABIDJÃ', country: 'Costa do Marfim', continent: 'AF', lat: 5.3, lon: -4 },
+      },
     });
-    await expect(source.fetchCountries()).rejects.toBeInstanceOf(TseParseError);
+    await expect(source.fetchAbroad()).rejects.toBeInstanceOf(TseParseError);
   });
 });
 

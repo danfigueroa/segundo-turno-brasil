@@ -46,7 +46,7 @@ describe('createAbroadSources', () => {
       () => 0,
     );
     expect(sources[2]).toBeInstanceOf(SimulatedAbroadSource);
-    expect((await sources[1].fetchCountries()).length).toBeGreaterThan(100);
+    expect((await sources[1].fetchAbroad()).countries.length).toBeGreaterThan(100);
   });
 });
 

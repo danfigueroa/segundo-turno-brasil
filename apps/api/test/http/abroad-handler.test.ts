@@ -5,6 +5,7 @@ import type { AbroadSnapshot } from '../../src/use-cases/get-abroad';
 
 const snapshot: AbroadSnapshot = {
   countries: [],
+  cities: [],
   fetchedAt: '2026-10-25T21:00:00.000Z',
   stale: false,
 };
