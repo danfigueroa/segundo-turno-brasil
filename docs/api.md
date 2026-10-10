@@ -67,3 +67,35 @@ Votos no exterior **por país** (ADR 0008). O TSE só publica o exterior por cid
 | 200    | `stale: true`                     | `public, s-maxage=5`                                                        |
 | 503    | TSE fora e nenhum dado em memória | `no-store` + `retry-after: 60`                                              |
 | 400    | `round` diferente de 1 ou 2       | `no-store`                                                                  |
+
+## `GET /api/history?scope=…`
+
+Como a apuração do **2º turno** evoluiu numa abrangência: um ponto por atualização do total nacional (ADR 0011). Schema: [`packages/contracts/src/history.ts`](../packages/contracts/src/history.ts).
+
+`scope`: `br` (padrão), `zz` (exterior), a UF em minúsculas (`sp`) ou `regiao-<código>` (`regiao-n`, `regiao-ne`, `regiao-co`, `regiao-se`, `regiao-s`). Regiões são somadas no servidor.
+
+```jsonc
+{
+  "scope": { "kind": "state", "code": "SP" },
+  "points": [
+    {
+      "at": "2026-10-25T17:12:00-03:00", // horário de totalização do TSE
+      "counted": 1200, // seções apuradas
+      "total": 102000, // seções totais
+      "votes": { "13": 61000, "22": 58000 }, // por número de urna
+    },
+  ],
+  "fetchedAt": "2026-10-25T20:13:00.000Z",
+  "stale": false,
+}
+```
+
+O front usa `paceOf` (`packages/domain`) para o ritmo (seções/min e previsão de 100%) e acrescenta à curva os pontos recebidos no polling de `/api/results`.
+
+| Status | Quando                                      | `cache-control`                                                      |
+| ------ | ------------------------------------------- | -------------------------------------------------------------------- |
+| 200    | Histórico lido                              | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600` |
+| 200    | `stale: true` (Blob fora, cópia em memória) | `public, s-maxage=5`                                                 |
+| 503    | Blob fora e nenhuma cópia em memória        | `no-store` + `retry-after: 60`                                       |
+| 400    | `scope` desconhecido                        | `no-store`                                                           |
+| 405    | Método diferente de GET/HEAD                | `no-store`                                                           |
