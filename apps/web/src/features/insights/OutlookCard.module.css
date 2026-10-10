@@ -1,0 +1,105 @@
+.pill {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--warning-border);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pill[data-decided] {
+  border-color: transparent;
+  background: var(--brand-soft);
+  color: var(--brand-text);
+}
+
+.answer {
+  display: grid;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.headline {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.sentence {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.gauge {
+  display: grid;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.gaugeLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.gaugeValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--hue-text);
+}
+
+.track {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--hue);
+  transition: width var(--duration) var(--ease-out);
+}
+
+/* The 50% marker: above it, the runner-up needs a majority of what is left. */
+.half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text-primary);
+}
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.leadValue {
+  color: var(--hue-text);
+}
+
+@media (min-width: 960px) {
+  .answer,
+  .gauge {
+    padding: 0;
+  }
+
+  .headline {
+    font-size: 28px;
+  }
+}
