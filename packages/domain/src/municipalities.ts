@@ -13,7 +13,7 @@ export interface MunicipalityResult {
   readonly electorate: number;
   /** Voters who showed up. */
   readonly turnout: number;
-  /** Valid votes per candidate, keyed by ballot number. */
+  /** Valid votes per candidate, keyed by ballot number; a missing candidate has none. */
   readonly votes: Readonly<Record<string, number>>;
   readonly ballots: { readonly valid: number; readonly blank: number; readonly null: number };
   readonly sections: { readonly total: number; readonly counted: number };
@@ -26,10 +26,7 @@ export interface MunicipalityResult {
  * keep the names and parties of the state's tally; shares are of the municipality's valid
  * votes. There is no municipal scope kind: the tally keeps the state as its scope.
  */
-export function municipalityTally(
-  municipality: MunicipalityResult,
-  state: Tally,
-): Tally {
+export function municipalityTally(municipality: MunicipalityResult, state: Tally): Tally {
   return {
     scope: state.scope,
     candidates: rankCandidates(
