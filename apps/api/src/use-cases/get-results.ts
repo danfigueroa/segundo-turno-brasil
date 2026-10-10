@@ -1,4 +1,5 @@
 import type { ElectionSnapshot, ResultsSource } from '../ports/results-source';
+import { GetLatest, type GetLatestOptions } from './get-latest';
 
 export interface ResultsSnapshot extends ElectionSnapshot {
   /** When the snapshot was fetched from the source. */
@@ -7,41 +8,21 @@ export interface ResultsSnapshot extends ElectionSnapshot {
   readonly stale: boolean;
 }
 
-export interface GetResultsOptions {
-  readonly now?: () => Date;
-  readonly onError?: (error: unknown) => void;
-}
+export type GetResultsOptions = GetLatestOptions;
 
 /**
  * Fetches the latest snapshot. Concurrent calls share one request to the source, and
  * when the source fails the last good snapshot is returned flagged as stale.
  */
 export class GetResults {
-  private lastGood: ResultsSnapshot | undefined;
-  private inFlight: Promise<ResultsSnapshot> | undefined;
+  private readonly latest: GetLatest<ElectionSnapshot>;
 
-  constructor(
-    private readonly source: ResultsSource,
-    private readonly options: GetResultsOptions = {},
-  ) {}
-
-  execute(): Promise<ResultsSnapshot> {
-    this.inFlight ??= this.refresh().finally(() => {
-      this.inFlight = undefined;
-    });
-    return this.inFlight;
+  constructor(source: ResultsSource, options: GetResultsOptions = {}) {
+    this.latest = new GetLatest(() => source.fetchSnapshot(), options);
   }
 
-  private async refresh(): Promise<ResultsSnapshot> {
-    try {
-      const snapshot = await this.source.fetchSnapshot();
-      const fetchedAt = (this.options.now?.() ?? new Date()).toISOString();
-      this.lastGood = { ...snapshot, fetchedAt, stale: false };
-      return this.lastGood;
-    } catch (error) {
-      this.options.onError?.(error);
-      if (!this.lastGood) throw error;
-      return { ...this.lastGood, stale: true };
-    }
+  async execute(): Promise<ResultsSnapshot> {
+    const { value, fetchedAt, stale } = await this.latest.execute();
+    return { ...value, fetchedAt, stale };
   }
 }
