@@ -47,9 +47,23 @@ export function selectionTitle(selection: Selection): string {
   }
 }
 
-/** `#/sp` → state, `#/regiao/ne` → region, `#/exterior` → abroad, anything else → country. */
-export function parseHash(hash: string): Selection {
-  const parts = hash.replace(/^#\/?/, '').toUpperCase().split('/');
+/** URL path segment of a selection: `''`, `sp`, `regiao/ne` or `exterior`. */
+export function selectionPath(selection: Selection): string {
+  switch (selection.kind) {
+    case 'country':
+      return '';
+    case 'region':
+      return `regiao/${selection.code.toLowerCase()}`;
+    case 'state':
+      return selection.code.toLowerCase();
+    case 'abroad':
+      return 'exterior';
+  }
+}
+
+/** Inverse of {@link selectionPath}; unknown paths fall back to the country. */
+export function parseSelectionPath(path: string): Selection {
+  const parts = path.toUpperCase().split('/').filter(Boolean);
   if (parts[0] === 'REGIAO' && REGION_CODES.includes(parts[1] as RegionCode)) {
     return { kind: 'region', code: parts[1] as RegionCode };
   }
@@ -60,19 +74,6 @@ export function parseHash(hash: string): Selection {
   return COUNTRY;
 }
 
-export function toHash(selection: Selection): string {
-  switch (selection.kind) {
-    case 'country':
-      return '';
-    case 'region':
-      return `#/regiao/${selection.code.toLowerCase()}`;
-    case 'state':
-      return `#/${selection.code.toLowerCase()}`;
-    case 'abroad':
-      return '#/exterior';
-  }
-}
-
 export function isSameSelection(a: Selection, b: Selection): boolean {
-  return toHash(a) === toHash(b);
+  return selectionPath(a) === selectionPath(b);
 }

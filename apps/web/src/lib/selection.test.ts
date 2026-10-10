@@ -1,22 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { parseHash, selectionTitle, toHash, type Selection } from './selection';
+import {
+  isSameSelection,
+  parseSelectionPath,
+  selectionPath,
+  selectionTitle,
+  type Selection,
+} from './selection';
 
-describe('selection hash', () => {
+describe('selection path', () => {
   const cases: [string, Selection][] = [
     ['', { kind: 'country' }],
-    ['#/sp', { kind: 'state', code: 'SP' }],
-    ['#/regiao/ne', { kind: 'region', code: 'NE' }],
-    ['#/exterior', { kind: 'abroad' }],
+    ['sp', { kind: 'state', code: 'SP' }],
+    ['regiao/ne', { kind: 'region', code: 'NE' }],
+    ['exterior', { kind: 'abroad' }],
   ];
 
-  it.each(cases)('round-trips %j', (hash, selection) => {
-    expect(parseHash(hash)).toEqual(selection);
-    expect(toHash(selection)).toBe(hash);
+  it.each(cases)('round-trips %j', (path, selection) => {
+    expect(parseSelectionPath(path)).toEqual(selection);
+    expect(selectionPath(selection)).toBe(path);
   });
 
-  it('falls back to the country for unknown hashes', () => {
-    expect(parseHash('#/zz')).toEqual({ kind: 'country' });
-    expect(parseHash('#/regiao/xx')).toEqual({ kind: 'country' });
+  it('falls back to the country for unknown paths', () => {
+    expect(parseSelectionPath('zz')).toEqual({ kind: 'country' });
+    expect(parseSelectionPath('regiao/xx')).toEqual({ kind: 'country' });
+  });
+
+  it('compares selections', () => {
+    expect(isSameSelection({ kind: 'state', code: 'SP' }, { kind: 'state', code: 'SP' })).toBe(
+      true,
+    );
+    expect(isSameSelection({ kind: 'country' }, { kind: 'abroad' })).toBe(false);
   });
 });
 
