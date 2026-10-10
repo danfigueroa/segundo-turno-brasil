@@ -106,7 +106,7 @@ Regras:
 
 - Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
-- Navegação: **Brasil / Região / Estado**, persistida no hash da URL (`#/sp`, `#/regiao/ne`).
+- Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL (`#/sp`, `#/regiao/ne`, `#/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (bloco no mapa, chip, tabela, compartilhamento).
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; `motion` só para entrada/saída (bottom sheet).
 - Barra de progresso de **% de seções apuradas** sempre visível.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
