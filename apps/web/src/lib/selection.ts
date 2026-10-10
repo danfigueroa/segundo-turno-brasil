@@ -77,3 +77,28 @@ export function parseSelectionPath(path: string): Selection {
 export function isSameSelection(a: Selection, b: Selection): boolean {
   return selectionPath(a) === selectionPath(b);
 }
+
+/** Region the selection belongs to: the region itself, or the state's region. */
+export function regionOf(selection: Selection): RegionCode | undefined {
+  if (selection.kind === 'region') return selection.code;
+  if (selection.kind === 'state') return STATES[selection.code].region;
+  return undefined;
+}
+
+export interface Breadcrumb {
+  readonly label: string;
+  readonly target: Selection;
+}
+
+/** Path from the country down to the selection: Brasil › Nordeste › Bahia. */
+export function breadcrumbsOf(selection: Selection): Breadcrumb[] {
+  const crumbs: Breadcrumb[] = [{ label: 'Brasil', target: COUNTRY }];
+  const region = regionOf(selection);
+  if (region)
+    crumbs.push({ label: REGION_NAMES[region], target: { kind: 'region', code: region } });
+  if (selection.kind === 'state') {
+    crumbs.push({ label: STATES[selection.code].name, target: selection });
+  }
+  if (selection.kind === 'abroad') crumbs.push({ label: 'Exterior', target: ABROAD });
+  return crumbs;
+}

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  breadcrumbsOf,
   isSameSelection,
   parseSelectionPath,
+  regionOf,
   selectionPath,
   selectionTitle,
   type Selection,
@@ -39,5 +41,28 @@ describe('selectionTitle', () => {
     expect(selectionTitle({ kind: 'region', code: 'CO' })).toBe('Região Centro-Oeste');
     expect(selectionTitle({ kind: 'state', code: 'PI' })).toBe('Piauí');
     expect(selectionTitle({ kind: 'abroad' })).toBe('Exterior');
+  });
+});
+
+describe('regionOf', () => {
+  it('resolves the region of regions and states only', () => {
+    expect(regionOf({ kind: 'region', code: 'S' })).toBe('S');
+    expect(regionOf({ kind: 'state', code: 'BA' })).toBe('NE');
+    expect(regionOf({ kind: 'country' })).toBeUndefined();
+    expect(regionOf({ kind: 'abroad' })).toBeUndefined();
+  });
+});
+
+describe('breadcrumbsOf', () => {
+  it('walks from the country down to a state', () => {
+    expect(breadcrumbsOf({ kind: 'state', code: 'BA' }).map((c) => c.label)).toEqual([
+      'Brasil',
+      'Nordeste',
+      'Bahia',
+    ]);
+  });
+
+  it('places abroad right under the country', () => {
+    expect(breadcrumbsOf({ kind: 'abroad' }).map((c) => c.label)).toEqual(['Brasil', 'Exterior']);
   });
 });
