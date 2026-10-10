@@ -58,6 +58,6 @@ Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de p
 
 ## Limites do plano Hobby
 
-- **Banda de 100 GB/mês** é o principal risco: a resposta tem ~40 KB sem compressão no 1º turno (12 candidatos) e bem menos no 2º turno; o JS inicial tem ~138 KB gzip.
+- **Banda de 100 GB/mês** é o principal risco: a resposta tem ~40 KB sem compressão no 1º turno (12 candidatos) e bem menos no 2º turno; o JS inicial tem ~115 KB gzip.
 - Uso **não comercial**.
 - Plano B: upgrade para Pro apenas no mês da eleição.
