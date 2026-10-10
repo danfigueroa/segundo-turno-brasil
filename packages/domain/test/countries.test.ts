@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateCountries, type AbroadCityResult } from '../src';
+import { aggregateCountries, countryTally, type AbroadCityResult, type Tally } from '../src';
 
 function city(
   name: string,
@@ -53,5 +53,37 @@ describe('aggregateCountries', () => {
         updatedAt: '2026-10-25T20:00:00-03:00',
       },
     ]);
+  });
+});
+
+describe('countryTally', () => {
+  const abroad: Tally = {
+    scope: { kind: 'abroad' },
+    candidates: [
+      { number: '22', name: 'FLÁVIO BOLSONARO', party: 'PL', votes: 90, share: 60 },
+      { number: '13', name: 'LULA', party: 'PT', votes: 60, share: 40 },
+    ],
+    sections: { total: 10, counted: 10 },
+    electorate: 1000,
+    turnout: 160,
+    votes: { valid: 150, blank: 4, null: 6 },
+    updatedAt: '2026-10-25T21:00:00-03:00',
+  };
+
+  it('shows a country like any scope, with the names of the abroad tally', () => {
+    const [portugal] = aggregateCountries([city('LISBOA', 'Portugal', { '13': 30, '22': 10 })]);
+    if (!portugal) throw new Error('No country');
+    expect(countryTally(portugal, abroad)).toEqual({
+      scope: { kind: 'abroad' },
+      candidates: [
+        { number: '13', name: 'LULA', party: 'PT', votes: 30, share: 75 },
+        { number: '22', name: 'FLÁVIO BOLSONARO', party: 'PL', votes: 10, share: 25 },
+      ],
+      sections: { total: 2, counted: 1 },
+      electorate: 100,
+      turnout: 43,
+      votes: { valid: 40, blank: 1, null: 2 },
+      updatedAt: '2026-10-25T20:00:00-03:00',
+    });
   });
 });
