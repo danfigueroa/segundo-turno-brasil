@@ -1,0 +1,14 @@
+.avatar {
+  overflow: hidden;
+}
+
+/* A thin white gap inside the colored ring keeps the photo from blending into it. */
+.photo {
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  background: var(--surface-sunken);
+}
