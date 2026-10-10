@@ -1,4 +1,4 @@
-import { BlobHistoryStore } from './adapters/history/blob-history-store';
+import { BlobHistoryStore, type BlobCredentials } from './adapters/history/blob-history-store';
 import { MemoryHistoryStore } from './adapters/history/memory-history-store';
 import { SimulatedAbroadSource } from './adapters/simulation/simulated-abroad-source';
 import { SimulatedResultsSource } from './adapters/simulation/simulated-results-source';
@@ -10,6 +10,7 @@ import type { Round } from '@stb/domain';
 import type { Config } from './config';
 import { createAbroadHandler } from './http/abroad-handler';
 import { createHistoryHandler } from './http/history-handler';
+import { currentOidcToken } from './http/request-context';
 import { createResultsHandler, type Handler } from './http/results-handler';
 import type { AbroadSource } from './ports/abroad-source';
 import type { HistoryStore } from './ports/history-store';
@@ -79,15 +80,27 @@ export function createAbroadSources(
   return { 1: firstRound, 2: runoff };
 }
 
+/** Blob credentials from the environment: the static token wins over OIDC. */
+function blobCredentials(config: Config): (() => BlobCredentials) | undefined {
+  const { BLOB_READ_WRITE_TOKEN: token, BLOB_STORE_ID: storeId } = config;
+  if (token) return () => ({ token });
+  if (!storeId) return undefined;
+  return () => {
+    const oidcToken = currentOidcToken();
+    return oidcToken ? { storeId, oidcToken } : { storeId };
+  };
+}
+
 /**
- * Where the runoff count history lives: Vercel Blob for the live TSE count when a token
- * is set, memory otherwise (so simulations never touch the production history).
+ * Where the runoff count history lives: Vercel Blob for the live TSE count when Blob
+ * credentials are set, memory otherwise (so simulations never touch the real history).
  */
 export function createHistoryStore(config: Config): HistoryStore {
-  if (config.DATA_SOURCE === 'tse' && config.BLOB_READ_WRITE_TOKEN) {
+  const credentials = blobCredentials(config);
+  if (config.DATA_SOURCE === 'tse' && credentials) {
     return new BlobHistoryStore({
       pathname: `history/${config.TSE_ELECTION_CODE}.json`,
-      token: config.BLOB_READ_WRITE_TOKEN,
+      credentials,
     });
   }
   return new MemoryHistoryStore();
