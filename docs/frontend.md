@@ -77,4 +77,4 @@ Não existe API web para postar direto nos Stories; a folha nativa do sistema of
 
 ## Orçamento de performance
 
-JS inicial ≈ 115 KB gzip (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento é um chunk separado.
+JS inicial ≈ 118 KB gzip (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB, Vercel Analytics ≈ 1,4 KB — ADR 0010), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento é um chunk separado.
