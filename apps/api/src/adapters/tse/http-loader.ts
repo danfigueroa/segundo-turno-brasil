@@ -1,3 +1,4 @@
+import type { TseCityFiles } from './tse-cities-source';
 import type { TseFileLoader } from './tse-results-source';
 
 export interface HttpLoaderOptions {
@@ -29,16 +30,41 @@ export function tseResultsUrl(baseUrl: string, electionCode: string, scopeCode: 
   return `${baseUrl}/${electionCode}/dados/${folder}/${scopeCode}-c0001-e${election}-u.json`;
 }
 
-/** Loads TSE files over HTTP from the official results CDN. */
-export function createHttpLoader(options: HttpLoaderOptions): TseFileLoader {
+/** Municipalities of every scope, with their IBGE codes. */
+export function tseMunicipalitiesUrl(baseUrl: string, electionCode: string): string {
+  return `${baseUrl}/${electionCode}/config/mun-e${electionCode.padStart(6, '0')}-cm.json`;
+}
+
+/** Count progress of every municipality of a state (lowercase code). */
+export function tseProgressUrl(baseUrl: string, electionCode: string, state: string): string {
+  return `${baseUrl}/${electionCode}/dados/${state}/${state}-e${electionCode.padStart(6, '0')}-ab.json`;
+}
+
+function jsonFetcher(options: HttpLoaderOptions): (url: string) => Promise<unknown> {
   const fetchFn = options.fetch ?? fetch;
-  return async (scopeCode) => {
-    const url = tseResultsUrl(options.baseUrl, options.electionCode, scopeCode);
+  return async (url) => {
     const response = await fetchFn(url, {
       headers: { accept: 'application/json' },
       signal: AbortSignal.timeout(options.timeoutMs),
     });
     if (!response.ok) throw new TseRequestError(url, response.status);
     return response.json();
+  };
+}
+
+/** Loads TSE files over HTTP from the official results CDN. */
+export function createHttpLoader(options: HttpLoaderOptions): TseFileLoader {
+  const get = jsonFetcher(options);
+  return (scopeCode) => get(tseResultsUrl(options.baseUrl, options.electionCode, scopeCode));
+}
+
+/** The files of the breakdown by municipality, over HTTP from the official results CDN. */
+export function createHttpCityFiles(options: HttpLoaderOptions): TseCityFiles {
+  const get = jsonFetcher(options);
+  const { baseUrl, electionCode } = options;
+  return {
+    municipalities: () => get(tseMunicipalitiesUrl(baseUrl, electionCode)),
+    progress: (state) => get(tseProgressUrl(baseUrl, electionCode, state)),
+    results: (scope) => get(tseResultsUrl(baseUrl, electionCode, scope)),
   };
 }

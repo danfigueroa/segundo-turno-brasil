@@ -52,3 +52,37 @@ export const tseResultFileSchema = z.object({
 });
 
 export type TseResultFile = z.infer<typeof tseResultFileSchema>;
+
+/** Municipalities of each scope, from `config/mun-e<election>-cm.json`. */
+export const tseMunicipalitiesFileSchema = z.object({
+  abr: z.array(
+    z.object({
+      /** Lowercase state code (also `zz` for abroad). */
+      cd: z.string(),
+      mu: z.array(
+        z.object({
+          /** TSE municipality code, e.g. "01120". */
+          cd: z.string(),
+          /** IBGE code, e.g. "1200013". */
+          cdi: z.string(),
+          nm: z.string(),
+        }),
+      ),
+    }),
+  ),
+});
+
+/**
+ * Count progress of every municipality of a state (`<uf>-e<election>-ab.json`): no votes,
+ * but enough to tell which municipalities changed since the last read.
+ */
+export const tseProgressFileSchema = z.object({
+  abr: z.array(
+    z.object({
+      cdabr: z.string(),
+      dt: z.string(),
+      ht: z.string(),
+      s: z.object({ st: tseInt }),
+    }),
+  ),
+});
