@@ -115,9 +115,10 @@ Regras:
 - **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
 - Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento).
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
-- Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
+- Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → análise da apuração → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
-- **Avatares:** foto oficial de urna do TSE, servida de `apps/web/public/candidates/{número}.jpeg` (`pnpm --filter @stb/web photos:fetch`), num anel da cor do candidato; iniciais como fallback (ADR 0009). Única exceção pedida ao design.
+- **Análise da apuração (ADR 0012):** seção carregada sob demanda (`features/insights`) com "Ainda dá virada?", curva da apuração com ritmo e previsão, saldo de votos por estado e comparação com o 1º turno (no 1º turno, só o saldo). Criada a pedido seguindo a identidade do site; ainda falta levá-la ao Claude Design.
+- **Avatares:** foto oficial de urna do TSE, servida de `apps/web/public/candidates/{número}.jpeg` (`pnpm --filter @stb/web photos:fetch`), num anel da cor do candidato; iniciais como fallback (ADR 0009). Exceção pedida ao design, como a análise da apuração.
 - **Rodapé:** linha de atualização (fonte TSE) e o crédito "Desenvolvido por @danmfigueroa", com link para https://www.instagram.com/danmfigueroa/.
 - 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
@@ -183,11 +184,12 @@ pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa 
 
 ## Status e próximos passos
 
-Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (redesenho verde e amarelo: card de resultado, mapa, regiões, lista de estados, contagem regressiva), compartilhamento Stories/Feed, build da Vercel e CI.
+Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale, histórico no Blob), web (redesenho verde e amarelo: card de resultado, mapa, regiões, análise da apuração, lista de estados, contagem regressiva), compartilhamento Stories/Feed, build da Vercel e CI.
 
 Pendente:
 
-- Novas estatísticas (domínio e API prontos; falta o desenho no Claude Design e a UI): "Ainda dá virada?" (`outlook`), saldo líquido por estado, 1º → 2º turno (`swing`), ritmo (`paceOf`) e curva da apuração (`/api/history`). Conectar um Blob store ao projeto na Vercel antes de 25/10.
+- Conectar um Blob store ao projeto na Vercel antes de 25/10 (histórico da curva, ADR 0011).
+- Levar a seção de análise da apuração para o Claude Design.
 
 - `GET /api/og` (prévia de links com o placar atual).
 - Pinch-zoom/pan do mapa no mobile.
