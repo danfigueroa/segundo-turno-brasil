@@ -1,6 +1,6 @@
 import { STATE_CODES } from '@stb/domain';
 import { formatPercent, formatTime, formatVotes } from '../../lib/format';
-import { BRAZIL_MAP } from '../map/brazil-map';
+import { ABROAD_TILE, BRAZIL_MAP } from '../map/brazil-map';
 import { SHARE_PALETTE as P } from './palette';
 import type { ShareContent } from './share-content';
 
@@ -186,6 +186,8 @@ function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: L
     ctx.stroke(path);
   }
 
+  drawAbroadTile(ctx, content, scale);
+
   if (content.focus.size === 1) {
     const [code] = content.focus;
     if (code) {
@@ -196,6 +198,29 @@ function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: L
     }
   }
   ctx.restore();
+}
+
+function drawAbroadTile(ctx: CanvasRenderingContext2D, content: ShareContent, scale: number) {
+  const { x, y, width, height, radius } = ABROAD_TILE;
+  const highlighted = content.abroadInFocus && content.focus.size === 0;
+  ctx.globalAlpha = content.abroadInFocus ? 1 : 0.5;
+  ctx.fillStyle = content.abroadInFocus ? content.abroadFill : P.mapEmpty;
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, radius);
+  ctx.fill();
+  if (highlighted) {
+    ctx.lineWidth = 5 / scale;
+    ctx.strokeStyle = P.text;
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = P.text;
+  ctx.font = font(700, 36);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Exterior', x + width / 2, y + height / 2);
+  ctx.textBaseline = 'alphabetic';
 }
 
 function drawProgress(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
