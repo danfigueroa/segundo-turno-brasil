@@ -5,7 +5,8 @@ Acompanhe **ao vivo** a apuração do 2º turno da eleição presidencial de **2
 - Mapa coroplético: cada estado na cor de quem lidera, mais intenso quanto maior a vantagem.
 - Abas **2º turno** (ao vivo) e **1º turno** (resultado final); antes da apuração do 2º turno, o site abre no 1º.
 - Navegação Brasil / Região / Estado / Exterior, com link compartilhável (`/#/sp`, `/#/regiao/ne`, `/#/exterior`).
-- Mobile first: bottom sheet ao tocar num estado, alvos de toque de 44px, tema claro/escuro.
+- Mobile first: barra de abrangência fixa, tocar num estado leva ao resultado dele, alvos de toque de 44px, tema claro/escuro.
+- Antes da apuração do 2º turno: contagem regressiva até 17h de 25/10.
 - Compartilhamento: imagem 1080×1920 (Stories) ou 1080×1350 (Feed) gerada no aparelho, enviada pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou baixada.
 - Dados oficiais do TSE, atualizados a cada ~20s, com fallback quando o TSE oscila.
 
