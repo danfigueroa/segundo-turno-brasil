@@ -1,0 +1,15 @@
+/* Hundreds of shapes: thinner borders than the states, and a bolder one when selected. */
+.city {
+  stroke-width: 0.8;
+}
+
+.city[data-selected] {
+  stroke-width: 4;
+}
+
+.placeholder {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--map-empty);
+  opacity: 0.5;
+}

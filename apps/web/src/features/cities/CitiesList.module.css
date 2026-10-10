@@ -1,0 +1,23 @@
+/* Each row is a button that selects its city. */
+.row {
+  width: 100%;
+  margin: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row[aria-current] {
+  background: var(--brand-soft);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
