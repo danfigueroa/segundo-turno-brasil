@@ -30,7 +30,7 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 
 1. **Cabeçalho:** marca, selo de status (Resultado final / Aguardando / Ao vivo / Apuração encerrada) e, no desktop, as abas de turno; no celular as abas ficam numa linha própria (`lib/use-media-query.ts`).
 2. **Barra de abrangência** fixa no topo (`features/scope-chips`): Brasil, regiões e Exterior. Com um estado selecionado, o chip da região dele fica marcado como "pai".
-3. **Card de resultado** (`features/result-card`): migalhas (Brasil › Nordeste › Bahia) e % apurado; avatares com iniciais, selo "Lidera"/"Mais votado"; barra com o marcador de 50%; três números-chave e o botão "Compartilhar …". A lógica fica em `headline.ts` (testada).
+3. **Card de resultado** (`features/result-card`): migalhas (Brasil › Nordeste › Bahia) e % apurado; avatares com a foto oficial do TSE num anel da cor do candidato (`components/CandidateAvatar`, ADR 0009; iniciais se faltar a foto), selo "Lidera"/"Mais votado"; barra com o marcador de 50%; três números-chave e o botão "Compartilhar …". A lógica fica em `headline.ts` (testada).
 4. **Mapa** (`features/map`): seletor de estado (com Exterior) e legenda em grade.
 5. **Lista de estados** (`features/states-list`): cartões no celular, grade tipo tabela no desktop; no Brasil começa recolhida (8 no celular, 10 no desktop). Em região/estado mostra os estados da região. Escondida no Exterior.
 
