@@ -1,8 +1,14 @@
-/* The world is wider than Brazil: it takes the whole card, continent chips on top. */
+/* The continent chips get a row of their own under the title. */
+:global(.card).layout {
+  grid-template-areas: 'head' 'continents' 'map' 'select' 'legend';
+}
+
+.continents {
+  grid-area: continents;
+}
+
 .container {
   grid-area: map;
-  display: grid;
-  gap: 14px;
   width: 100%;
   min-width: 0;
 }
@@ -11,54 +17,43 @@
   display: block;
   width: 100%;
   height: auto;
-  /* Zoomed into a continent, the rest of the world must not spill over the card. */
+  /* Neighbors cut at the edges of the continent must not spill over the card. */
   overflow: hidden;
 }
 
-.land {
-  fill: var(--map-empty);
-  stroke: var(--map-stroke);
-  /* --scale is how much a continent is magnified: lines keep their width on screen. */
-  stroke-width: calc(0.6px / var(--scale, 1));
+/* Hundreds of borders on a continent: thinner than the states. */
+.country {
+  stroke-width: 1;
+  cursor: default;
 }
 
-.brazil {
+/* Countries without Brazilian polling stations: lighter than "no votes yet". */
+.country[data-kind='other'] {
+  fill: color-mix(in srgb, var(--map-empty), var(--surface) 55%);
+}
+
+.country[data-kind='brazil'] {
   fill: color-mix(in srgb, var(--map-empty), #0f1a14 12%);
-  stroke: var(--map-stroke);
-  stroke-width: calc(0.6px / var(--scale, 1));
 }
 
-.brazilLabel,
-.cityLabel {
-  /* viewBox units: the 1000-wide map shrinks to about a third on a phone. */
-  font-size: calc(32px / var(--scale, 1));
+.label {
   font-weight: 800;
+  text-anchor: middle;
   dominant-baseline: central;
   fill: #0f1a14;
   paint-order: stroke;
   stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: calc(6px / var(--scale, 1));
+  stroke-width: 0.2em;
   stroke-linejoin: round;
   pointer-events: none;
   user-select: none;
 }
 
-.brazilLabel {
-  text-anchor: middle;
-}
-
-/* Colors come from the state styles (hue and margin); dots are a picture, not buttons. */
-.dot {
-  stroke-width: calc(1px / var(--scale, 1));
-  cursor: default;
-  transition:
-    fill var(--duration) var(--ease-out),
-    opacity var(--duration) var(--ease-out);
-}
-
-/* Cities of other continents that fall inside a zoomed view stay in the background. */
-.dot[data-dimmed] {
-  opacity: 0.3;
+.placeholder {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--map-empty);
+  opacity: 0.5;
 }
 
 .back {
@@ -80,17 +75,17 @@
 }
 
 @media (min-width: 960px) {
+  :global(.card).layout {
+    grid-template-areas: 'head select' 'continents continents' 'map map' 'legend legend';
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  /* The map takes the height the result card beside it leaves. */
   .container {
     align-self: center;
   }
 
   .back {
     justify-self: end;
-  }
-
-  .brazilLabel,
-  .cityLabel {
-    font-size: calc(19px / var(--scale, 1));
-    stroke-width: calc(4px / var(--scale, 1));
   }
 }
