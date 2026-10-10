@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatCompactVotes,
   formatDate,
   formatLead,
   formatName,
   formatPercent,
   formatPoints,
+  formatPointsChange,
   formatTime,
   formatVotes,
   initialsOf,
@@ -48,5 +50,26 @@ describe('format', () => {
     expect(initialsOf('Flávio Bolsonaro')).toBe('FB');
     expect(initialsOf('Lula')).toBe('L');
     expect(initialsOf('Rui Costa da Silva')).toBe('RC');
+  });
+});
+
+describe('formatCompactVotes', () => {
+  it('abbreviates millions and thousands', () => {
+    expect(formatCompactVotes(1_234_567)).toBe('1,2 mi');
+    expect(formatCompactVotes(45_600)).toBe('46 mil');
+    expect(formatCompactVotes(9_870)).toBe('9.870');
+    expect(formatCompactVotes(999_600)).toBe('1,0 mi');
+  });
+
+  it('keeps the sign', () => {
+    expect(formatCompactVotes(-2_500_000)).toBe('-2,5 mi');
+  });
+});
+
+describe('formatPointsChange', () => {
+  it('signs gains and losses', () => {
+    expect(formatPointsChange(2.5)).toBe('+2,50 p.p.');
+    expect(formatPointsChange(-1)).toBe('−1,00 p.p.');
+    expect(formatPointsChange(0)).toBe('0,00 p.p.');
   });
 });
