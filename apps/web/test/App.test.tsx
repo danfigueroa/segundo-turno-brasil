@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
@@ -159,6 +159,28 @@ describe('App abroad votes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Voltar ao Brasil' }));
     expect(window.location.hash).toBe('');
     expect(await screen.findByRole('group', { name: 'Estados' })).toBeInTheDocument();
+  });
+
+  it('zooms the world map into a continent', async () => {
+    window.location.hash = '#/exterior';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const zoom = await screen.findByRole('group', { name: 'Aproximar o mapa' });
+    const world = screen.getByRole('group', { name: 'Mundo' });
+    const viewBox = world.getAttribute('viewBox');
+    expect(within(zoom).getByRole('button', { name: 'Mundo' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await userEvent.click(within(zoom).getByRole('button', { name: 'Europa' }));
+    const europe = screen.getByRole('group', { name: 'Europa' });
+    await waitFor(() => expect(europe.getAttribute('viewBox')).not.toBe(viewBox));
+    expect(within(zoom).getByRole('button', { name: 'Europa' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 });
 
