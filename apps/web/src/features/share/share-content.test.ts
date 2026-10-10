@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finalistsOf } from '../../lib/finalists';
-import { resultsResponse, tally } from '../../../test/fixtures';
+import { citiesResponse, resultsResponse, tally } from '../../../test/fixtures';
 import { SHARE_PALETTE } from './palette';
 import { shareContentFrom } from './share-content';
 
@@ -64,5 +64,34 @@ describe('shareContentFrom', () => {
     expect(content.othersVotes).toBe(80);
     expect(content.notes[1]).toBe('Demais candidatos: 8,00%');
     expect(content.source).toBe('Fonte: TSE · 25/10, 19:42');
+  });
+
+  it("draws a city on its state's municipal map, outlined", () => {
+    const salvador = { kind: 'city', state: 'BA', ibge: '2927408' } as const;
+    const map = {
+      viewBox: '0 0 10 10',
+      cities: { '2927408': 'M0,0L1,1Z', '2903201': 'M2,2L3,3Z', '2900108': 'M4,4L5,5Z' },
+    };
+    const { cities } = citiesResponse();
+    const content = shareContentFrom(data, salvador, finalists, 'x', { cities, map });
+    expect(content.title).toBe('Salvador');
+    expect(content.cityMap?.selected).toBe('M0,0L1,1Z');
+    // Numeric keys come in IBGE order: a municipality without results is drawn empty.
+    expect(content.cityMap?.shapes.map((s) => s.fill)).toEqual([
+      SHARE_PALETTE.mapEmpty,
+      SHARE_PALETTE.ramps.blue[4],
+      SHARE_PALETTE.ramps.red[4],
+    ]);
+    expect(content.leadCounts.map((c) => [c.label, c.value])).toEqual([
+      ['Lula lidera em', '2 cidades'],
+      ['Flávio lidera em', '1 cidade'],
+    ]);
+  });
+
+  it('shares a city like its state until its details load', () => {
+    const salvador = { kind: 'city', state: 'BA', ibge: '2927408' } as const;
+    const content = shareContentFrom(data, salvador, finalists, 'x');
+    expect(content.cityMap).toBeUndefined();
+    expect([...content.focus]).toEqual(['BA']);
   });
 });
