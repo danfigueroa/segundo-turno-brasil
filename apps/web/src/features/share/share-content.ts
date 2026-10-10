@@ -3,19 +3,23 @@ import {
   countedPercentage,
   STATE_CODES,
   STATES,
+  type MunicipalityResult,
   type Round,
   type StateCode,
   type Tally,
 } from '@stb/domain';
+import { cityRows, cityWins } from '../../lib/cities';
 import {
   finalistResults,
   leadOf,
+  leadOfVotes,
   type CandidateHue,
   type Finalist,
   type FinalistResult,
 } from '../../lib/finalists';
 import { formatDate, formatPercent, formatPoints, formatTime } from '../../lib/format';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
+import type { StateMapShape } from '../state-map/state-maps';
 import { SHARE_PALETTE } from './palette';
 
 /** "Lula lidera em" / "12 estados". */
@@ -44,10 +48,31 @@ export interface ShareContent {
   readonly mapFills: Readonly<Record<StateCode, string>>;
   /** States outside the selection are drawn faded. */
   readonly focus: ReadonlySet<StateCode>;
-  /** How many states each finalist leads, within the region or the whole country. */
+  /** A city is drawn on its state's municipal map instead of the map of Brazil. */
+  readonly cityMap: CityMap | undefined;
+  /**
+   * How many states each finalist leads, within the region or the whole country; for a
+   * city, how many of its state's municipalities.
+   */
   readonly leadCounts: readonly LeadCount[];
   readonly siteUrl: string;
 }
+
+/** A state's municipalities colored by leader, with the selected one outlined. */
+export interface CityMap {
+  readonly viewBox: string;
+  readonly shapes: readonly { readonly d: string; readonly fill: string }[];
+  /** Path of the selected municipality. */
+  readonly selected: string | undefined;
+}
+
+/** The selected state's municipalities and their map, to share a city. */
+export interface StateDetail {
+  readonly cities: readonly MunicipalityResult[];
+  readonly map: StateMapShape;
+}
+
+const citiesText = (n: number) => (n === 1 ? '1 cidade' : `${n} cidades`);
 
 function statesText(count: number, withDistrict: boolean): string {
   const states = count === 1 ? '1 estado' : `${count} estados`;
@@ -81,8 +106,11 @@ export function shareContentFrom(
   selection: Selection,
   finalists: readonly Finalist[],
   siteUrl: string,
+  /** Needed to share a city; without it, a city is shared like its state. */
+  detail?: StateDetail,
 ): ShareContent {
-  const tally = resolveTally(data, selection);
+  const cities = detail?.cities;
+  const tally = resolveTally(data, selection, cities);
   const results = finalistResults(tally, finalists);
   const lead = leadOf(results);
   const counted = countedPercentage(tally);
@@ -92,13 +120,13 @@ export function shareContentFrom(
   const others = tally.candidates.filter((c) => !finalistNumbers.has(c.number));
   const othersShare = others.reduce((sum, c) => sum + c.share, 0);
 
-  const fillOf = (scopeTally: Tally) => {
-    const scopeLead = leadOf(finalistResults(scopeTally, finalists));
+  const fillOfLead = (scopeLead: ReturnType<typeof leadOf>) => {
     const fill = scopeLead
       ? SHARE_PALETTE.ramps[scopeLead.hue][scopeLead.intensity - 1]
       : undefined;
     return fill ?? SHARE_PALETTE.mapEmpty;
   };
+  const fillOf = (scopeTally: Tally) => fillOfLead(leadOf(finalistResults(scopeTally, finalists)));
   const mapFills = Object.fromEntries(
     STATE_CODES.map((code) => [code, fillOf(data.states[code])]),
   ) as Record<StateCode, string>;
@@ -109,18 +137,25 @@ export function shareContentFrom(
         selection.kind === 'country' ||
         selection.kind === 'abroad' ||
         (selection.kind === 'region' && STATES[code].region === selection.code) ||
-        (selection.kind === 'state' && selection.code === code),
+        (selection.kind === 'state' && selection.code === code) ||
+        (selection.kind === 'city' && selection.state === code),
     ),
   );
   const countScope =
     selection.kind === 'region' ? STATE_CODES.filter((code) => focus.has(code)) : STATE_CODES;
+
+  const cityMap =
+    selection.kind === 'city' && detail
+      ? cityMapOf(detail, selection.ibge, (votes) => fillOfLead(leadOfVotes(votes, finalists)))
+      : undefined;
+  const cityLeadCounts = cityMap && cities ? cityLeadCountsOf(cities, finalists) : undefined;
 
   const { updatedAt } = tally;
   return {
     round: data.round,
     kicker:
       `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`.toUpperCase(),
-    title: selectionTitle(selection),
+    title: selectionTitle(selection, cities),
     results,
     leaderNumber: lead?.leader.number,
     othersVotes: others.reduce((sum, c) => sum + c.votes, 0),
@@ -134,7 +169,36 @@ export function shareContentFrom(
       : `Atualizado às ${formatTime(updatedAt)} · Fonte: TSE`,
     mapFills,
     focus,
-    leadCounts: leadCountsOf(data, finalists, countScope),
+    cityMap,
+    leadCounts: cityLeadCounts ?? leadCountsOf(data, finalists, countScope),
     siteUrl,
   };
+}
+
+function cityMapOf(
+  { cities, map }: StateDetail,
+  selected: string,
+  fillOf: (votes: MunicipalityResult['votes']) => string,
+): CityMap {
+  const byIbge = new Map(cities.map((c) => [c.ibge, c]));
+  return {
+    viewBox: map.viewBox,
+    shapes: Object.entries(map.cities).map(([ibge, d]) => {
+      const city = byIbge.get(ibge);
+      return { d, fill: city ? fillOf(city.votes) : SHARE_PALETTE.mapEmpty };
+    }),
+    selected: map.cities[selected],
+  };
+}
+
+function cityLeadCountsOf(
+  cities: readonly MunicipalityResult[],
+  finalists: readonly Finalist[],
+): LeadCount[] {
+  const wins = cityWins(cityRows(cities, finalists), finalists);
+  return finalists.map((f) => ({
+    hue: f.hue,
+    label: `${f.shortName} lidera em`,
+    value: citiesText(wins[f.number] ?? 0),
+  }));
 }

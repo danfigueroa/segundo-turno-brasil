@@ -2,7 +2,7 @@ import { STATE_CODES } from '@stb/domain';
 import { formatPercent, formatVotes } from '../../lib/format';
 import { BRAZIL_MAP } from '../map/brazil-map';
 import { SHARE_PALETTE as P } from './palette';
-import type { ShareContent } from './share-content';
+import type { CityMap, ShareContent } from './share-content';
 
 export type ShareFormat = 'story' | 'feed';
 
@@ -241,20 +241,46 @@ function drawSplitBar(
   ctx.fillRect(x + width / 2 - 3, y - 12, 6, height + 24);
 }
 
-function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
-  const [minX = 0, minY = 0, vbWidth = 1000, vbHeight = 1000] = BRAZIL_MAP.viewBox
-    .split(' ')
-    .map(Number);
+/** Fits a viewBox into the map square and returns the scale applied. */
+function placeMap(ctx: CanvasRenderingContext2D, viewBox: string, layout: Layout): number {
+  const [minX = 0, minY = 0, vbWidth = 1000, vbHeight = 1000] = viewBox.split(' ').map(Number);
   const { top, size } = layout.map;
   const scale = Math.min(size / vbWidth, size / vbHeight);
-
-  ctx.save();
   ctx.translate(MARGIN, top);
   ctx.scale(scale, scale);
   ctx.translate(-minX, -minY);
-  ctx.lineWidth = 2 / scale;
   ctx.lineJoin = 'round';
   ctx.strokeStyle = P.mapStroke;
+  return scale;
+}
+
+/** A city: its state's municipalities, the city outlined. */
+function drawCityMap(ctx: CanvasRenderingContext2D, map: CityMap, layout: Layout) {
+  ctx.save();
+  const scale = placeMap(ctx, map.viewBox, layout);
+  ctx.lineWidth = 1 / scale;
+  for (const shape of map.shapes) {
+    const path = new Path2D(shape.d);
+    ctx.fillStyle = shape.fill;
+    ctx.fill(path);
+    ctx.stroke(path);
+  }
+  if (map.selected) {
+    ctx.lineWidth = 6 / scale;
+    ctx.strokeStyle = P.text;
+    ctx.stroke(new Path2D(map.selected));
+  }
+  ctx.restore();
+}
+
+function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+  if (content.cityMap) {
+    drawCityMap(ctx, content.cityMap, layout);
+    return;
+  }
+  ctx.save();
+  const scale = placeMap(ctx, BRAZIL_MAP.viewBox, layout);
+  ctx.lineWidth = 2 / scale;
 
   for (const code of STATE_CODES) {
     const path = new Path2D(BRAZIL_MAP.states[code].d);
