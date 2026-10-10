@@ -2,6 +2,7 @@ import type { ResultsResponse } from '@stb/contracts';
 import type { CountryResult } from '@stb/domain';
 import type { ReactNode, Ref } from 'react';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
+import { CandidateAvatar } from '../../components/CandidateAvatar';
 import type { Finalist } from '../../lib/finalists';
 import { formatPercent, formatVotes } from '../../lib/format';
 import { breadcrumbsOf, isSameSelection, type Selection } from '../../lib/selection';
@@ -135,9 +136,7 @@ function Column({ column, badge }: { readonly column: HeadlineColumn; readonly b
   return (
     <div className={styles.column} data-hue={finalist.hue}>
       <div className={styles.identity}>
-        <span className={styles.avatar} aria-hidden="true">
-          {finalist.initials}
-        </span>
+        <CandidateAvatar finalist={finalist} className={styles.avatar} />
         <span className={styles.nameBlock}>
           <span className={styles.name}>{finalist.name}</span>
           {leads && <span className={styles.badge}>{badge}</span>}

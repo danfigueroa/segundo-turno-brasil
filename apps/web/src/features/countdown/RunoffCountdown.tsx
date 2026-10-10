@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CandidateAvatar } from '../../components/CandidateAvatar';
 import type { Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { countdownParts, RUNOFF_COUNT_START } from './countdown';
@@ -49,9 +50,7 @@ export function RunoffCountdown({ finalists, onShowFirstRound }: Props) {
         <div className={styles.finalists}>
           {finalists.map((f) => (
             <div key={f.number} className={styles.finalist} data-hue={f.hue}>
-              <span className={styles.avatar} aria-hidden="true">
-                {f.initials}
-              </span>
+              <CandidateAvatar finalist={f} className={styles.avatar} />
               <span className={styles.finalistText}>
                 <span className={styles.finalistName}>{f.name}</span>
                 <span className={styles.finalistShare}>{zero}</span>
