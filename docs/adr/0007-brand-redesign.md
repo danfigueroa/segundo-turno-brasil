@@ -17,6 +17,8 @@ O visual foi refeito no Claude Design (telas de celular para Brasil, região, es
 - **Antes da apuração do 2º turno:** contagem regressiva até 17h de 25/10 e atalho para o 1º turno, sem barra de abrangência nem lista de estados.
 - **Imagem de compartilhamento** segue o card de Stories, no tema claro, respeitando as áreas seguras do Instagram.
 
+- **O design é a fonte da verdade**: nada além do que ele mostra (sem tooltip no mapa, sem barra de progresso extra no card); o % apurado aparece como no desenho.
+
 ## Consequências
 
 - JS inicial cai de ~138 KB para ~115 KB gzip (sem `motion`); a fonte soma ~47 KB, em cache longo.

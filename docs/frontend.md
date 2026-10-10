@@ -22,6 +22,7 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 
 - Verde `#00843D` e amarelo `#FFD60A` da bandeira (faixa no topo e no rodapé, marca), fundo `#F5F6F1`, texto `#0F1A14`.
 - Fonte Schibsted Grotesk auto-hospedada (`@fontsource-variable/schibsted-grotesk`).
+- O desenho é a fonte da verdade: cores, tipografia (inclusive algarismos tabulares em toda a página), layout e textos iguais ao design.
 - Só tema claro, com as cores exatas do desenho (o tema escuro do sistema é ignorado).
 - Textos e casas decimais seguem o desenho em cada tamanho de tela: "Toque…" no celular, "Clique…" no desktop; vantagem com 1 casa no celular e 2 na tabela do desktop.
 
@@ -42,13 +43,13 @@ Escolher uma abrangência em qualquer lugar rola até o card de resultado, se el
 - Mapa: escala divergente por **margem em pontos percentuais**, em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`), cada passo também mais escuro (lê-se sem cor). Cinza para "sem votos" ou empate.
 - Ao escolher uma região, os outros estados esmaecem; ao escolher um estado, os vizinhos de região ficam a meio-tom (`features/map/emphasis.ts`).
 - Nomes do TSE vêm sem acento: `formatName` corrige os conhecidos ("Flávio").
-- Cor nunca é a única pista: tooltip, `aria-label` por estado e a tabela trazem os números.
+- Cor nunca é a única pista: `aria-label` por estado, o card de resultado e a lista de estados trazem os números.
 
 ## Mapa
 
 - Malha das UFs do IBGE (qualidade "mínima") em `data/br-uf.topo.json`.
 - `scripts/build-map.ts` projeta (Mercator) e grava caminhos SVG em `brazil-map.generated.json` (~14 KB gzip): o navegador não carrega d3 nem topojson.
-- Estados são botões acessíveis por teclado (Enter/Espaço); tooltip no hover (mouse) e no foco.
+- Estados são botões acessíveis por teclado (Enter/Espaço). Sem tooltip nem efeito de hover, como no design.
 - **Votos no exterior** (escopo `zz` do TSE, já somados ao total do Brasil) aparecem como um botão "Exterior" sobre o Atlântico, na mesma escala de cores e com ≥ 44px. Também há chip na barra de abrangência e opção no seletor.
 - Siglas dos estados só no desktop.
 
