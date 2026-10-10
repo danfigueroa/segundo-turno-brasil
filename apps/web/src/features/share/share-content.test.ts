@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { finalistsOf } from '../../lib/finalists';
-import { citiesResponse, resultsResponse, tally } from '../../../test/fixtures';
+import { abroadCountry } from '../../lib/selection';
+import { abroadResponse, citiesResponse, resultsResponse, tally } from '../../../test/fixtures';
 import { SHARE_PALETTE } from './palette';
 import { shareContentFrom } from './share-content';
 
@@ -93,5 +94,49 @@ describe('shareContentFrom', () => {
     const content = shareContentFrom(data, salvador, finalists, 'x');
     expect(content.detailMap).toBeUndefined();
     expect([...content.focus]).toEqual(['BA']);
+  });
+
+  it("draws a country abroad on its continent's map, a tiny one with a marker", () => {
+    const { countries } = abroadResponse();
+    const map = {
+      viewBox: '0 0 1000 1000',
+      countries: [
+        { d: 'M0Z', name: 'Portugal', label: [1, 1] },
+        { d: 'M1Z', name: 'Estados Unidos', label: [2, 2] },
+        { d: 'M2Z' },
+        { d: 'M3Z', brazil: true, label: [3, 3] },
+        { d: 'M4Z', name: 'Haiti', label: [10, 20], tiny: true },
+      ],
+    } as const;
+    const content = shareContentFrom(data, abroadCountry('Haiti'), finalists, 'x', undefined, {
+      countries,
+      map,
+    });
+    expect(content.title).toBe('Haiti');
+    expect(content.detailMap?.shapes.map((s) => s.fill)).toEqual([
+      SHARE_PALETTE.ramps.red[4],
+      SHARE_PALETTE.ramps.blue[4],
+      SHARE_PALETTE.mapOther,
+      SHARE_PALETTE.mapBrazil,
+      // Haiti is tied: drawn empty, and its marker too.
+      SHARE_PALETTE.mapEmpty,
+      SHARE_PALETTE.mapEmpty,
+    ]);
+    expect(content.detailMap?.selected).toBe('M1,20a9,9 0 1,0 18,0a9,9 0 1,0 -18,0Z');
+    expect(content.leadCounts.map((c) => [c.label, c.value])).toEqual([
+      ['Lula lidera em', '1 país'],
+      ['Flávio lidera em', '1 país'],
+    ]);
+  });
+
+  it('shares a country abroad on the map of Brazil until its continent loads', () => {
+    const { countries } = abroadResponse();
+    const content = shareContentFrom(data, abroadCountry('Portugal'), finalists, 'x', undefined, {
+      countries,
+      map: undefined,
+    });
+    expect(content.title).toBe('Portugal');
+    expect(content.detailMap).toBeUndefined();
+    expect(content.focus.size).toBe(27);
   });
 });
