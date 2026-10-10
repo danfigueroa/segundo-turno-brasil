@@ -1,4 +1,4 @@
-import { REGION_CODES, STATE_CODES, type Tally } from '@stb/domain';
+import { REGION_CODES, STATE_CODES, type Round, type Tally } from '@stb/domain';
 // zod/mini is tree-shakeable: this module also ships to the browser, where classic zod
 // would add ~90 KB (gzip) to the bundle.
 import * as z from 'zod/mini';
@@ -7,6 +7,8 @@ const count = z.int().check(z.nonnegative());
 const timestamp = z.iso.datetime({ offset: true });
 
 export const stateCodeSchema = z.enum(STATE_CODES);
+
+export const roundSchema = z.union([z.literal(1), z.literal(2)]) satisfies z.ZodMiniType<Round>;
 
 export const scopeSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('country') }),
@@ -33,8 +35,10 @@ export const tallySchema = z.object({
   updatedAt: timestamp,
 }) satisfies z.ZodMiniType<Tally>;
 
-/** Response of `GET /api/results`: a consistent snapshot of every scope. */
+/** Response of `GET /api/results?round=1|2`: a consistent snapshot of every scope. */
 export const resultsResponseSchema = z.object({
+  /** Which round this snapshot belongs to. */
+  round: roundSchema,
   country: tallySchema,
   /** Every one of the 27 federative units. */
   states: z.record(stateCodeSchema, tallySchema),
