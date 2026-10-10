@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
-import { abroadResponse, resultsResponse, tally } from './fixtures';
+import { abroadResponse, citiesResponse, resultsResponse, tally } from './fixtures';
 
 function renderApp() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -14,11 +14,17 @@ function renderApp() {
   );
 }
 
-/** Answers `/api/results` and `/api/abroad`; each call gets a fresh `Response`. */
+/** Answers `/api/results`, `/api/abroad` and `/api/cities`; each call gets a fresh `Response`. */
 function mockFetch(results: () => Response, abroad = () => Response.json(abroadResponse())) {
   vi.stubGlobal(
     'fetch',
-    vi.fn(async (url: string) => (url.includes('/api/abroad') ? abroad() : results())),
+    vi.fn(async (url: string) =>
+      url.includes('/api/abroad')
+        ? abroad()
+        : url.includes('/api/cities')
+          ? Response.json(citiesResponse())
+          : results(),
+    ),
   );
 }
 
@@ -153,6 +159,53 @@ describe('App abroad votes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Voltar ao Brasil' }));
     expect(window.location.hash).toBe('');
     expect(await screen.findByRole('group', { name: 'Estados' })).toBeInTheDocument();
+  });
+});
+
+describe('App cities', () => {
+  it('lists the municipalities of a state in place of the states', async () => {
+    window.location.hash = '#/ba';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const section = await screen.findByRole('region', { name: 'Votação por cidade' });
+    expect(
+      await within(section).findByText(
+        'Lula lidera em 2 cidades, Flávio lidera em 1 cidade, de 3 cidades.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Quem lidera em cada cidade' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: /Resultado por estado|Outros estados/ }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.type(
+      within(section).getByRole('searchbox', { name: 'Buscar cidade em Bahia' }),
+      'feira',
+    );
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('opens the result card of a city picked in the list', async () => {
+    window.location.hash = '#/ba';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const section = await screen.findByRole('region', { name: 'Votação por cidade' });
+    await userEvent.click(await within(section).findByRole('button', { name: /Salvador/ }));
+    expect(window.location.hash).toBe('#/ba/2927408');
+    const scoreboard = await screen.findByRole('region', { name: 'Salvador' });
+    expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
+    expect(within(scoreboard).getByRole('button', { name: 'Bahia' })).toBeInTheDocument();
+    expect(
+      within(scoreboard).getByRole('button', { name: 'Compartilhar Salvador' }),
+    ).toBeInTheDocument();
+    expect(within(section).getByRole('button', { name: /Salvador/ })).toHaveAttribute(
+      'aria-current',
+      'location',
+    );
   });
 });
 
