@@ -3,6 +3,7 @@
 Acompanhe **ao vivo** a apuração do 2º turno da eleição presidencial de **25/10/2026**: placar nacional, por região e por estado, num mapa do Brasil interativo e animado, com imagens prontas para compartilhar nos Stories.
 
 - Mapa coroplético: cada estado na cor de quem lidera, mais intenso quanto maior a vantagem.
+- Abas **2º turno** (ao vivo) e **1º turno** (resultado final); antes da apuração do 2º turno, o site abre no 1º.
 - Navegação Brasil / Região / Estado / Exterior, com link compartilhável (`/#/sp`, `/#/regiao/ne`, `/#/exterior`).
 - Mobile first: bottom sheet ao tocar num estado, alvos de toque de 44px, tema claro/escuro.
 - Compartilhamento: imagem 1080×1920 (Stories) ou 1080×1350 (Feed) gerada no aparelho, enviada pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou baixada.
@@ -20,11 +21,11 @@ pnpm dev                                 # web em http://localhost:5173, API em 
 
 ### Fontes de dados (`DATA_SOURCE`)
 
-| Valor        | Uso                                                                            |
-| ------------ | ------------------------------------------------------------------------------ |
-| `simulation` | Replay "ao vivo" do 1º turno de 2026 com só os 2 finalistas — ideal para UI.   |
-| `fixture`    | Resultado final do 1º turno de 2026, estático (offline).                       |
-| `tse`        | TSE ao vivo (produção). Use `TSE_ELECTION_CODE=6257` para ver o 1º turno real. |
+| Valor        | Uso                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `simulation` | 2º turno simulado "ao vivo" a partir do 1º turno (só os 2 finalistas); 1º turno final. |
+| `fixture`    | Resultado final do 1º turno de 2026, estático (offline).                               |
+| `tse`        | TSE ao vivo (produção): 2º turno (6258) e 1º turno (6257).                             |
 
 Todas as variáveis estão em [`apps/api/.env.example`](apps/api/.env.example).
 
