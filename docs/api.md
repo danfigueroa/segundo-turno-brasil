@@ -42,7 +42,7 @@ Regiões não vêm na resposta: são agregadas no cliente com `aggregateRegion` 
 
 ## `GET /api/abroad?round=1|2`
 
-Votos no exterior **por país e por cidade** (ADR 0008 e 0013). O TSE só publica o exterior por cidade; a API devolve as 186 cidades (com coordenadas, para o mapa-múndi) e a soma delas por país. Buscado pelo front apenas com o Exterior aberto. Schema: [`packages/contracts/src/abroad.ts`](../packages/contracts/src/abroad.ts).
+Votos no exterior **por país e por cidade** (ADR 0008, 0013 e 0019). O TSE só publica o exterior por cidade; a API devolve as 186 cidades (com coordenadas) e a soma delas por país, com eleitorado, comparecimento, brancos e nulos, para o card de resultado de cada país. Buscado pelo front apenas com o Exterior (ou um país) aberto. Schema: [`packages/contracts/src/abroad.ts`](../packages/contracts/src/abroad.ts).
 
 ```jsonc
 {
@@ -53,6 +53,10 @@ Votos no exterior **por país e por cidade** (ADR 0008 e 0013). O TSE só public
       "continent": "EU", // AM | EU | AS (Ásia e Oceania) | AF
       "votes": { "13": 26401, "22": 19412, "55": 312 }, // por número de urna
       "sections": { "total": 120, "counted": 120 },
+      "electorate": 98000,
+      "turnout": 47500, // comparecimento
+      "ballots": { "valid": 46125, "blank": 590, "null": 785 },
+      "updatedAt": "2026-10-04T21:10:00-03:00", // a cidade mais recente
     },
   ],
   "cities": [
@@ -64,8 +68,11 @@ Votos no exterior **por país e por cidade** (ADR 0008 e 0013). O TSE só public
       "lat": 38.7,
       "lon": -9.1,
       "electorate": 61234,
+      "turnout": 27100,
       "votes": { "13": 15201, "22": 11002, "55": 190 },
+      "ballots": { "valid": 26393, "blank": 300, "null": 407 },
       "sections": { "total": 70, "counted": 70 },
+      "updatedAt": "2026-10-04T21:10:00-03:00",
     },
   ],
   "fetchedAt": "2026-10-05T15:00:00.000Z",
