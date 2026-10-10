@@ -74,7 +74,7 @@ function replayTally(
   };
 }
 
-function clamp(value: number): number {
+export function clamp(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
@@ -83,11 +83,11 @@ function hash(key: string): number {
 }
 
 /** Each scope counts 1x–2x faster than the simulation clock, finishing by the end. */
-function progressOf(key: string, elapsed: number): number {
+export function progressOf(key: string, elapsed: number): number {
   return clamp(elapsed * (1 + (hash(key) % 100) / 100));
 }
 
 /** Early-count bias between -0.25 and +0.25, fading out as counting progresses. */
-function tiltOf(key: string): number {
+export function tiltOf(key: string): number {
   return ((hash(key) % 51) - 25) / 100;
 }
