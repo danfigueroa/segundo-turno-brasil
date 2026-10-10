@@ -104,17 +104,26 @@
 }
 
 .identity {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+    'avatar badge'
+    'name name';
+  justify-content: start;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  column-gap: 8px;
+  row-gap: 6px;
 }
 
 .column:last-child .identity {
-  flex-direction: row-reverse;
+  grid-template-areas:
+    'badge avatar'
+    'name name';
+  justify-content: end;
 }
 
 .avatar {
+  grid-area: avatar;
   flex: none;
   display: flex;
   align-items: center;
@@ -128,32 +137,30 @@
   font-weight: 800;
 }
 
+/* On phones the badge sits by the avatar and the name goes below. */
 .nameBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-
-.column:last-child .nameBlock {
-  align-items: flex-end;
+  display: contents;
 }
 
 .name {
+  grid-area: name;
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .badge {
-  padding: 3px 7px;
+  grid-area: badge;
+  justify-self: start;
+  padding: 4px 8px;
   border-radius: 6px;
   background: var(--flag-yellow);
   color: #0f1a14;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .value {
@@ -294,8 +301,30 @@
   }
 
   .identity {
+    display: flex;
+    align-items: center;
     gap: 12px;
     min-height: 52px;
+  }
+
+  .column:last-child .identity {
+    flex-direction: row-reverse;
+  }
+
+  .nameBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .column:last-child .nameBlock {
+    align-items: flex-end;
+  }
+
+  .badge {
+    margin-top: 2px;
+    padding: 3px 7px;
+    font-size: 10px;
   }
 
   .avatar {
