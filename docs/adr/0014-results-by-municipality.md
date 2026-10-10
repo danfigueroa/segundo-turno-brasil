@@ -35,6 +35,7 @@ Ler os 5.571 arquivos a cada atualização é inviável num proxy que roda pouca
   - Não há histórico por município: a análise da apuração fica oculta para a cidade.
 - **Mapa municipal no lugar do mapa do Brasil** com um estado ou uma cidade aberta: mesmas cores, faixas e legenda dos estados.
   - Tocar num município seleciona a cidade.
+  - O mapa municipal escreve o nome da cidade selecionada acima dela e tem um seletor nativo "Ir para uma cidade" ao lado do de estado, para escolher a cidade sem rolar até a lista.
   - A lista "Votação por cidade" (busca, maiores eleitorados primeiro) substitui a lista de estados e é o caminho por teclado e leitor de tela, já que centenas de formas não podem receber foco.
 
 ## Consequências
