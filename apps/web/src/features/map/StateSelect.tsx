@@ -5,6 +5,7 @@ import styles from './BrazilMap.module.css';
 interface Props {
   readonly selection: Selection;
   readonly onSelect: (selection: Selection) => void;
+  readonly label: string;
   readonly className?: string | undefined;
 }
 
@@ -12,13 +13,13 @@ const SORTED_STATES = STATE_CODES.toSorted((a, b) => STATES[a].name.localeCompar
 const ABROAD_VALUE = 'EX';
 
 /** Native select with every state and abroad: the quickest picker on a phone. */
-export function StateSelect({ selection, onSelect, className }: Props) {
+export function StateSelect({ selection, onSelect, label, className }: Props) {
   const value =
     selection.kind === 'state' ? selection.code : selection.kind === 'abroad' ? ABROAD_VALUE : '';
   return (
     <div className={`${styles.selectWrap} ${className ?? ''}`}>
       <label htmlFor="state-select" className={styles.selectLabel}>
-        Ou escolha um estado
+        {label}
       </label>
       <select
         id="state-select"

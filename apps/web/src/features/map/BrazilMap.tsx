@@ -3,6 +3,7 @@ import { countedPercentage, STATE_CODES, STATES, type StateCode, type Tally } fr
 import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
+import { useMediaQuery } from '../../lib/use-media-query';
 import { ABROAD, type Selection } from '../../lib/selection';
 import { BRAZIL_MAP } from './brazil-map';
 import { emphasisOf, type Area } from './emphasis';
@@ -24,7 +25,7 @@ interface Hover {
 }
 
 /** Labels for states too small to fit their code inside are skipped. */
-const UNLABELED = new Set<StateCode>(['DF', 'SE', 'AL', 'PB', 'RN', 'ES', 'RJ']);
+const UNLABELED = new Set<StateCode>(['DF', 'SE', 'AL', 'PB', 'PE', 'RN', 'ES', 'RJ']);
 
 const areaName = (area: Area) => (area === 'abroad' ? 'Exterior' : STATES[area].name);
 const areaSelection = (area: Area): Selection =>
@@ -33,6 +34,7 @@ const areaSelection = (area: Area): Selection =>
 /** Choropleth: each state takes the leader's hue, darker the wider the margin. */
 export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
   const [hover, setHover] = useState<Hover>();
+  const wide = useMediaQuery('(min-width: 960px)');
 
   const tallyOf = (area: Area): Tally => (area === 'abroad' ? data.abroad : data.states[area]);
 
@@ -105,9 +107,11 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           Quem lidera em cada estado
         </h2>
         <p className={styles.subtitle}>
-          {anyLead
-            ? 'Toque em um estado ou no Exterior para ver o resultado.'
-            : 'Os estados ganham cor conforme as urnas são apuradas.'}
+          {!anyLead
+            ? 'Os estados ganham cor conforme as urnas são apuradas.'
+            : wide
+              ? 'Clique em um estado ou no Exterior.'
+              : 'Toque em um estado ou no Exterior para ver o resultado.'}
         </p>
       </div>
 
@@ -157,7 +161,12 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
         )}
       </div>
 
-      <StateSelect className={styles.select} selection={selection} onSelect={onSelect} />
+      <StateSelect
+        className={styles.select}
+        label={wide ? 'Ir para um estado' : 'Ou escolha um estado'}
+        selection={selection}
+        onSelect={onSelect}
+      />
       <MapLegend
         className={styles.legend}
         finalists={anyLead ? finalists : []}

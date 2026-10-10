@@ -47,6 +47,7 @@
   fill: var(--map-empty);
   stroke: var(--map-stroke);
   stroke-width: 2;
+  /* No hover effect in the design: only selection and focus change a state. */
   stroke-linejoin: round;
   cursor: pointer;
   transition:
@@ -99,13 +100,6 @@
   opacity: 0.2;
 }
 
-@media (hover: hover) {
-  .state:hover {
-    opacity: 1;
-    filter: brightness(1.06);
-  }
-}
-
 .state:focus-visible,
 .state[data-selected] {
   stroke: var(--map-selected);
@@ -114,14 +108,14 @@
 
 .label {
   display: none;
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 800;
   text-anchor: middle;
   dominant-baseline: central;
   fill: #0f1a14;
   paint-order: stroke;
   stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 5px;
+  stroke-width: 5.7px;
   stroke-linejoin: round;
   pointer-events: none;
   user-select: none;
@@ -136,7 +130,8 @@
   min-height: 48px;
   padding: 0 12px;
   border-radius: 12px;
-  border: 1px solid var(--control-border);
+  /* A darker tint of its own fill, as in the design (#F7B9B1 → #E3A79E). */
+  border: 1px solid color-mix(in srgb, var(--tone, var(--map-empty)), #0f1a14 8%);
   background: var(--tone, var(--map-empty));
   color: var(--ramp-text-light-steps);
   font-size: 14px;
