@@ -30,6 +30,7 @@ describe('tallySchema', () => {
 describe('resultsResponseSchema', () => {
   const states = Object.fromEntries(STATE_CODES.map((code) => [code, tally]));
   const response = {
+    round: 2,
     country: tally,
     states,
     abroad: tally,
@@ -39,6 +40,10 @@ describe('resultsResponseSchema', () => {
 
   it('accepts a complete snapshot', () => {
     expect(resultsResponseSchema.safeParse(response).success).toBe(true);
+  });
+
+  it('only accepts rounds 1 and 2', () => {
+    expect(resultsResponseSchema.safeParse({ ...response, round: 3 }).success).toBe(false);
   });
 
   it('requires all 27 states', () => {
