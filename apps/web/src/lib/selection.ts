@@ -14,9 +14,12 @@ import {
 export type Selection =
   | { readonly kind: 'country' }
   | { readonly kind: 'region'; readonly code: RegionCode }
-  | { readonly kind: 'state'; readonly code: StateCode };
+  | { readonly kind: 'state'; readonly code: StateCode }
+  /** Votes cast by Brazilians living abroad (TSE scope `zz`). */
+  | { readonly kind: 'abroad' };
 
 export const COUNTRY: Selection = { kind: 'country' };
+export const ABROAD: Selection = { kind: 'abroad' };
 
 export function resolveTally(data: ResultsResponse, selection: Selection): Tally {
   switch (selection.kind) {
@@ -26,6 +29,8 @@ export function resolveTally(data: ResultsResponse, selection: Selection): Tally
       return aggregateRegion(selection.code, data.states);
     case 'state':
       return data.states[selection.code];
+    case 'abroad':
+      return data.abroad;
   }
 }
 
@@ -37,15 +42,18 @@ export function selectionTitle(selection: Selection): string {
       return `Região ${REGION_NAMES[selection.code]}`;
     case 'state':
       return STATES[selection.code].name;
+    case 'abroad':
+      return 'Exterior';
   }
 }
 
-/** `#/SP` → state, `#/regiao/NE` → region, anything else → country. */
+/** `#/sp` → state, `#/regiao/ne` → region, `#/exterior` → abroad, anything else → country. */
 export function parseHash(hash: string): Selection {
   const parts = hash.replace(/^#\/?/, '').toUpperCase().split('/');
   if (parts[0] === 'REGIAO' && REGION_CODES.includes(parts[1] as RegionCode)) {
     return { kind: 'region', code: parts[1] as RegionCode };
   }
+  if (parts.length === 1 && parts[0] === 'EXTERIOR') return ABROAD;
   if (parts.length === 1 && parts[0] && isStateCode(parts[0])) {
     return { kind: 'state', code: parts[0] };
   }
@@ -60,6 +68,8 @@ export function toHash(selection: Selection): string {
       return `#/regiao/${selection.code.toLowerCase()}`;
     case 'state':
       return `#/${selection.code.toLowerCase()}`;
+    case 'abroad':
+      return '#/exterior';
   }
 }
 
