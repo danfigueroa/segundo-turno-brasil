@@ -24,9 +24,9 @@ const oneDecimal = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 1,
 });
 
-/** Compact lead in percentage points: `2.34` → `"+2,3"`. */
-export function formatLead(value: number): string {
-  return `+${oneDecimal.format(value)}`;
+/** Lead in percentage points: `2.345` → `"+2,3"`, or `"+2,35"` with two decimals. */
+export function formatLead(value: number, decimals: 1 | 2 = 1): string {
+  return `+${(decimals === 1 ? oneDecimal : percent).format(value)}`;
 }
 
 /** Percentage points: `2.5` → `"2,50 p.p."`. */

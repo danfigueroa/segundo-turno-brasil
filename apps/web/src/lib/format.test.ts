@@ -25,6 +25,7 @@ describe('format', () => {
 
   it('formats compact leads with one decimal', () => {
     expect(formatLead(2.345)).toBe('+2,3');
+    expect(formatLead(2.345, 2)).toBe('+2,35');
   });
 
   it('formats dates in Brasília', () => {
