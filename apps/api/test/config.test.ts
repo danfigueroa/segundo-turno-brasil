@@ -7,6 +7,7 @@ describe('loadConfig', () => {
       DATA_SOURCE: 'tse',
       TSE_BASE_URL: 'https://resultados.tse.jus.br/oficial/ele2026',
       TSE_ELECTION_CODE: '6258',
+      TSE_FIRST_ROUND_ELECTION_CODE: '6257',
       TSE_TIMEOUT_MS: 8000,
     });
   });
