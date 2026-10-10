@@ -1,0 +1,30 @@
+.status {
+  display: grid;
+  gap: 8px;
+}
+
+.status p {
+  margin: 0;
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.warning,
+.waiting {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.waiting {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+}
