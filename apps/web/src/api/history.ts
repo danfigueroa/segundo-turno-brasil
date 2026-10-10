@@ -14,6 +14,9 @@ export function historyScopeOf(selection: Selection): string {
       return selection.code.toLowerCase();
     case 'region':
       return `regiao-${selection.code.toLowerCase()}`;
+    // No history per municipality: a city follows its state.
+    case 'city':
+      return selection.state.toLowerCase();
   }
 }
 

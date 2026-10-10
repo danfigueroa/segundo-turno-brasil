@@ -22,5 +22,8 @@ export function emphasisOf(area: Area, selection: Selection): Emphasis {
     case 'state':
       if (selection.code === area) return 'full';
       return STATES[area].region === regionOf(selection) ? 'near' : 'far';
+    case 'city':
+      if (selection.state === area) return 'full';
+      return STATES[area].region === regionOf(selection) ? 'near' : 'far';
   }
 }

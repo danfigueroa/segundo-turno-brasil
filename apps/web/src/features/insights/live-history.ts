@@ -30,7 +30,9 @@ export function liveSeries(data: ResultsResponse, selection: Selection): CountPo
         ? seriesOf(entries, 'ZZ')
         : selection.kind === 'state'
           ? seriesOf(entries, selection.code)
-          : regionSeriesOf(entries, selection.code);
+          : selection.kind === 'city'
+            ? seriesOf(entries, selection.state)
+            : regionSeriesOf(entries, selection.code);
   const tally = resolveTally(data, selection);
   return [...series, { at: tally.updatedAt, ...sampleOf(tally) }];
 }

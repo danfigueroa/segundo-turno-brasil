@@ -5,7 +5,12 @@ import { AnimatedNumber } from '../../components/AnimatedNumber';
 import { CandidateAvatar } from '../../components/CandidateAvatar';
 import type { Finalist } from '../../lib/finalists';
 import { formatPercent, formatVotes } from '../../lib/format';
-import { breadcrumbsOf, isSameSelection, type Selection } from '../../lib/selection';
+import {
+  breadcrumbsOf,
+  isSameSelection,
+  type Municipalities,
+  type Selection,
+} from '../../lib/selection';
 import { headlineOf, type HeadlineColumn } from './headline';
 import styles from './ResultCard.module.css';
 
@@ -16,6 +21,8 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
   /** Votes abroad by country, once loaded (abroad only). */
   readonly countries?: readonly CountryResult[] | undefined;
+  /** Municipalities of the selected state, once loaded (city only). */
+  readonly cities?: Municipalities;
   /** Actions at the bottom of the card, e.g. sharing. */
   readonly children?: ReactNode;
   readonly ref?: Ref<HTMLElement>;
@@ -33,11 +40,12 @@ export function ResultCard({
   finalists,
   onSelect,
   countries,
+  cities,
   children,
   ref,
 }: Props) {
-  const headline = headlineOf(data, selection, finalists, countries);
-  const crumbs = breadcrumbsOf(selection);
+  const headline = headlineOf(data, selection, finalists, countries, cities);
+  const crumbs = breadcrumbsOf(selection, cities);
   const total = headline.bar.reduce((sum, s) => sum + s.weight, 0);
 
   return (
@@ -47,7 +55,8 @@ export function ResultCard({
           {crumbs.map((crumb, index) => {
             const current = isSameSelection(crumb.target, selection);
             return (
-              <span key={crumb.label} className={styles.crumb}>
+              // A city can share its state's name (São Paulo › São Paulo).
+              <span key={index} className={styles.crumb}>
                 {index > 0 && (
                   <span className={styles.separator} aria-hidden="true">
                     ›

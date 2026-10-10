@@ -9,7 +9,12 @@ import {
 import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatName, formatPercent, formatPoints, formatVotes } from '../../lib/format';
-import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
+import {
+  resolveTally,
+  selectionTitle,
+  type Municipalities,
+  type Selection,
+} from '../../lib/selection';
 import { stateLeads } from '../../lib/state-leads';
 
 export interface HeadlineColumn {
@@ -77,6 +82,8 @@ function eyebrowOf(round: Round, selection: Selection): string {
       return `${base} · ${selection.code}`;
     case 'abroad':
       return `${base} · votos de brasileiros no exterior`;
+    case 'city':
+      return `${base} · ${selection.state}`;
     case 'region':
       return `${base} · votos na região`;
   }
@@ -202,7 +209,7 @@ function tallyHeadline(
         value: lead ? formatPoints(lead.margin) : '—',
         note: !lead
           ? ''
-          : selection.kind === 'state'
+          : selection.kind === 'state' || selection.kind === 'city'
             ? `${lead.leader.shortName} à frente`
             : `${formatVotes(gap)} votos`,
       },
@@ -221,14 +228,16 @@ export function headlineOf(
   finalists: readonly Finalist[],
   /** Votes abroad by country, once loaded; only used for abroad. */
   countries?: readonly CountryResult[],
+  /** Municipalities of the selected state, once loaded; only used for a city. */
+  cities?: Municipalities,
 ): Headline {
-  const tally = resolveTally(data, selection);
+  const tally = resolveTally(data, selection, cities);
   const counted = countedPercentage(tally);
   const final = isFinal(data.round, counted);
   const body = tallyHeadline(data, selection, finalists, tally, final, countries);
   return {
     eyebrow: eyebrowOf(data.round, selection),
-    title: selectionTitle(selection),
+    title: selectionTitle(selection, cities),
     counted,
     ...body,
   };
