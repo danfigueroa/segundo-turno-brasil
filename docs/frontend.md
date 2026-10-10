@@ -30,7 +30,7 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 
 1. **Cabeçalho:** marca, selo de status (Resultado final / Aguardando / Ao vivo / Apuração encerrada) e, no desktop, as abas de turno; no celular as abas ficam numa linha própria (`lib/use-media-query.ts`).
 2. **Barra de abrangência** fixa no topo (`features/scope-chips`): Brasil, regiões e Exterior. Com um estado selecionado, o chip da região dele fica marcado como "pai".
-3. **Card de resultado** (`features/result-card`): migalhas (Brasil › Nordeste › Bahia) e % apurado; avatares com a foto oficial do TSE num anel da cor do candidato (`components/CandidateAvatar`, ADR 0009; iniciais se faltar a foto), selo "Lidera"/"Mais votado"; barra com o marcador de 50%; três números-chave e o botão "Compartilhar …". A lógica fica em `headline.ts` (testada).
+3. **Card de resultado** (`features/result-card`): migalhas (Brasil › Nordeste › Bahia) e % apurado; avatares com a foto oficial do TSE num anel da cor do candidato (`components/CandidateAvatar`, ADR 0009; iniciais se faltar a foto), selo "Lidera"/"Mais votado"; barra com o marcador de 50%; duas linhas de três números-chave e o botão "Compartilhar …". A lógica fica em `headline.ts` (testada).
 4. **Mapa** (`features/map`): seletor de estado (com Exterior) e legenda em grade.
 5. **Análise da apuração** (`features/insights`, chunk carregado sob demanda, ADR 0012):
    - **Ainda dá virada?** — votos válidos que faltam (estimativa pelas seções pendentes), vantagem do líder e quanto o segundo colocado precisa do que falta, numa barra com marcador de 50%. Selo "Decidido" quando a vantagem supera todos os eleitores ainda não apurados (`outlook`). Some com 100% apurado.
@@ -43,6 +43,11 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 8. **Rodapé:** horário dos dados (fonte TSE) e "Desenvolvido por @danmfigueroa" (Instagram).
 
 **Percentual e total de votos aparecem sempre**, em qualquer abrangência. No 1º turno, o card lista também os demais candidatos (nome, partido, % e votos). Numa região, o card mostra o % e os votos de cada finalista na região e, abaixo, em quantos estados cada um venceu (ou lidera). No Exterior, o terceiro número-chave é "Países com votos".
+
+Números-chave do card, em duas linhas:
+
+- **Primeira linha:** "Diferença"; "Demais candidatos" (1º turno) ou "Abstenção" (2º turno, % do eleitorado); "Seções apuradas" ("Países com votos" no Exterior).
+- **Segunda linha** (inspirada no seuimposto.com, exceção pedida ao design), igual em toda abrangência e nos dois turnos: "Votos válidos" (total e % do comparecimento), "Comparecimento" (% do eleitorado) e "Brancos e nulos" (% do comparecimento, como o TSE). Antes de haver votos, os percentuais aparecem como "—".
 
 Escolher uma abrangência em qualquer lugar rola até o card de resultado, se ele estiver fora da tela.
 

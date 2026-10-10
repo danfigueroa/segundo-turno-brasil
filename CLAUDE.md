@@ -123,6 +123,7 @@ Regras:
 - 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
+- **Números-chave em duas linhas:** Diferença · Demais candidatos (1º turno) ou Abstenção (2º) · Seções apuradas; e Votos válidos · Comparecimento · Brancos e nulos (inspirado no seuimposto.com, exceção pedida ao design; falta levar ao Claude Design).
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
@@ -190,7 +191,7 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 Pendente:
 
 - Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
-- Levar a seção de análise da apuração para o Claude Design.
+- Levar a seção de análise da apuração e a segunda linha de números-chave para o Claude Design.
 
 - `GET /api/og` (prévia de links com o placar atual).
 - Pinch-zoom/pan do mapa no mobile.
