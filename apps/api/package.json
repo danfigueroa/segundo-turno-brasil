@@ -11,6 +11,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "fixtures:abroad": "tsx scripts/fetch-abroad-fixtures.ts",
+    "fixtures:cities": "tsx scripts/fetch-city-fixtures.ts",
     "geocode:abroad": "tsx scripts/geocode-abroad-cities.ts"
   },
   "dependencies": {
