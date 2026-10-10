@@ -108,7 +108,9 @@ function drawHeader(ctx: CanvasRenderingContext2D, content: ShareContent, layout
   ctx.fillStyle = P.muted;
   ctx.font = font(700, 32);
   ctx.letterSpacing = '4px';
-  ctx.fillText('SEGUNDO TURNO 2026 · PRESIDENTE', MARGIN, layout.kicker);
+  const kicker =
+    content.round === 1 ? '1º TURNO 2026 · RESULTADO FINAL' : '2º TURNO 2026 · PRESIDENTE';
+  ctx.fillText(kicker, MARGIN, layout.kicker);
   ctx.letterSpacing = '0px';
 
   ctx.fillStyle = P.text;

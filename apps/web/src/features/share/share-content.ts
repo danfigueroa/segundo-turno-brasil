@@ -1,11 +1,19 @@
 import type { ResultsResponse } from '@stb/contracts';
-import { countedPercentage, STATE_CODES, STATES, type StateCode, type Tally } from '@stb/domain';
+import {
+  countedPercentage,
+  STATE_CODES,
+  STATES,
+  type Round,
+  type StateCode,
+  type Tally,
+} from '@stb/domain';
 import { finalistResults, leadOf, type Finalist, type FinalistResult } from '../../lib/finalists';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import { SHARE_PALETTE } from './palette';
 
 /** Everything the share image shows, already resolved for the current selection. */
 export interface ShareContent {
+  readonly round: Round;
   readonly title: string;
   readonly results: readonly FinalistResult[];
   readonly leaderNumber: string | undefined;
@@ -50,6 +58,7 @@ export function shareContentFrom(
   );
 
   return {
+    round: data.round,
     title: selectionTitle(selection),
     results,
     leaderNumber: leadOf(results)?.leader.number,
