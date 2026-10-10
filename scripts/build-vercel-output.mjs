@@ -10,6 +10,7 @@ import { build } from 'esbuild';
 const OUTPUT = '.vercel/output';
 const FUNCTIONS = {
   'api/results': 'apps/api/src/vercel/results.ts',
+  'api/abroad': 'apps/api/src/vercel/abroad.ts',
 };
 
 const SECURITY_HEADERS = {

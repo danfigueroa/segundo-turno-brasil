@@ -1,21 +1,28 @@
+import { SimulatedAbroadSource } from './adapters/simulation/simulated-abroad-source';
 import { SimulatedResultsSource } from './adapters/simulation/simulated-results-source';
 import { createFixtureLoader } from './adapters/tse/fixture-loader';
 import { createHttpLoader } from './adapters/tse/http-loader';
+import { TseAbroadSource } from './adapters/tse/tse-abroad-source';
 import { TseResultsSource } from './adapters/tse/tse-results-source';
 import type { Round } from '@stb/domain';
 import type { Config } from './config';
+import { createAbroadHandler } from './http/abroad-handler';
 import { createResultsHandler, type Handler } from './http/results-handler';
+import type { AbroadSource } from './ports/abroad-source';
 import type { ResultsSource } from './ports/results-source';
+import { GetAbroad } from './use-cases/get-abroad';
 import { GetResults } from './use-cases/get-results';
 
+function tseLoader(config: Config, electionCode: string) {
+  return createHttpLoader({
+    baseUrl: config.TSE_BASE_URL,
+    electionCode,
+    timeoutMs: config.TSE_TIMEOUT_MS,
+  });
+}
+
 function tseSource(config: Config, electionCode: string): ResultsSource {
-  return new TseResultsSource(
-    createHttpLoader({
-      baseUrl: config.TSE_BASE_URL,
-      electionCode,
-      timeoutMs: config.TSE_TIMEOUT_MS,
-    }),
-  );
+  return new TseResultsSource(tseLoader(config, electionCode));
 }
 
 /** Where each round's results come from, according to `DATA_SOURCE`. */
@@ -42,19 +49,47 @@ export function createSources(
   return { 1: firstRound, 2: runoff };
 }
 
+/** Where each round's breakdown by country comes from, according to `DATA_SOURCE`. */
+export function createAbroadSources(
+  config: Config,
+  now: () => number = Date.now,
+): Record<Round, AbroadSource> {
+  if (config.DATA_SOURCE === 'tse') {
+    return {
+      1: new TseAbroadSource(tseLoader(config, config.TSE_FIRST_ROUND_ELECTION_CODE)),
+      2: new TseAbroadSource(tseLoader(config, config.TSE_ELECTION_CODE)),
+    };
+  }
+
+  const firstRound = new TseAbroadSource(createFixtureLoader(config.FIXTURES_DIR));
+  const runoff =
+    config.DATA_SOURCE === 'simulation'
+      ? new SimulatedAbroadSource(firstRound, {
+          durationMs: config.SIMULATION_DURATION_MINUTES * 60_000,
+          startedAt: now(),
+          now,
+        })
+      : firstRound;
+  return { 1: firstRound, 2: runoff };
+}
+
 export interface Routes {
   readonly '/api/results': Handler;
+  readonly '/api/abroad': Handler;
 }
 
 /** Composition root: wires adapters, use cases and HTTP handlers. */
 export function createRoutes(config: Config): Routes {
   const sources = createSources(config);
-  const useCase = (round: Round) =>
-    new GetResults(sources[round], {
-      onError: (error) =>
-        console.error(
-          JSON.stringify({ event: 'results_fetch_failed', round, error: String(error) }),
-        ),
-    });
-  return { '/api/results': createResultsHandler({ 1: useCase(1), 2: useCase(2) }) };
+  const abroadSources = createAbroadSources(config);
+  const logError = (event: string, round: Round) => (error: unknown) =>
+    console.error(JSON.stringify({ event, round, error: String(error) }));
+  const results = (round: Round) =>
+    new GetResults(sources[round], { onError: logError('results_fetch_failed', round) });
+  const abroad = (round: Round) =>
+    new GetAbroad(abroadSources[round], { onError: logError('abroad_fetch_failed', round) });
+  return {
+    '/api/results': createResultsHandler({ 1: results(1), 2: results(2) }),
+    '/api/abroad': createAbroadHandler({ 1: abroad(1), 2: abroad(2) }),
+  };
 }
