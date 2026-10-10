@@ -1,8 +1,8 @@
 import type { ResultsResponse } from '@stb/contracts';
-import { countedPercentage, STATE_CODES, STATES } from '@stb/domain';
+import { countedPercentage, STATE_CODES, STATES, type Tally } from '@stb/domain';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
-import type { Selection } from '../../lib/selection';
+import { ABROAD, type Selection } from '../../lib/selection';
 import styles from './StatesTable.module.css';
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
 }
 
-/** Table view of every state: the accessible, color-independent twin of the map. */
+/** Table view of every state and abroad: the accessible, color-independent twin of the map. */
 export function StatesTable({ data, finalists, selection, onSelect }: Props) {
   const codes = STATE_CODES.filter(
     (code) => selection.kind !== 'region' || STATES[code].region === selection.code,
@@ -39,39 +39,65 @@ export function StatesTable({ data, finalists, selection, onSelect }: Props) {
             </tr>
           </thead>
           <tbody>
-            {codes.map((code) => {
-              const results = finalistResults(data.states[code], finalists);
-              const lead = leadOf(results);
-              const selected = selection.kind === 'state' && selection.code === code;
-              return (
-                <tr key={code} data-selected={selected || undefined}>
-                  <th scope="row">
-                    <button
-                      type="button"
-                      className={styles.stateButton}
-                      onClick={() => onSelect({ kind: 'state', code })}
-                    >
-                      <span className={styles.code}>{code}</span> {STATES[code].name}
-                    </button>
-                  </th>
-                  {results.map((r) => (
-                    <td
-                      key={r.number}
-                      className={styles.num}
-                      data-leader={lead?.leader.number === r.number || undefined}
-                    >
-                      {formatPercent(r.share)}
-                    </td>
-                  ))}
-                  <td className={`${styles.num} ${styles.muted} ${styles.counted}`}>
-                    {formatPercent(countedPercentage(data.states[code]))}
-                  </td>
-                </tr>
-              );
-            })}
+            {codes.map((code) => (
+              <Row
+                key={code}
+                code={code}
+                name={STATES[code].name}
+                tally={data.states[code]}
+                finalists={finalists}
+                selected={selection.kind === 'state' && selection.code === code}
+                onSelect={() => onSelect({ kind: 'state', code })}
+              />
+            ))}
+            {selection.kind !== 'region' && (
+              <Row
+                code="EX"
+                name="Exterior"
+                tally={data.abroad}
+                finalists={finalists}
+                selected={selection.kind === 'abroad'}
+                onSelect={() => onSelect(ABROAD)}
+              />
+            )}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+interface RowProps {
+  readonly code: string;
+  readonly name: string;
+  readonly tally: Tally;
+  readonly finalists: readonly Finalist[];
+  readonly selected: boolean;
+  readonly onSelect: () => void;
+}
+
+function Row({ code, name, tally, finalists, selected, onSelect }: RowProps) {
+  const results = finalistResults(tally, finalists);
+  const lead = leadOf(results);
+  return (
+    <tr data-selected={selected || undefined}>
+      <th scope="row">
+        <button type="button" className={styles.stateButton} onClick={onSelect}>
+          <span className={styles.code}>{code}</span> {name}
+        </button>
+      </th>
+      {results.map((r) => (
+        <td
+          key={r.number}
+          className={styles.num}
+          data-leader={lead?.leader.number === r.number || undefined}
+        >
+          {formatPercent(r.share)}
+        </td>
+      ))}
+      <td className={`${styles.num} ${styles.muted} ${styles.counted}`}>
+        {formatPercent(countedPercentage(tally))}
+      </td>
+    </tr>
   );
 }
