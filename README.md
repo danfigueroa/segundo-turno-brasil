@@ -118,6 +118,7 @@ A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arqu
 | `pnpm --filter @stb/web map:build`  | Regera o mapa pré-projetado a partir do IBGE                 |
 | `pnpm --filter @stb/web map:world`  | Regera os mapas por continente do Exterior                   |
 | `pnpm --filter @stb/web map:cities` | Regera as malhas municipais (`--download` baixa do IBGE)     |
+| `pnpm --filter @stb/web og:build`   | Regera a imagem de prévia de links (`public/og.png`)         |
 
 ## Estrutura
 
