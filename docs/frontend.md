@@ -2,11 +2,19 @@
 
 React 19 + Vite, organizado por funcionalidade em `apps/web/src/features`.
 
+## Turnos
+
+- Abas **2º turno** / **1º turno** (`features/round-tabs`). O turno vai no hash (`#/1turno/sp`, `#/2turno`).
+- Sem turno no endereço, `resolveRound` (`lib/view.ts`) mostra o **1º turno enquanto a apuração do 2º não começou** e muda sozinho para o 2º quando a primeira seção é totalizada — o site nunca fica vazio.
+- O 2º turno é sempre carregado (é o dado ao vivo e decide o padrão); o 1º turno é buscado só quando exibido, uma vez (`staleTime: Infinity`, sem polling).
+- No 1º turno, o placar mostra os dois finalistas, os **demais candidatos** num `<details>` e a barra inclui os demais em cinza — o marcador de 50% passa a ser o limite de maioria absoluta. O mapa usa os mesmos dois finalistas (em 2026 todas as UFs e o exterior foram liderados por eles).
+- Antes da apuração do 2º turno: selo "Aguardando apuração" (sem pulsar), barra neutra e um botão para ver o 1º turno.
+
 ## Dados e estado
 
-- `api/use-results.ts`: TanStack Query, polling de 20s, pausado com a aba oculta, `keepPreviousData` para não piscar.
+- `api/use-results.ts`: TanStack Query por turno; o 2º turno tem polling de 20s, pausado com a aba oculta, e `keepPreviousData` para não piscar.
 - Resposta validada com o schema de `@stb/contracts` (zod/mini, ~9 KB gzip).
-- Seleção (Brasil / região / UF / exterior) vive no hash da URL (`lib/use-selection.ts`: `#/sp`, `#/regiao/ne`, `#/exterior`): links compartilháveis e botão voltar funcionam.
+- Turno e seleção (Brasil / região / UF / exterior) vivem no hash da URL (`lib/use-view.ts`: `#/sp`, `#/regiao/ne`, `#/exterior`): links compartilháveis e botão voltar funcionam.
 
 ## Finalistas e cores
 
