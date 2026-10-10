@@ -49,10 +49,7 @@ describe('App', () => {
     const list = await screen.findByRole('list');
     await userEvent.click(within(list).getByRole('button', { name: /Bahia/ }));
     const scoreboard = await screen.findByRole('region', { name: 'Bahia' });
-    // The share counts up from the national figure.
-    expect(
-      await within(scoreboard).findByText('70,00%', {}, { timeout: 2000 }),
-    ).toBeInTheDocument();
+    expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
     expect(window.location.hash).toBe('#/ba');
     expect(within(scoreboard).getByRole('button', { name: 'Nordeste' })).toBeInTheDocument();
   });
@@ -88,9 +85,7 @@ describe('App abroad votes', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Exterior' }));
     const scoreboard = await screen.findByRole('region', { name: 'Exterior' });
-    expect(
-      await within(scoreboard).findByText('66,67%', {}, { timeout: 2000 }),
-    ).toBeInTheDocument();
+    expect(within(scoreboard).getByText('66,67%')).toBeInTheDocument();
     expect(window.location.hash).toBe('#/exterior');
   });
 
