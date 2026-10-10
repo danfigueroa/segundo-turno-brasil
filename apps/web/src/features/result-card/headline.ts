@@ -8,7 +8,13 @@ import {
 } from '@stb/domain';
 import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
-import { formatName, formatPercent, formatPoints, formatVotes } from '../../lib/format';
+import {
+  formatCompactVotes,
+  formatName,
+  formatPercent,
+  formatPoints,
+  formatVotes,
+} from '../../lib/format';
 import {
   resolveTally,
   selectionTitle,
@@ -110,7 +116,8 @@ export function turnoutStats(tally: Tally): Stat[] {
   return [
     {
       label: 'Votos válidos',
-      value: formatVotes(votes.valid),
+      // Compact ("119,3 mi"): the full count does not fit a third of a 360px card.
+      value: formatCompactVotes(votes.valid),
       note: turnout > 0 ? `${percentOf(votes.valid, turnout)} do comparecimento` : '',
     },
     {
