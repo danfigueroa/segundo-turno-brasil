@@ -39,6 +39,17 @@ Horários são de Brasília (UTC−3, sem horário de verão desde 2019).
 
 Também existe `br/br-e{eleição}-ab.json` com o andamento de todas as UFs num único arquivo, mas **sem votos por candidato** — por isso buscamos os 29 arquivos.
 
+## Exterior por cidade
+
+O exterior (`zz`) também tem um arquivo por cidade com seção eleitoral — 186 em 2026, os mesmos códigos nos dois turnos:
+
+```
+{base}/{ciclo}/{eleição}/dados/zz/zz{cidade}-c0001-e{eleição com 6 dígitos}-u.json
+ex.: /oficial/ele2026/6257/dados/zz/zz29254-c0001-e006257-u.json   (Abidjã)
+```
+
+A lista de cidades está em `{base}/{ciclo}/{eleição}/config/mun-e{eleição}-cm.json` (abrangência `zz`), **sem o país**. O país e o continente de cada cidade estão em `apps/api/src/adapters/tse/abroad-cities.ts` (ADR 0008). O formato do arquivo é o mesmo dos estados.
+
 ## Fixtures
 
 | Pasta                                     | Conteúdo                                                 |
@@ -46,4 +57,10 @@ Também existe `br/br-e{eleição}-ab.json` com o andamento de todas as UFs num 
 | `apps/api/test/fixtures/ele2026-6257`     | 1º turno 2026, 100% apurado (base de testes e simulação) |
 | `apps/api/test/fixtures/ele2026-6258-pre` | 2º turno 2026 antes da votação (votos zerados)           |
 
-Invariante testada com dados reais: soma das 27 UFs + exterior = total nacional.
+As pastas também têm os 186 arquivos de cidades do exterior (`zz{cidade}.json`), só com os campos que lemos. Para baixá-los de novo:
+
+```bash
+pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257
+```
+
+Invariantes testadas com dados reais: soma das 27 UFs + exterior = total nacional; soma dos países = total do exterior.
