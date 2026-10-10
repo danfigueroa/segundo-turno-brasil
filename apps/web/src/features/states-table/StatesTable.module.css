@@ -1,0 +1,104 @@
+.card {
+  padding: 16px 0 8px;
+}
+
+.title {
+  margin: 0 16px 8px;
+  font-size: 1rem;
+}
+
+.scroller {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  padding: 0 12px;
+  height: 44px;
+  border-top: 1px solid var(--hairline);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table thead th {
+  white-space: normal;
+  line-height: 1.2;
+  border-top: none;
+  height: 36px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.table thead th[data-hue]::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+  background: var(--hue);
+}
+
+.table thead th[data-hue='red'] {
+  --hue: var(--cand-red);
+}
+.table thead th[data-hue='blue'] {
+  --hue: var(--cand-blue);
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.table td[data-leader] {
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 420px) {
+  .table th,
+  .table td {
+    padding: 0 8px;
+  }
+
+  .counted {
+    display: none;
+  }
+}
+
+.table tr[data-selected] {
+  background: var(--track);
+}
+
+.stateButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.code {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 22px;
+}
