@@ -1,0 +1,126 @@
+.scoreboard {
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.candidates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.candidate:last-child {
+  text-align: right;
+}
+
+.candidate[data-hue='red'] {
+  --hue: var(--cand-red);
+}
+
+.candidate[data-hue='blue'] {
+  --hue: var(--cand-blue);
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 24px;
+}
+
+.candidate:last-child .nameRow {
+  flex-direction: row-reverse;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--hue);
+  flex-shrink: 0;
+}
+
+.name {
+  font-weight: 650;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  color: var(--text-secondary);
+}
+
+.share {
+  display: block;
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.split {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  height: 14px;
+}
+
+.segment {
+  flex-basis: 0;
+  border-radius: 4px;
+  transition: flex-grow var(--duration) var(--ease-out);
+}
+
+.segment[data-hue='red'] {
+  background: var(--cand-red);
+}
+
+.segment[data-hue='blue'] {
+  background: var(--cand-blue);
+}
+
+.half {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text-primary);
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+.progress {
+  display: grid;
+  gap: 6px;
+}
+
+.progressLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
