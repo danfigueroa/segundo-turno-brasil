@@ -1,6 +1,8 @@
+import type { Round } from '@stb/domain';
 import { useMemo } from 'react';
 import { useResults } from './api/use-results';
 import { BrazilMap } from './features/map/BrazilMap';
+import { RoundTabs } from './features/round-tabs/RoundTabs';
 import { Scoreboard } from './features/scoreboard/Scoreboard';
 import { ScopePicker } from './features/scope-picker/ScopePicker';
 import { ShareButton } from './features/share/ShareButton';
@@ -12,19 +14,28 @@ import { UpdateStatus } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { finalistsOf } from './lib/finalists';
-import { COUNTRY, resolveTally, selectionTitle } from './lib/selection';
-import { useSelection } from './lib/use-selection';
+import { COUNTRY, resolveTally, selectionTitle, type Selection } from './lib/selection';
+import { useView } from './lib/use-view';
+import { resolveRound } from './lib/view';
 import styles from './App.module.css';
 
 export function App() {
-  const { data, isPending, isError, refetch } = useResults();
-  const [selection, select] = useSelection();
-  const finalists = useMemo(() => (data ? finalistsOf(data.country) : []), [data]);
+  const [view, navigate] = useView();
+  // The runoff is always loaded: it is the live data and decides the default round.
+  const runoff = useResults(2);
+  const waitingForDefault = view.round === undefined && runoff.isPending;
+  const round = resolveRound(view.round, runoff.data);
+  const firstRound = useResults(1, { enabled: round === 1 && !waitingForDefault });
+  const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
 
-  if (isPending) {
+  const finalists = useMemo(() => (data ? finalistsOf(data.country) : []), [data]);
+  const select = (selection: Selection) => navigate({ round: view.round, selection });
+  const changeRound = (next: Round) => navigate({ round: next, selection: view.selection });
+
+  if (waitingForDefault || isPending) {
     return (
       <>
-        <Header />
+        <Header round={round} />
         <main className={styles.message} aria-busy="true">
           Carregando resultados…
         </main>
@@ -35,7 +46,7 @@ export function App() {
   if (isError && !data) {
     return (
       <>
-        <Header />
+        <Header round={round} />
         <main className={styles.message}>
           <p>Não foi possível carregar os resultados agora.</p>
           <button type="button" className={styles.retry} onClick={() => void refetch()}>
@@ -46,6 +57,7 @@ export function App() {
     );
   }
 
+  const { selection } = view;
   const tally = resolveTally(data, selection);
   const title = selectionTitle(selection);
   // States and abroad open the bottom sheet on mobile, keeping the map in view.
@@ -54,15 +66,16 @@ export function App() {
 
   return (
     <>
-      <Header>
-        <LiveBadge country={data.country} />
+      <Header round={round}>
+        <LiveBadge round={round} country={data.country} />
       </Header>
       <main className={styles.layout}>
         <div className={styles.summary}>
+          <RoundTabs round={round} onChange={changeRound} />
           <Scoreboard title={title} tally={tally} finalists={finalists} />
           <ShareButton getContent={getShareContent} variant="desktop" />
           <ScopePicker selection={selection} onSelect={select} />
-          <UpdateStatus data={data} />
+          <UpdateStatus data={data} onShowFirstRound={() => changeRound(1)} />
         </div>
         <div className={styles.detail}>
           <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
