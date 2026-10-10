@@ -101,6 +101,17 @@ Regras:
 - Polling via TanStack Query (~20s), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, `prefers-reduced-motion` respeitado, tema claro/escuro.
 
+## Mobile first (requisito crítico)
+
+A maior parte do público acessa pelo **celular** — a experiência mobile **não pode** ser inferior à desktop.
+
+- Projetar e implementar **primeiro para 360px** de largura e só depois expandir para tablet/desktop.
+- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e abre os detalhes em um **bottom sheet**; o mapa permite pinch-zoom/pan sem quebrar a rolagem da página.
+- Alvos de toque com no mínimo **44×44px**; textos legíveis sem zoom (≥ 16px no corpo).
+- Respeitar `safe-area-inset-*` (notch / barra de gestos) e funcionar em retrato e paisagem.
+- Desempenho em rede móvel: meta **Lighthouse mobile ≥ 90**, LCP < 2,5s em 4G, JS inicial enxuto, código não essencial carregado sob demanda.
+- Testar em viewports reais (iPhone SE, iPhone recente, Android médio) nos testes e2e e manualmente antes de cada release.
+
 ## Atualização dos dados e limites do Vercel Hobby
 
 - **Defasagem esperada:** ~15–40s em relação ao TSE (que já publica em lotes). Cron não é necessário (e no Hobby só roda 1x/dia).
