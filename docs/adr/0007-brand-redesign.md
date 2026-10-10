@@ -9,7 +9,7 @@ O visual foi refeito no Claude Design (telas de celular para Brasil, região, es
 
 ## Decisão
 
-- **Identidade:** verde `#00843D` e amarelo `#FFD60A` da bandeira, fundo `#F5F6F1`, texto `#0F1A14`; fonte **Schibsted Grotesk** auto-hospedada (`@fontsource-variable`, só o subconjunto latino é baixado, ~47 KB). Candidatos: vermelho `#D92D20` e azul `#1F5FD1`, com variantes mais escuras para texto. Tema escuro mantido com tokens próprios.
+- **Identidade:** verde `#00843D` e amarelo `#FFD60A` da bandeira, fundo `#F5F6F1`, texto `#0F1A14`; fonte **Schibsted Grotesk** auto-hospedada (`@fontsource-variable`, só o subconjunto latino é baixado, ~47 KB). Candidatos: vermelho `#D92D20` e azul `#1F5FD1`, com variantes mais escuras para texto. **Só tema claro**, exatamente como no desenho: o site ignora o tema escuro do sistema (`color-scheme: light`).
 - **Sem bottom sheet:** tocar num estado (mapa, lista ou seletor) troca o card de resultado e rola a página até ele (`scrollIntoView` com `block: 'nearest'`, sem animação com `prefers-reduced-motion`). Com isso o `motion` saiu do bundle.
 - **Compartilhar no card de resultado** ("Compartilhar Bahia"), em vez de botão flutuante. A barra fixa de abrangência fica sempre à mão para voltar ao topo do contexto.
 - **Região** mostra quantos estados cada finalista lidera (e a maior vantagem), não a soma de votos.
