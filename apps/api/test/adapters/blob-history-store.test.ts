@@ -36,7 +36,10 @@ function fakeBlob(initial?: unknown) {
   };
 }
 
-const options = { pathname: 'history/6258.json', token: 'test-token' };
+const options = {
+  pathname: 'history/6258.json',
+  credentials: () => ({ token: 'test-token' }),
+};
 
 describe('BlobHistoryStore', () => {
   it('reads an empty history while the file does not exist', async () => {
@@ -84,6 +87,29 @@ describe('BlobHistoryStore', () => {
     });
     await new BlobHistoryStore({ ...options, blob: blob.api }).append(historyEntry(20));
     expect(blob.stored()?.entries).toHaveLength(3);
+  });
+
+  it('authenticates every operation with the current credentials', async () => {
+    const blob = fakeBlob({ entries: [historyEntry(10)] });
+    let oidcToken = 'oidc-1';
+    const store = new BlobHistoryStore({
+      pathname: options.pathname,
+      credentials: () => ({ storeId: 'store_abc', oidcToken }),
+      blob: blob.api,
+    });
+    await store.read();
+    oidcToken = 'oidc-2';
+    await store.append(historyEntry(20));
+    expect(blob.mocks.get).toHaveBeenNthCalledWith(
+      1,
+      'history/6258.json',
+      expect.objectContaining({ storeId: 'store_abc', oidcToken: 'oidc-1' }),
+    );
+    expect(blob.mocks.put).toHaveBeenCalledWith(
+      'history/6258.json',
+      expect.any(String),
+      expect.objectContaining({ storeId: 'store_abc', oidcToken: 'oidc-2' }),
+    );
   });
 
   it('rejects a malformed file', async () => {
