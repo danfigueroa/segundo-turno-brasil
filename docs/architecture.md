@@ -48,6 +48,7 @@ O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é val
 
 - `static/` — build do Vite; `/assets/*` com cache imutável de 1 ano.
 - `functions/api/results.func/`, `functions/api/abroad.func/` e `functions/api/history.func/` — funções empacotadas pelo esbuild (`index.mjs`, Node 22).
+- Cada função roda em `gru1` (São Paulo), perto do TSE (`regions` no `.vc-config.json`, ver [ADR 0015](adr/0015-functions-in-sao-paulo.md)). O CDN atende o público do ponto de presença mais próximo de qualquer forma.
 - `config.json` — cabeçalhos de segurança, fallback SPA para `index.html` e 404 para `/api/*` desconhecido.
 
 Dependências CommonJS (o `undici`, que vem com o `@vercel/blob`) chamam `require()`, que não existe em módulos ES: o build injeta um `require` com `createRequire` no topo de cada função. `pnpm smoke` (também no CI) executa cada função empacotada contra uma requisição real, em processos separados, e falha se alguma cair; os testes unitários rodam o TypeScript e não pegam problemas que só existem no pacote.
@@ -56,6 +57,7 @@ Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de p
 
 ### Checklist pós-deploy (Preview)
 
+- Painel do deploy → Functions: as funções devem aparecer na região `gru1`.
 - `curl -I https://<preview>/api/results` → `x-vercel-cache` deve alternar entre `MISS`, `HIT` e `STALE`.
 - O payload deve sair comprimido (`content-encoding: br` ou `gzip`).
 - `curl -I "https://<preview>/api/cities?uf=mg&round=1"` → 200, comprimido e com `x-vercel-cache`.
