@@ -13,3 +13,34 @@
   background: var(--map-empty);
   opacity: 0.5;
 }
+
+/* The selected city's name, above its shape; same halo as the state labels. */
+.cityLabel {
+  font-weight: 800;
+  text-anchor: middle;
+  fill: var(--map-selected);
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 0.22em;
+  stroke-linejoin: round;
+  pointer-events: none;
+  user-select: none;
+}
+
+.selects {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 960px) {
+  /* Two selects do not fit beside the title: they get a row of their own under it. */
+  :global(.card).layout {
+    grid-template-areas: 'head head' 'select select' 'map map' 'legend legend';
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  .selects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}

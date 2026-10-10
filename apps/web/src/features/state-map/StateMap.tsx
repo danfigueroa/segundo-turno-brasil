@@ -1,10 +1,13 @@
 import { STATES, type StateCode } from '@stb/domain';
 import { leadOfVotes, type Finalist } from '../../lib/finalists';
+import { formatName } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
 import type { Municipalities, Selection } from '../../lib/selection';
 import mapStyles from '../map/BrazilMap.module.css';
 import { MapLegend } from '../map/MapLegend';
 import { StateSelect } from '../map/StateSelect';
+import { cityLabel } from './city-label';
+import { CitySelect } from './CitySelect';
 import type { StateMapShape } from './state-maps';
 import styles from './StateMap.module.css';
 
@@ -19,10 +22,14 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
 }
 
+/** Font size of the selected city's name, in viewBox units (the maps are ~1000 wide). */
+const LABEL_SIZE = { phone: 46, wide: 30 };
+
 /**
  * The selected state's municipalities, each in the color of its leader (same margins and
  * legend as the states). Tapping one selects it; the list of cities below is the
- * keyboard and screen reader path, as hundreds of shapes cannot all take focus.
+ * keyboard and screen reader path, as hundreds of shapes cannot all take focus. The
+ * selected city is named on the map, and the selects jump to another state or city.
  */
 export default function StateMap({ uf, map, selection, cities, finalists, onSelect }: Props) {
   const wide = useMediaQuery('(min-width: 960px)');
@@ -33,9 +40,16 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
   const shapes = Object.entries(map?.cities ?? {});
   // The selected municipality goes last so its outline is drawn on top of its neighbors.
   shapes.sort(([a], [b]) => Number(a === selectedIbge) - Number(b === selectedIbge));
+  const selectedCity = selectedIbge ? byIbge.get(selectedIbge) : undefined;
+  const selectedShape = selectedIbge ? map?.cities[selectedIbge] : undefined;
+  const fontSize = wide ? LABEL_SIZE.wide : LABEL_SIZE.phone;
+  const label =
+    map && selectedCity && selectedShape
+      ? cityLabel(selectedShape, map.viewBox, fontSize)
+      : undefined;
 
   return (
-    <section className={`card ${mapStyles.card}`} aria-labelledby="map-title">
+    <section className={`card ${mapStyles.card} ${styles.layout}`} aria-labelledby="map-title">
       <div className={mapStyles.head}>
         <h2 id="map-title" className={mapStyles.title}>
           Quem lidera em cada cidade
@@ -72,18 +86,38 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
                 />
               );
             })}
+            {label && selectedCity && (
+              <text
+                className={styles.cityLabel}
+                x={label.x}
+                y={label.y}
+                fontSize={fontSize}
+                dominantBaseline={label.side === 'above' ? 'auto' : 'hanging'}
+                aria-hidden="true"
+              >
+                {formatName(selectedCity.name)}
+              </text>
+            )}
           </svg>
         ) : (
           <div className={styles.placeholder} aria-hidden="true" />
         )}
       </div>
 
-      <StateSelect
-        className={mapStyles.select}
-        label={wide ? 'Ir para um estado' : 'Ou escolha um estado'}
-        selection={selection}
-        onSelect={onSelect}
-      />
+      <div className={`${mapStyles.select} ${styles.selects}`}>
+        <StateSelect
+          label={wide ? 'Ir para um estado' : 'Ou escolha um estado'}
+          selection={selection}
+          onSelect={onSelect}
+        />
+        <CitySelect
+          uf={uf}
+          label={wide ? 'Ir para uma cidade' : 'Ou escolha uma cidade'}
+          selection={selection}
+          cities={cities}
+          onSelect={onSelect}
+        />
+      </div>
       <MapLegend
         className={mapStyles.legend}
         finalists={anyLead ? finalists : []}
