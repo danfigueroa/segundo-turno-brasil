@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  abroadCountry,
   breadcrumbsOf,
+  countrySlug,
   isSameSelection,
   parseSelectionPath,
   regionOf,
@@ -9,7 +11,7 @@ import {
   selectionTitle,
   type Selection,
 } from './selection';
-import { citiesResponse, resultsResponse } from '../../test/fixtures';
+import { abroadResponse, citiesResponse, resultsResponse } from '../../test/fixtures';
 
 describe('selection path', () => {
   const cases: [string, Selection][] = [
@@ -18,6 +20,7 @@ describe('selection path', () => {
     ['regiao/ne', { kind: 'region', code: 'NE' }],
     ['exterior', { kind: 'abroad' }],
     ['ba/2927408', { kind: 'city', state: 'BA', ibge: '2927408' }],
+    ['exterior/estados-unidos', { kind: 'abroadCountry', slug: 'estados-unidos' }],
   ];
 
   it.each(cases)('round-trips %j', (path, selection) => {
@@ -34,6 +37,11 @@ describe('selection path', () => {
     expect(parseSelectionPath('ba/123')).toEqual({ kind: 'state', code: 'BA' });
     expect(parseSelectionPath('ba/3550308')).toEqual({ kind: 'state', code: 'BA' });
     expect(parseSelectionPath('ba/2927408/x')).toEqual({ kind: 'country' });
+  });
+
+  it('falls back to abroad for a malformed country', () => {
+    expect(parseSelectionPath('exterior/Japão')).toEqual({ kind: 'abroad' });
+    expect(parseSelectionPath('exterior/japao/x')).toEqual({ kind: 'abroad' });
   });
 
   it('compares selections', () => {
@@ -105,5 +113,46 @@ describe('resolveTally for a city', () => {
   it('falls back to the state until the municipalities load', () => {
     expect(resolveTally(data, salvador)).toBe(data.states.BA);
     expect(regionOf(salvador)).toBe('NE');
+  });
+});
+
+describe('a country abroad', () => {
+  const data = resultsResponse();
+  const { countries } = abroadResponse();
+  const portugal = abroadCountry('Portugal');
+
+  it('is named in the URL by a slug of its name, without accents', () => {
+    expect(countrySlug('Estados Unidos')).toBe('estados-unidos');
+    expect(countrySlug('Japão')).toBe('japao');
+    expect(countrySlug('Guiné-Bissau')).toBe('guine-bissau');
+    expect(abroadCountry('República Tcheca')).toEqual({
+      kind: 'abroadCountry',
+      slug: 'republica-tcheca',
+    });
+  });
+
+  it("uses the country's votes and voters with the abroad candidates", () => {
+    const tally = resolveTally(data, portugal, undefined, countries);
+    expect(tally.candidates.map((c) => [c.number, c.votes])).toEqual([
+      ['13', 6],
+      ['22', 3],
+    ]);
+    expect(tally.electorate).toBe(2000);
+    expect(tally.votes).toEqual({ valid: 9, blank: 1, null: 1 });
+    expect(selectionTitle(portugal, undefined, countries)).toBe('Portugal');
+  });
+
+  it('falls back to abroad until the countries load', () => {
+    expect(resolveTally(data, portugal)).toBe(data.abroad);
+    expect(selectionTitle(portugal)).toBe('Exterior');
+  });
+
+  it('walks down from Brazil through abroad', () => {
+    expect(breadcrumbsOf(portugal, undefined, countries).map((c) => c.label)).toEqual([
+      'Brasil',
+      'Exterior',
+      'Portugal',
+    ]);
+    expect(regionOf(portugal)).toBeUndefined();
   });
 });
