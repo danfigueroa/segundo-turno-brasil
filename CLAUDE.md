@@ -48,7 +48,7 @@ resultados.tse.jus.br (JSON público do TSE)
 - **Sem cron e sem banco de dados.** O CDN absorve o tráfego; a função só executa quando o cache expira. O próprio acesso dos usuários dispara a atualização.
 - **Endpoint:** `GET /api/results?round=1|2` (padrão 2) — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). O 1º turno é final e fica 1h em cache. Regiões são agregadas no cliente com `aggregateRegion`.
 - **Endpoint:** `GET /api/abroad?round=1|2` — votos no exterior **por país**, somando os 186 arquivos de cidade do TSE com a tabela cidade → país em `adapters/tse/abroad-cities.ts` (ADR 0008). Cache de 60s no 2º turno; buscado só com o Exterior aberto.
-- **Endpoint:** `GET /api/history?scope=br|zz|<uf>|regiao-<código>` — curva da apuração do 2º turno (um ponto por avanço do total nacional), gravada por `RecordHistory` num JSON do **Vercel Blob** (ADR 0011; em memória fora de `DATA_SOURCE=tse` ou sem token). Cache de 60s; o front acrescenta os pontos do polling.
+- **Endpoint:** `GET /api/history?scope=br|zz|<uf>|regiao-<código>` — curva da apuração do 2º turno (um ponto por avanço do total nacional), gravada por `RecordHistory` num JSON do **Vercel Blob** (ADR 0011; credenciais por OIDC ou token; em memória fora de `DATA_SOURCE=tse` ou sem credenciais). Cache de 60s; o front acrescenta os pontos do polling.
 - **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003).
@@ -104,7 +104,7 @@ Regras:
   - `DATA_SOURCE` = `tse` | `fixture` | `simulation`
   - `TSE_BASE_URL`, `TSE_ELECTION_CODE`, `TSE_FIRST_ROUND_ELECTION_CODE`, `TSE_TIMEOUT_MS`
   - `FIXTURES_DIR`, `SIMULATION_DURATION_MINUTES`
-  - `BLOB_READ_WRITE_TOKEN` (opcional; histórico da apuração no Vercel Blob, só com `DATA_SOURCE=tse`)
+  - `BLOB_STORE_ID` (OIDC) ou `BLOB_READ_WRITE_TOKEN` (opcionais; histórico da apuração no Vercel Blob, só com `DATA_SOURCE=tse`)
 - Fixtures reais em `apps/api/test/fixtures/`: `ele2026-6257` (1º turno, final) e `ele2026-6258-pre` (2º turno zerado), incluindo as 186 cidades do exterior (`pnpm --filter @stb/api fixtures:abroad <eleição> <pasta>` baixa de novo).
 - **Nunca** chamar o TSE diretamente do navegador.
 
@@ -188,7 +188,7 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 
 Pendente:
 
-- Conectar um Blob store ao projeto na Vercel antes de 25/10 (histórico da curva, ADR 0011).
+- Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
 - Levar a seção de análise da apuração para o Claude Design.
 
 - `GET /api/og` (prévia de links com o placar atual).
