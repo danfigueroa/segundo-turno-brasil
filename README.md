@@ -4,6 +4,8 @@ Acompanhe **ao vivo** a apuração do 2º turno da eleição presidencial de **2
 
 - Mapa coroplético: cada estado na cor de quem lidera, mais intenso quanto maior a vantagem.
 - Abas **2º turno** (ao vivo) e **1º turno** (resultado final); antes da apuração do 2º turno, o site abre no 1º.
+- Percentual e total de votos sempre visíveis; numa região, também quantos estados cada um venceu.
+- Exterior por país (busca e filtro por continente), somando as 186 cidades publicadas pelo TSE.
 - Navegação Brasil / Região / Estado / Exterior, com link compartilhável (`/#/sp`, `/#/regiao/ne`, `/#/exterior`).
 - Mobile first: barra de abrangência fixa, tocar num estado leva ao resultado dele, alvos de toque de 44px.
 - Antes da apuração do 2º turno: contagem regressiva até 17h de 25/10.
