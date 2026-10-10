@@ -69,6 +69,21 @@
   margin: 0;
 }
 
+.footerText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Inline link, but tall enough to be an easy touch target. */
+.credit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  color: var(--brand-text);
+}
+
 .footerStripe {
   width: 48px;
   height: 4px;
@@ -106,6 +121,10 @@
     padding: 8px 24px 48px;
     font-size: 13px;
     text-align: left;
+  }
+
+  .footerText {
+    align-items: flex-start;
   }
 
   .footerStripe {

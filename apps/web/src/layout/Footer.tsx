@@ -10,7 +10,20 @@ export function Footer({ children }: Props) {
   return (
     <footer className={styles.footer}>
       <div className={`flag-stripe ${styles.footerStripe}`} />
-      {children}
+      <div className={styles.footerText}>
+        {children}
+        <p>
+          Desenvolvido por{' '}
+          <a
+            className={styles.credit}
+            href="https://www.instagram.com/danmfigueroa/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @danmfigueroa
+          </a>
+        </p>
+      </div>
     </footer>
   );
 }
