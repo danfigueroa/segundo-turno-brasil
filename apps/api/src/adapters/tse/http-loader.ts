@@ -19,10 +19,14 @@ export class TseRequestError extends Error {
   }
 }
 
-/** URL of the presidential (office 0001) results file of one scope. */
+/**
+ * URL of the presidential (office 0001) results file of one scope. Files live in the
+ * folder of their state (or `br`/`zz`): a city abroad, `zz29254`, is under `zz/`.
+ */
 export function tseResultsUrl(baseUrl: string, electionCode: string, scopeCode: string): string {
   const election = electionCode.padStart(6, '0');
-  return `${baseUrl}/${electionCode}/dados/${scopeCode}/${scopeCode}-c0001-e${election}-u.json`;
+  const folder = scopeCode.slice(0, 2);
+  return `${baseUrl}/${electionCode}/dados/${folder}/${scopeCode}-c0001-e${election}-u.json`;
 }
 
 /** Loads TSE files over HTTP from the official results CDN. */
