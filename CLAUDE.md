@@ -113,6 +113,7 @@ Regras:
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
 - Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
+- 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
