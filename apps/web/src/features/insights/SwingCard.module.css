@@ -1,0 +1,152 @@
+.rows {
+  display: grid;
+  gap: 16px;
+  padding: 0 4px;
+}
+
+.row {
+  display: grid;
+  gap: 6px;
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--hue-text);
+}
+
+.change {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--brand-text);
+}
+
+.change[data-down] {
+  color: var(--live-text);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.barLabel {
+  color: var(--text-secondary);
+}
+
+.track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--hue);
+  transition: width var(--duration) var(--ease-out);
+}
+
+.bar[data-muted] .fill {
+  background: var(--hue-soft);
+}
+
+.barValue {
+  font-weight: 700;
+  text-align: right;
+}
+
+.bar[data-muted] .barValue {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.others {
+  margin: 0;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--divider);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.others strong {
+  color: var(--text-primary);
+}
+
+.flipped {
+  display: grid;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.flippedTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.none {
+  margin: 0;
+  font-size: 13px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--control-border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.code {
+  font-weight: 800;
+}
+
+.from,
+.to {
+  color: var(--hue-text);
+}
+
+.to {
+  font-weight: 800;
+}
+
+@media (min-width: 960px) {
+  .rows,
+  .flipped {
+    padding: 0;
+  }
+
+  .others {
+    padding: 14px 0 0;
+  }
+
+  .bar {
+    grid-template-columns: 72px minmax(0, 1fr) 72px;
+    font-size: 14px;
+  }
+}
