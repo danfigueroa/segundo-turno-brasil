@@ -35,7 +35,7 @@ export function App() {
   if (waitingForDefault || isPending) {
     return (
       <>
-        <Header round={round} />
+        <Header />
         <main className={styles.message} aria-busy="true">
           Carregando resultados…
         </main>
@@ -46,7 +46,7 @@ export function App() {
   if (isError && !data) {
     return (
       <>
-        <Header round={round} />
+        <Header />
         <main className={styles.message}>
           <p>Não foi possível carregar os resultados agora.</p>
           <button type="button" className={styles.retry} onClick={() => void refetch()}>
@@ -66,7 +66,7 @@ export function App() {
 
   return (
     <>
-      <Header round={round}>
+      <Header>
         <LiveBadge round={round} country={data.country} />
       </Header>
       <main className={styles.layout}>
