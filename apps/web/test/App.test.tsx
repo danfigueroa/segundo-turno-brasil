@@ -65,6 +65,15 @@ describe('App', () => {
     expect(within(scoreboard).getByText('Lidera em 9 estados')).toBeInTheDocument();
   });
 
+  it('credits the developer in the footer', async () => {
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+    expect(await screen.findByRole('link', { name: '@danmfigueroa' })).toHaveAttribute(
+      'href',
+      'https://www.instagram.com/danmfigueroa/',
+    );
+  });
+
   it('warns when serving stale data', async () => {
     mockFetch(() => Response.json(resultsResponse({ stale: true })));
     renderApp();
