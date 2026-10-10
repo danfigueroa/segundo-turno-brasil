@@ -24,9 +24,9 @@ Tocar num estado abre o resultado dele, e o mapa passa a mostrar **os município
 
 ### Acompanhar o voto no exterior
 
-Os votos de brasileiros no exterior já entram no total do Brasil e também podem ser vistos à parte. Há um **mapa-múndi com um ponto por cidade** com seção eleitoral (186), do tamanho do eleitorado de cada uma. Também há uma lista por país com busca e filtro por continente.
+Os votos de brasileiros no exterior já entram no total do Brasil e também podem ser vistos à parte. Há um **mapa por país, um continente por vez**, com cada país na cor de quem lidera. Também há uma lista por país com busca e filtro por continente.
 
-![Exterior: mapa-múndi com um ponto por cidade, colorido por quem lidera, ao lado do card com o resultado no exterior](docs/images/exterior-mapa-mundi.png)
+![Exterior: mapa da Europa com cada país na cor de quem lidera, ao lado do card com o resultado no exterior](docs/images/exterior-mapa-paises.png)
 
 ### Entender a apuração
 
@@ -116,7 +116,7 @@ A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arqu
 | `pnpm typecheck`                    | `tsc` em todos os pacotes                                    |
 | `pnpm build`                        | Build da web + `.vercel/output` (Build Output API da Vercel) |
 | `pnpm --filter @stb/web map:build`  | Regera o mapa pré-projetado a partir do IBGE                 |
-| `pnpm --filter @stb/web map:world`  | Regera o mapa-múndi do Exterior                              |
+| `pnpm --filter @stb/web map:world`  | Regera os mapas por continente do Exterior                   |
 | `pnpm --filter @stb/web map:cities` | Regera as malhas municipais (`--download` baixa do IBGE)     |
 
 ## Estrutura
