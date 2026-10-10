@@ -4,12 +4,17 @@ import { roundSchema } from './results';
 
 const count = z.int().check(z.nonnegative());
 const timestamp = z.iso.datetime({ offset: true });
+const ballots = z.object({ valid: count, blank: count, null: count });
 
 export const countryResultSchema = z.object({
   name: z.string().check(z.minLength(1)),
   continent: z.enum(CONTINENT_CODES),
   votes: z.record(z.string(), count),
   sections: z.object({ total: count, counted: count }),
+  electorate: count,
+  turnout: count,
+  ballots,
+  updatedAt: timestamp,
 }) satisfies z.ZodMiniType<CountryResult>;
 
 export const abroadCityResultSchema = z.object({
@@ -20,8 +25,11 @@ export const abroadCityResultSchema = z.object({
   lat: z.number().check(z.gte(-90), z.lte(90)),
   lon: z.number().check(z.gte(-180), z.lte(180)),
   electorate: count,
+  turnout: count,
   votes: z.record(z.string(), count),
+  ballots,
   sections: z.object({ total: count, counted: count }),
+  updatedAt: timestamp,
 }) satisfies z.ZodMiniType<AbroadCityResult>;
 
 /** Response of `GET /api/abroad?round=1|2`: votes abroad broken down by country and city. */

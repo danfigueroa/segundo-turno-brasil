@@ -10,6 +10,10 @@ const country = (name: string, lula: number, flavio: number): CountryResult => (
   continent: 'EU',
   votes: { '13': lula, '22': flavio, '55': 7 },
   sections: { total: 1, counted: 1 },
+  electorate: 100_000,
+  turnout: lula + flavio + 9,
+  ballots: { valid: lula + flavio + 7, blank: 1, null: 1 },
+  updatedAt: '2026-10-04T21:00:00-03:00',
 });
 
 describe('countryRows', () => {

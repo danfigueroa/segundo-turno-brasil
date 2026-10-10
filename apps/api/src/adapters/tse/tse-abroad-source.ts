@@ -59,7 +59,10 @@ function cityResult(code: string, city: AbroadCity, tally: Tally): AbroadCityRes
     lat: city.lat,
     lon: city.lon,
     electorate: tally.electorate,
+    turnout: tally.turnout,
     votes: Object.fromEntries(tally.candidates.map((c) => [c.number, c.votes])),
+    ballots: tally.votes,
     sections: tally.sections,
+    updatedAt: tally.updatedAt,
   };
 }

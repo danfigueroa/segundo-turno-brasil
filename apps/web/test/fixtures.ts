@@ -56,7 +56,21 @@ function city(
 ): AbroadCityResult {
   const continent = country === 'Portugal' ? 'EU' : 'AM';
   const sections = { total: 5, counted: 3 };
-  return { code, name, country, continent, lat, lon, electorate: 1000, votes, sections };
+  const valid = Object.values(votes).reduce((sum, v) => sum + v, 0);
+  return {
+    code,
+    name,
+    country,
+    continent,
+    lat,
+    lon,
+    electorate: 1000,
+    turnout: valid + 2,
+    votes,
+    ballots: { valid, blank: 1, null: 1 },
+    sections,
+    updatedAt: '2026-10-25T22:40:00-03:00',
+  };
 }
 
 /**
@@ -65,12 +79,27 @@ function city(
  */
 export function abroadResponse(overrides: Partial<AbroadResponse> = {}): AbroadResponse {
   const sections = { total: 10, counted: 5 };
+  const country = (name: string, continent: 'AM' | 'EU', votes: { '13': number; '22': number }) => {
+    const valid = votes['13'] + votes['22'];
+    const ballots = { valid, blank: 1, null: 1 };
+    const updatedAt = '2026-10-25T22:40:00-03:00';
+    return {
+      name,
+      continent,
+      votes,
+      sections,
+      electorate: 2000,
+      turnout: valid + 2,
+      ballots,
+      updatedAt,
+    };
+  };
   return {
     round: 2,
     countries: [
-      { name: 'Estados Unidos', continent: 'AM', votes: { '13': 4, '22': 12 }, sections },
-      { name: 'Portugal', continent: 'EU', votes: { '13': 6, '22': 3 }, sections },
-      { name: 'Haiti', continent: 'AM', votes: { '13': 1, '22': 1 }, sections },
+      country('Estados Unidos', 'AM', { '13': 4, '22': 12 }),
+      country('Portugal', 'EU', { '13': 6, '22': 3 }),
+      country('Haiti', 'AM', { '13': 1, '22': 1 }),
     ],
     cities: [
       city('39080', 'ATLANTA', 'Estados Unidos', 33.7, -84.4, { '13': 1, '22': 5 }),

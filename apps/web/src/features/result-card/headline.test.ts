@@ -53,18 +53,26 @@ describe('headlineOf', () => {
   });
 
   it('counts the countries with votes abroad once they are loaded', () => {
+    const voters = {
+      electorate: 10,
+      turnout: 6,
+      ballots: { valid: 5, blank: 0, null: 1 },
+      updatedAt: '2026-10-25T22:40:00-03:00',
+    };
     const countries = [
       {
         name: 'Portugal',
         continent: 'EU' as const,
         votes: { '13': 3, '22': 1 },
         sections: { total: 1, counted: 1 },
+        ...voters,
       },
       {
         name: 'Japão',
         continent: 'AS' as const,
         votes: { '13': 1, '22': 4 },
         sections: { total: 1, counted: 1 },
+        ...voters,
       },
     ];
     expect(headlineOf(data, { kind: 'abroad' }, finalists).stats[2]).toEqual({

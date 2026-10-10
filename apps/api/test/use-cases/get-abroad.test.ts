@@ -7,6 +7,10 @@ const portugal = {
   continent: 'EU',
   votes: { '13': 2, '22': 1 },
   sections: { total: 1, counted: 1 },
+  electorate: 10,
+  turnout: 4,
+  ballots: { valid: 3, blank: 0, null: 1 },
+  updatedAt: '2026-10-25T18:00:00-03:00',
 } as const;
 const breakdown = { countries: [portugal], cities: [] };
 const now = () => new Date('2026-10-25T21:00:00Z');

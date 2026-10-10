@@ -33,7 +33,20 @@ export class SimulatedAbroadSource implements AbroadSource {
         }),
       );
       const { total } = city.sections;
-      return { ...city, votes, sections: { total, counted: Math.round(total * progress) } };
+      const counted = (n: number) => Math.round(n * progress);
+      const valid = Object.values(votes).reduce((sum, v) => sum + v, 0);
+      const ballots = {
+        valid,
+        blank: counted(city.ballots.blank),
+        null: counted(city.ballots.null),
+      };
+      return {
+        ...city,
+        votes,
+        ballots,
+        turnout: valid + ballots.blank + ballots.null,
+        sections: { total, counted: counted(total) },
+      };
     });
     return { countries: aggregateCountries(cities), cities };
   }
