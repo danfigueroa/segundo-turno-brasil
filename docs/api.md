@@ -39,3 +39,31 @@ Regiões não vêm na resposta: são agregadas no cliente com `aggregateRegion` 
 | 503    | TSE fora e nenhum snapshot em memória     | `no-store` + `retry-after: 15`                                              |
 | 400    | `round` diferente de 1 ou 2               | `no-store`                                                                  |
 | 405    | Método diferente de GET/HEAD              | `no-store`                                                                  |
+
+## `GET /api/abroad?round=1|2`
+
+Votos no exterior **por país** (ADR 0008). O TSE só publica o exterior por cidade; a API soma as 186 cidades por país. Buscado pelo front apenas com o Exterior aberto. Schema: [`packages/contracts/src/abroad.ts`](../packages/contracts/src/abroad.ts).
+
+```jsonc
+{
+  "round": 1,
+  "countries": [
+    {
+      "name": "Portugal",
+      "continent": "EU", // AM | EU | AS (Ásia e Oceania) | AF
+      "votes": { "13": 26401, "22": 19412, "55": 312 }, // por número de urna
+      "sections": { "total": 120, "counted": 120 },
+    },
+  ],
+  "fetchedAt": "2026-10-05T15:00:00.000Z",
+  "stale": false,
+}
+```
+
+| Status | Quando                            | `cache-control`                                                             |
+| ------ | --------------------------------- | --------------------------------------------------------------------------- |
+| 200    | 2º turno, dados frescos           | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600`        |
+| 200    | 1º turno (resultado final)        | `public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400` |
+| 200    | `stale: true`                     | `public, s-maxage=5`                                                        |
+| 503    | TSE fora e nenhum dado em memória | `no-store` + `retry-after: 60`                                              |
+| 400    | `round` diferente de 1 ou 2       | `no-store`                                                                  |
