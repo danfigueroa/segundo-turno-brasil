@@ -2,7 +2,7 @@ import { STATE_CODES } from '@stb/domain';
 import { describe, expect, it } from 'vitest';
 import { createFixtureLoader } from '../../src/adapters/tse/fixture-loader';
 import { TseParseError, TseResultsSource } from '../../src/adapters/tse/tse-results-source';
-import { FIRST_ROUND_2026 } from '../helpers';
+import { FIRST_ROUND_2026, RUNOFF_2026_BEFORE_COUNT } from '../helpers';
 
 describe('TseResultsSource', () => {
   it('builds a snapshot with the country, abroad and all 27 states', async () => {
@@ -28,5 +28,18 @@ describe('TseResultsSource', () => {
   it('reports which scope has an invalid file', async () => {
     const source = new TseResultsSource(async (code) => (code === 'sp' ? { foo: 1 } : {}));
     await expect(source.fetchSnapshot()).rejects.toBeInstanceOf(TseParseError);
+  });
+});
+
+describe('TseResultsSource before counting starts', () => {
+  it('handles the official runoff files published with zero votes', async () => {
+    const snapshot = await new TseResultsSource(
+      createFixtureLoader(RUNOFF_2026_BEFORE_COUNT),
+    ).fetchSnapshot();
+    expect(snapshot.country.candidates.map((c) => [c.number, c.votes])).toEqual([
+      ['13', 0],
+      ['22', 0],
+    ]);
+    expect(snapshot.country.sections.counted).toBe(0);
   });
 });
