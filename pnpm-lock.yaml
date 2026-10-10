@@ -136,6 +136,9 @@ importers:
       vite:
         specifier: ^8.3.4
         version: 8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      world-atlas:
+        specifier: 2.0.2
+        version: 2.0.2
 
   packages/contracts:
     dependencies:
@@ -1697,6 +1700,9 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
+  world-atlas@2.0.2:
+    resolution: {integrity: sha512-IXfV0qwlKXpckz1FhwXVwKRjiIhOnWttOskm5CtxMsjgE/MXAYRHWJqgXOpM8IkcPBoXnyTU5lFHcYa5ChG0LQ==}
+
   xdg-app-paths@5.5.1:
     resolution: {integrity: sha512-hI3flOB4PLZIy5prbtTpirobtPE2ZtZ52szO+2mM9Efp6ErM398La+C1lIpNWDfNoQk+6Lsi6nMcCwVB7pxeMQ==}
     engines: {node: '>= 6.0'}
@@ -3105,6 +3111,8 @@ snapshots:
   why-is-node-running@3.2.1: {}
 
   word-wrap@1.2.5: {}
+
+  world-atlas@2.0.2: {}
 
   xdg-app-paths@5.5.1:
     dependencies:
