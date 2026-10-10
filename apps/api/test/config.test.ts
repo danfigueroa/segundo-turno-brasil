@@ -16,8 +16,10 @@ describe('loadConfig', () => {
     expect(loadConfig({ TSE_TIMEOUT_MS: '3000' }).TSE_TIMEOUT_MS).toBe(3000);
   });
 
-  it('leaves the Blob token optional', () => {
+  it('leaves the Blob credentials optional', () => {
     expect(loadConfig({}).BLOB_READ_WRITE_TOKEN).toBeUndefined();
+    expect(loadConfig({}).BLOB_STORE_ID).toBeUndefined();
+    expect(loadConfig({ BLOB_STORE_ID: 'store_abc' }).BLOB_STORE_ID).toBe('store_abc');
     expect(loadConfig({ BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_x' }).BLOB_READ_WRITE_TOKEN).toBe(
       'vercel_blob_rw_x',
     );
