@@ -1,23 +1,40 @@
-import type { Round } from '@stb/domain';
-import { useMemo } from 'react';
+import { REGION_NAMES, STATES, type Round } from '@stb/domain';
+import { useMemo, useRef } from 'react';
 import { useResults } from './api/use-results';
+import { RunoffCountdown } from './features/countdown/RunoffCountdown';
 import { BrazilMap } from './features/map/BrazilMap';
+import { ResultCard } from './features/result-card/ResultCard';
 import { RoundTabs } from './features/round-tabs/RoundTabs';
-import { Scoreboard } from './features/scoreboard/Scoreboard';
-import { ScopePicker } from './features/scope-picker/ScopePicker';
+import { ScopeChips } from './features/scope-chips/ScopeChips';
 import { ShareButton } from './features/share/ShareButton';
 import { shareContentFrom } from './features/share/share-content';
-import { StateSheet } from './features/state-sheet/StateSheet';
-import { StatesTable } from './features/states-table/StatesTable';
+import { StatesList } from './features/states-list/StatesList';
 import { LiveBadge } from './features/status/LiveBadge';
-import { UpdateStatus } from './features/status/UpdateStatus';
+import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { finalistsOf } from './lib/finalists';
-import { COUNTRY, resolveTally, selectionTitle, type Selection } from './lib/selection';
+import type { Selection } from './lib/selection';
+import { useMediaQuery } from './lib/use-media-query';
 import { useView } from './lib/use-view';
 import { resolveRound } from './lib/view';
 import styles from './App.module.css';
+
+/** What the share button names: "Compartilhar Bahia". */
+function shareLabel(selection: Selection): string {
+  switch (selection.kind) {
+    case 'country':
+      return 'Compartilhar resultado';
+    case 'region':
+      return `Compartilhar ${REGION_NAMES[selection.code]}`;
+    case 'state':
+      return `Compartilhar ${STATES[selection.code].name}`;
+    case 'abroad':
+      return 'Compartilhar Exterior';
+  }
+}
+
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export function App() {
   const [view, navigate] = useView();
@@ -27,10 +44,22 @@ export function App() {
   const round = resolveRound(view.round, runoff.data);
   const firstRound = useResults(1, { enabled: round === 1 && !waitingForDefault });
   const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
+  const resultRef = useRef<HTMLElement>(null);
+  // Wide screens put the round tabs in the header; phones give them a row of their own.
+  const wide = useMediaQuery('(min-width: 960px)');
 
   const finalists = useMemo(() => (data ? finalistsOf(data.country) : []), [data]);
-  const select = (selection: Selection) => navigate({ round: view.round, selection });
   const changeRound = (next: Round) => navigate({ round: next, selection: view.selection });
+  /** Picking a scope anywhere brings its result into view (the map sits below it on phones). */
+  const select = (selection: Selection) => {
+    navigate({ round: view.round, selection });
+    requestAnimationFrame(() =>
+      resultRef.current?.scrollIntoView?.({
+        block: 'nearest',
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      }),
+    );
+  };
 
   if (waitingForDefault || isPending) {
     return (
@@ -58,40 +87,51 @@ export function App() {
   }
 
   const { selection } = view;
-  const tally = resolveTally(data, selection);
-  const title = selectionTitle(selection);
-  // States and abroad open the bottom sheet on mobile, keeping the map in view.
-  const sheetOpen = selection.kind === 'state' || selection.kind === 'abroad';
+  // Before the runoff count starts there is nothing to break down by scope.
+  const waiting = data.round === 2 && data.country.sections.counted === 0;
   const getShareContent = () => shareContentFrom(data, selection, finalists, window.location.host);
 
   return (
     <>
       <Header>
         <LiveBadge round={round} country={data.country} />
+        {wide && <RoundTabs round={round} onChange={changeRound} compact />}
       </Header>
-      <main className={styles.layout}>
-        <div className={styles.summary}>
+      {!wide && (
+        <div className={styles.mobileTabs}>
           <RoundTabs round={round} onChange={changeRound} />
-          <Scoreboard title={title} tally={tally} finalists={finalists} />
-          <ShareButton getContent={getShareContent} variant="desktop" />
-          <ScopePicker selection={selection} onSelect={select} />
-          <UpdateStatus data={data} onShowFirstRound={() => changeRound(1)} />
         </div>
-        <div className={styles.detail}>
+      )}
+      {!waiting && <ScopeChips selection={selection} onSelect={select} />}
+
+      <main className={styles.main}>
+        <StaleWarning data={data} />
+        <div className={styles.top}>
+          {waiting ? (
+            <div className={styles.column}>
+              <RunoffCountdown finalists={finalists} onShowFirstRound={() => changeRound(1)} />
+            </div>
+          ) : (
+            <ResultCard
+              ref={resultRef}
+              data={data}
+              selection={selection}
+              finalists={finalists}
+              onSelect={select}
+            >
+              <ShareButton getContent={getShareContent} label={shareLabel(selection)} />
+            </ResultCard>
+          )}
           <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
-          <StatesTable data={data} finalists={finalists} selection={selection} onSelect={select} />
         </div>
+        {!waiting && selection.kind !== 'abroad' && (
+          <StatesList data={data} finalists={finalists} selection={selection} onSelect={select} />
+        )}
       </main>
-      <Footer />
-      <ShareButton getContent={getShareContent} variant="floating" hidden={sheetOpen} />
-      <StateSheet
-        title={sheetOpen ? title : undefined}
-        tally={sheetOpen ? tally : undefined}
-        finalists={finalists}
-        onClose={() => select(COUNTRY)}
-      >
-        <ShareButton getContent={getShareContent} variant="inline" />
-      </StateSheet>
+
+      <Footer>
+        <UpdateNote data={data} />
+      </Footer>
     </>
   );
 }

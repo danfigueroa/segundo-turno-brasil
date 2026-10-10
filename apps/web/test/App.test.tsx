@@ -44,15 +44,30 @@ describe('App', () => {
     expect(within(scoreboard).getByText('Lidera')).toBeInTheDocument();
   });
 
-  it('switches the scoreboard to a state picked in the table', async () => {
+  it('switches the result to a state picked in the list', async () => {
     mockFetch(Response.json(resultsResponse()));
     renderApp();
 
-    const table = await screen.findByRole('table');
-    await userEvent.click(within(table).getByRole('button', { name: /Bahia/ }));
+    const list = await screen.findByRole('list');
+    await userEvent.click(within(list).getByRole('button', { name: /Bahia/ }));
     const scoreboard = await screen.findByRole('region', { name: 'Bahia' });
-    expect(within(scoreboard).getAllByText('70,00%')[0]).toBeInTheDocument();
+    // The share counts up from the national figure.
+    expect(
+      await within(scoreboard).findByText('70,00%', {}, { timeout: 2000 }),
+    ).toBeInTheDocument();
     expect(window.location.hash).toBe('#/ba');
+    expect(within(scoreboard).getByRole('button', { name: 'Nordeste' })).toBeInTheDocument();
+  });
+
+  it('counts the states each finalist leads in a region', async () => {
+    window.location.hash = '#/regiao/ne';
+    mockFetch(Response.json(resultsResponse()));
+    renderApp();
+
+    const scoreboard = await screen.findByRole('region', { name: 'Região Nordeste' });
+    expect(within(scoreboard).getByText('Lidera mais')).toBeInTheDocument();
+    // Lula leads all nine states: his count and the region's size.
+    expect(within(scoreboard).getAllByText('9')).toHaveLength(2);
   });
 
   it('warns when serving stale data', async () => {
@@ -75,16 +90,19 @@ describe('App abroad votes', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Exterior' }));
     const scoreboard = await screen.findByRole('region', { name: 'Exterior' });
-    expect(within(scoreboard).getAllByText('66,67%')[0]).toBeInTheDocument();
+    expect(
+      await within(scoreboard).findByText('66,67%', {}, { timeout: 2000 }),
+    ).toBeInTheDocument();
     expect(window.location.hash).toBe('#/exterior');
   });
 
-  it('lists abroad votes in the table', async () => {
+  it('selects abroad from its button on the map', async () => {
     mockFetch(Response.json(resultsResponse()));
     renderApp();
 
-    const table = await screen.findByRole('table');
-    expect(within(table).getByRole('button', { name: /Exterior/ })).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: /^Exterior: Flávio/ }));
+    expect(window.location.hash).toBe('#/exterior');
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 });
 
@@ -121,6 +139,20 @@ describe('App rounds', () => {
 
     await userEvent.click(await screen.findByRole('tab', { name: /2º turno/ }));
     expect(window.location.hash).toBe('#/2turno');
-    expect(await screen.findByText(/A apuração do 2º turno começa/)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'A apuração começa às 17h' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Aguardando')).toBeInTheDocument();
+  });
+
+  it('leads from the runoff countdown back to the first round', async () => {
+    window.location.hash = '#/2turno';
+    mockRounds();
+    renderApp();
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Ver o resultado do 1º turno/ }),
+    );
+    expect(window.location.hash).toBe('#/1turno');
   });
 });
