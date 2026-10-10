@@ -1,6 +1,6 @@
 import { rankCandidates, type Tally } from '@stb/domain';
 import { describe, expect, it } from 'vitest';
-import { finalistResults, finalistsOf, leadOf } from './finalists';
+import { finalistResults, finalistsOf, leadOf, leadOfVotes } from './finalists';
 
 function tally(votes: Record<string, number>): Tally {
   return {
@@ -65,5 +65,21 @@ describe('leadOf', () => {
   it('is undefined with no votes or a perfect tie', () => {
     expect(leadOf(finalistResults(tally({ '13': 0, '22': 0 }), finalists))).toBeUndefined();
     expect(leadOf(finalistResults(tally({ '13': 5, '22': 5 }), finalists))).toBeUndefined();
+  });
+});
+
+describe('leadOfVotes', () => {
+  const finalists = finalistsOf(tally({ '13': 1, '22': 1 }));
+
+  it('measures the margin against all valid votes', () => {
+    const lead = leadOfVotes({ '13': 30, '22': 60, '55': 10 }, finalists);
+    expect(lead?.leader.number).toBe('22');
+    expect(lead?.margin).toBeCloseTo(30);
+    expect(lead?.intensity).toBe(5);
+  });
+
+  it('has no leader before any vote or on a tie', () => {
+    expect(leadOfVotes({}, finalists)).toBeUndefined();
+    expect(leadOfVotes({ '13': 2, '22': 2 }, finalists)).toBeUndefined();
   });
 });

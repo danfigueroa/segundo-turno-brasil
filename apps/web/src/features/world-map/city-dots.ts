@@ -1,5 +1,5 @@
 import type { AbroadCityResult } from '@stb/domain';
-import { leadOf, type Finalist, type StateLead } from '../../lib/finalists';
+import { leadOfVotes, type Finalist, type StateLead } from '../../lib/finalists';
 import { formatName } from '../../lib/format';
 import { project, type Projection } from './project';
 
@@ -17,20 +17,6 @@ export interface CityDot {
 /** Radius of the biggest city, in viewBox units (the map is 1000 wide). */
 const MAX_RADIUS = 16;
 const MIN_RADIUS = 3;
-
-/** Leader and margin of a city, with shares of its valid votes (every candidate's votes). */
-export function cityLead(
-  city: AbroadCityResult,
-  finalists: readonly Finalist[],
-): StateLead | undefined {
-  const valid = Object.values(city.votes).reduce((sum, votes) => sum + votes, 0);
-  return leadOf(
-    finalists.map((f) => {
-      const votes = city.votes[f.number] ?? 0;
-      return { ...f, votes, share: valid > 0 ? (votes / valid) * 100 : 0 };
-    }),
-  );
-}
 
 /**
  * One dot per city, its area proportional to the electorate, biggest first so the small
@@ -51,7 +37,7 @@ export function cityDots(
         x,
         y,
         r: Math.max(MIN_RADIUS, MAX_RADIUS * Math.sqrt(city.electorate / largest)),
-        lead: cityLead(city, finalists),
+        lead: leadOfVotes(city.votes, finalists),
       };
     })
     .sort((a, b) => b.r - a.r || a.code.localeCompare(b.code));

@@ -76,3 +76,20 @@ export function leadOf(results: readonly FinalistResult[]): StateLead | undefine
   const intensity = (MARGIN_BINS.filter((limit) => margin >= limit).length + 1) as Intensity;
   return { hue: leader.hue, leader, margin, intensity };
 }
+
+/**
+ * Who leads among the finalists given raw votes per candidate (a municipality, a city
+ * abroad), with shares of all valid votes: every candidate's votes added up.
+ */
+export function leadOfVotes(
+  votes: Readonly<Record<string, number>>,
+  finalists: readonly Finalist[],
+): StateLead | undefined {
+  const valid = Object.values(votes).reduce((sum, v) => sum + v, 0);
+  return leadOf(
+    finalists.map((f) => {
+      const count = votes[f.number] ?? 0;
+      return { ...f, votes: count, share: valid > 0 ? (count / valid) * 100 : 0 };
+    }),
+  );
+}

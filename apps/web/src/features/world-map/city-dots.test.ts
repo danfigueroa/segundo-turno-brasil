@@ -1,28 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { abroadResponse, resultsResponse } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
-import { cityDots, cityLead, labeledDots } from './city-dots';
+import { cityDots, labeledDots } from './city-dots';
 import { WORLD_MAP } from './world-map';
 
 const finalists = finalistsOf(resultsResponse().country);
 const { cities } = abroadResponse();
-const [atlanta] = cities;
-if (!atlanta) throw new Error('fixture without cities');
-
-describe('cityLead', () => {
-  it('measures the margin against all valid votes of the city', () => {
-    const city = { ...atlanta, votes: { '13': 30, '22': 60, '55': 10 } };
-    const lead = cityLead(city, finalists);
-    expect(lead?.leader.number).toBe('22');
-    expect(lead?.margin).toBeCloseTo(30);
-    expect(lead?.intensity).toBe(5);
-  });
-
-  it('has no leader before any vote or on a tie', () => {
-    expect(cityLead({ ...atlanta, votes: {} }, finalists)).toBeUndefined();
-    expect(cityLead({ ...atlanta, votes: { '13': 2, '22': 2 } }, finalists)).toBeUndefined();
-  });
-});
 
 describe('cityDots', () => {
   it('sizes dots by electorate and draws the biggest first', () => {
