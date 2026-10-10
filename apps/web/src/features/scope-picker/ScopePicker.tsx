@@ -1,5 +1,5 @@
 import { REGION_CODES, REGION_NAMES, STATE_CODES, STATES, type StateCode } from '@stb/domain';
-import { COUNTRY, isSameSelection, type Selection } from '../../lib/selection';
+import { ABROAD, COUNTRY, isSameSelection, type Selection } from '../../lib/selection';
 import styles from './ScopePicker.module.css';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 
 const SORTED_STATES = STATE_CODES.toSorted((a, b) => STATES[a].name.localeCompare(STATES[b].name));
 
-/** Brasil / regions as chips, states as a native select (best picker on mobile). */
+/** Brasil / regions / abroad as chips, states as a native select (best picker on mobile). */
 export function ScopePicker({ selection, onSelect }: Props) {
   const chips: { label: string; target: Selection }[] = [
     { label: 'Brasil', target: COUNTRY },
@@ -17,6 +17,7 @@ export function ScopePicker({ selection, onSelect }: Props) {
       label: REGION_NAMES[code],
       target: { kind: 'region', code } as const,
     })),
+    { label: 'Exterior', target: ABROAD },
   ];
 
   return (
