@@ -1,7 +1,6 @@
 import type { ResultsResponse } from '@stb/contracts';
 import type { ReactNode, Ref } from 'react';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
-import { ProgressBar } from '../../components/ProgressBar';
 import type { Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { breadcrumbsOf, isSameSelection, type Selection } from '../../lib/selection';
@@ -29,7 +28,6 @@ export function ResultCard({ data, selection, finalists, onSelect, children, ref
   const headline = headlineOf(data, selection, finalists);
   const crumbs = breadcrumbsOf(selection);
   const total = headline.bar.reduce((sum, s) => sum + s.weight, 0);
-  const live = headline.counted > 0 && headline.counted < 100;
 
   return (
     <section ref={ref} className={`card ${styles.card}`} aria-labelledby="result-title">
@@ -58,7 +56,6 @@ export function ResultCard({ data, selection, finalists, onSelect, children, ref
         </nav>
         <span className={styles.counted}>{formatCounted(headline.counted)} apurado</span>
       </div>
-      {live && <ProgressBar value={headline.counted} label="Seções apuradas" />}
 
       <div className={styles.heading}>
         <div className={styles.eyebrow}>{headline.eyebrow}</div>
