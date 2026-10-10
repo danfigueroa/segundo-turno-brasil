@@ -1,0 +1,117 @@
+.total {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 15px;
+}
+
+.total strong {
+  color: var(--hue-text);
+  font-weight: 800;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr 64px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sides span:first-child {
+  grid-column: 2;
+  color: var(--hue-text);
+}
+
+.sides span:last-child {
+  grid-column: 3;
+  text-align: right;
+  color: var(--hue-text);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 64px;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-top: 1px solid var(--divider);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.row[aria-current] {
+  background: var(--surface-selected);
+}
+
+.code {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Two halves around a center axis: the first finalist grows left, the second right. */
+.bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 14px;
+}
+
+.half {
+  display: flex;
+}
+
+.half[data-side='first'] {
+  justify-content: flex-end;
+  border-right: 2px solid var(--text-primary);
+}
+
+.fill {
+  height: 100%;
+  background: var(--hue);
+  transition: width var(--duration) var(--ease-out);
+}
+
+.half[data-side='first'] .fill {
+  border-radius: 4px 0 0 4px;
+}
+
+.half[data-side='second'] .fill {
+  border-radius: 0 4px 4px 0;
+}
+
+.value {
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--hue-text, var(--text-secondary));
+}
+
+@media (min-width: 960px) {
+  .total {
+    padding: 0;
+  }
+
+  .sides,
+  .row {
+    grid-template-columns: 52px minmax(0, 1fr) 80px;
+  }
+
+  .sides {
+    grid-template-columns: 52px 1fr 1fr 80px;
+    font-size: 13px;
+  }
+
+  .value {
+    font-size: 14px;
+  }
+}
