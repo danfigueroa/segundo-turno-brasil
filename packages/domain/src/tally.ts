@@ -1,5 +1,8 @@
 import type { RegionCode, StateCode } from './states';
 
+/** Election round: 1 = first round (4 Oct 2026), 2 = runoff (25 Oct 2026). */
+export type Round = 1 | 2;
+
 /** Geographic coverage of a tally. `abroad` holds votes cast outside Brazil. */
 export type Scope =
   | { readonly kind: 'country' }
