@@ -1,7 +1,9 @@
 import { REGION_NAMES, STATES, type Round } from '@stb/domain';
 import { useMemo, useRef } from 'react';
+import { useAbroad } from './api/abroad';
 import { useResults } from './api/use-results';
 import { RunoffCountdown } from './features/countdown/RunoffCountdown';
+import { CountriesList } from './features/countries/CountriesList';
 import { BrazilMap } from './features/map/BrazilMap';
 import { ResultCard } from './features/result-card/ResultCard';
 import { RoundTabs } from './features/round-tabs/RoundTabs';
@@ -44,6 +46,10 @@ export function App() {
   const round = resolveRound(view.round, runoff.data);
   const firstRound = useResults(1, { enabled: round === 1 && !waitingForDefault });
   const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
+  // The breakdown by country is heavier and only needed while abroad is on screen.
+  const abroad = useAbroad(round, {
+    enabled: view.selection.kind === 'abroad' && !waitingForDefault,
+  });
   const resultRef = useRef<HTMLElement>(null);
   // Wide screens put the round tabs in the header; phones give them a row of their own.
   const wide = useMediaQuery('(min-width: 960px)');
@@ -118,6 +124,7 @@ export function App() {
               selection={selection}
               finalists={finalists}
               onSelect={select}
+              countries={abroad.data?.countries}
             >
               <ShareButton getContent={getShareContent} label={shareLabel(selection)} />
             </ResultCard>
@@ -126,6 +133,14 @@ export function App() {
         </div>
         {!waiting && selection.kind !== 'abroad' && (
           <StatesList data={data} finalists={finalists} selection={selection} onSelect={select} />
+        )}
+        {!waiting && selection.kind === 'abroad' && (
+          <CountriesList
+            data={data}
+            abroad={abroad.data}
+            failed={abroad.isError}
+            finalists={finalists}
+          />
         )}
       </main>
 

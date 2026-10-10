@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
-import { resultsResponse, tally } from './fixtures';
+import { abroadResponse, resultsResponse, tally } from './fixtures';
 
 function renderApp() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -14,10 +14,11 @@ function renderApp() {
   );
 }
 
-function mockFetch(response: Response) {
+/** Answers `/api/results` and `/api/abroad`; each call gets a fresh `Response`. */
+function mockFetch(results: () => Response, abroad = () => Response.json(abroadResponse())) {
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => response),
+    vi.fn(async (url: string) => (url.includes('/api/abroad') ? abroad() : results())),
   );
 }
 
@@ -31,7 +32,7 @@ afterEach(() => {
 
 describe('App', () => {
   it('shows the national scoreboard with both finalists', async () => {
-    mockFetch(Response.json(resultsResponse()));
+    mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     const scoreboard = await screen.findByRole('region', { name: 'Brasil' });
@@ -42,7 +43,7 @@ describe('App', () => {
   });
 
   it('switches the result to a state picked in the list', async () => {
-    mockFetch(Response.json(resultsResponse()));
+    mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     const list = await screen.findByRole('list');
@@ -56,25 +57,25 @@ describe('App', () => {
     expect(within(scoreboard).getByRole('button', { name: 'Nordeste' })).toBeInTheDocument();
   });
 
-  it('counts the states each finalist leads in a region', async () => {
+  it('shows shares, votes and states won in a region', async () => {
     window.location.hash = '#/regiao/ne';
-    mockFetch(Response.json(resultsResponse()));
+    mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     const scoreboard = await screen.findByRole('region', { name: 'Região Nordeste' });
-    expect(within(scoreboard).getByText('Lidera mais')).toBeInTheDocument();
-    // Lula leads all nine states: his count and the region's size.
-    expect(within(scoreboard).getAllByText('9')).toHaveLength(2);
+    expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
+    expect(within(scoreboard).getByText('PT · 6.300 votos')).toBeInTheDocument();
+    expect(within(scoreboard).getByText('Lidera em 9 estados')).toBeInTheDocument();
   });
 
   it('warns when serving stale data', async () => {
-    mockFetch(Response.json(resultsResponse({ stale: true })));
+    mockFetch(() => Response.json(resultsResponse({ stale: true })));
     renderApp();
     expect(await screen.findByText(/O TSE não respondeu agora/)).toBeInTheDocument();
   });
 
   it('offers a retry when results cannot be loaded', async () => {
-    mockFetch(new Response(null, { status: 503 }));
+    mockFetch(() => new Response(null, { status: 503 }));
     renderApp();
     expect(await screen.findByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
   });
@@ -82,7 +83,7 @@ describe('App', () => {
 
 describe('App abroad votes', () => {
   it('shows abroad results from the scope picker', async () => {
-    mockFetch(Response.json(resultsResponse()));
+    mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Exterior' }));
@@ -93,13 +94,43 @@ describe('App abroad votes', () => {
     expect(window.location.hash).toBe('#/exterior');
   });
 
+  it('lists the votes by country abroad', async () => {
+    window.location.hash = '#/exterior';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const section = await screen.findByRole('region', { name: 'Votação por país' });
+    expect(
+      await within(section).findByText(
+        /Lula lidera em 1 país, Flávio em 1 e houve 1 empate \(Haiti\)/,
+      ),
+    ).toBeInTheDocument();
+    const rows = within(section).getAllByRole('listitem');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining('Estados Unidos'),
+      expect.stringContaining('Portugal'),
+      expect.stringContaining('Haiti'),
+    ]);
+
+    await userEvent.type(within(section).getByRole('searchbox', { name: 'Buscar país' }), 'portu');
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+    await userEvent.click(within(section).getByRole('button', { name: 'Europa' }));
+    await userEvent.clear(within(section).getByRole('searchbox'));
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+
+    const scoreboard = screen.getByRole('region', { name: 'Exterior' });
+    expect(within(scoreboard).getByText('Países com votos')).toBeInTheDocument();
+    expect(within(scoreboard).getByText('1 Lula · 1 Flávio')).toBeInTheDocument();
+  });
+
   it('selects abroad from its button on the map', async () => {
-    mockFetch(Response.json(resultsResponse()));
+    mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     await userEvent.click(await screen.findByRole('button', { name: /^Exterior: Flávio/ }));
     expect(window.location.hash).toBe('#/exterior');
-    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Resultado por estado' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Votação por país' })).toBeInTheDocument();
   });
 });
 

@@ -1,4 +1,4 @@
-import type { ResultsResponse } from '@stb/contracts';
+import type { AbroadResponse, ResultsResponse } from '@stb/contracts';
 import { rankCandidates, STATE_CODES, type Scope, type StateCode, type Tally } from '@stb/domain';
 
 export function tally(scope: Scope, lula: number, flavio: number, counted = 50): Tally {
@@ -33,6 +33,22 @@ export function resultsResponse(overrides: Partial<ResultsResponse> = {}): Resul
     country: tally({ kind: 'country' }, 12_000, 12_400),
     states,
     abroad: tally({ kind: 'abroad' }, 10, 20),
+    fetchedAt: '2026-10-25T22:42:10.000Z',
+    stale: false,
+    ...overrides,
+  };
+}
+
+/** Votes abroad by country: Flávio ahead in the United States, Lula in Portugal, a tie in Haiti. */
+export function abroadResponse(overrides: Partial<AbroadResponse> = {}): AbroadResponse {
+  const sections = { total: 10, counted: 5 };
+  return {
+    round: 2,
+    countries: [
+      { name: 'Estados Unidos', continent: 'AM', votes: { '13': 4, '22': 12 }, sections },
+      { name: 'Portugal', continent: 'EU', votes: { '13': 6, '22': 3 }, sections },
+      { name: 'Haiti', continent: 'AM', votes: { '13': 1, '22': 1 }, sections },
+    ],
     fetchedAt: '2026-10-25T22:42:10.000Z',
     stale: false,
     ...overrides,
