@@ -10,7 +10,8 @@
     "dev": "tsx watch --env-file-if-exists=.env src/dev-server.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "fixtures:abroad": "tsx scripts/fetch-abroad-fixtures.ts"
+    "fixtures:abroad": "tsx scripts/fetch-abroad-fixtures.ts",
+    "geocode:abroad": "tsx scripts/geocode-abroad-cities.ts"
   },
   "dependencies": {
     "@stb/contracts": "workspace:*",
