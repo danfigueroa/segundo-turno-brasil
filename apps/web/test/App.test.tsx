@@ -67,3 +67,23 @@ describe('App', () => {
     expect(await screen.findByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
   });
 });
+
+describe('App abroad votes', () => {
+  it('shows abroad results from the scope picker', async () => {
+    mockFetch(Response.json(resultsResponse()));
+    renderApp();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Exterior' }));
+    const scoreboard = await screen.findByRole('region', { name: 'Exterior' });
+    expect(within(scoreboard).getAllByText('66,67%')[0]).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/exterior');
+  });
+
+  it('lists abroad votes in the table', async () => {
+    mockFetch(Response.json(resultsResponse()));
+    renderApp();
+
+    const table = await screen.findByRole('table');
+    expect(within(table).getByRole('button', { name: /Exterior/ })).toBeInTheDocument();
+  });
+});
