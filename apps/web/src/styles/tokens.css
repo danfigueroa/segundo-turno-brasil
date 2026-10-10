@@ -1,7 +1,8 @@
 /*
  * Design tokens. Candidate hues and the diverging map ramp were validated for
  * color-vision deficiency (blue #2a78d6 vs red #e34948: CVD ΔE 21.6, contrast ≥ 3:1).
- * Dark mode uses its own steps, not an automatic inversion.
+ * Dark mode uses its own steps, not an automatic inversion: its map ramp runs from
+ * near-surface (narrow margin) to bright (wide margin).
  */
 :root {
   color-scheme: light;
@@ -60,6 +61,17 @@
     --cand-red: #e66767;
     --cand-blue: #3987e5;
     --map-empty: #383835;
+    /* On dark surfaces narrow margins recede towards the surface and wide ones glow. */
+    --red-1: #4f2c2a;
+    --red-2: #7a3532;
+    --red-3: #b0403d;
+    --red-4: #e05a58;
+    --red-5: #f28b86;
+    --blue-1: #26364d;
+    --blue-2: #2a4d7c;
+    --blue-3: #2f68b3;
+    --blue-4: #3987e5;
+    --blue-5: #7fb0f0;
   }
 }
 
@@ -79,4 +91,14 @@
   --cand-red: #e66767;
   --cand-blue: #3987e5;
   --map-empty: #383835;
+  --red-1: #4f2c2a;
+  --red-2: #7a3532;
+  --red-3: #b0403d;
+  --red-4: #e05a58;
+  --red-5: #f28b86;
+  --blue-1: #26364d;
+  --blue-2: #2a4d7c;
+  --blue-3: #2f68b3;
+  --blue-4: #3987e5;
+  --blue-5: #7fb0f0;
 }
