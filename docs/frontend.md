@@ -6,7 +6,7 @@ React 19 + Vite, organizado por funcionalidade em `apps/web/src/features`.
 
 - `api/use-results.ts`: TanStack Query, polling de 20s, pausado com a aba oculta, `keepPreviousData` para não piscar.
 - Resposta validada com o schema de `@stb/contracts` (zod/mini, ~9 KB gzip).
-- Seleção (Brasil / região / UF) vive no hash da URL (`lib/use-selection.ts`): links compartilháveis e botão voltar funcionam.
+- Seleção (Brasil / região / UF / exterior) vive no hash da URL (`lib/use-selection.ts`: `#/sp`, `#/regiao/ne`, `#/exterior`): links compartilháveis e botão voltar funcionam.
 
 ## Finalistas e cores
 
@@ -20,6 +20,7 @@ React 19 + Vite, organizado por funcionalidade em `apps/web/src/features`.
 - Malha das UFs do IBGE (qualidade "mínima") em `data/br-uf.topo.json`.
 - `scripts/build-map.ts` projeta (Mercator) e grava caminhos SVG em `brazil-map.generated.json` (~14 KB gzip): o navegador não carrega d3 nem topojson.
 - Estados são botões acessíveis por teclado (Enter/Espaço); tooltip no hover (mouse) e no foco.
+- **Votos no exterior** (escopo `zz` do TSE, já somados ao total do Brasil) aparecem como um bloco "Exterior" no Atlântico (`ABROAD_TILE` em `brazil-map.ts`), com a mesma escala de cores e tamanho mínimo de 44px no celular. Também há chip no seletor, linha na tabela, bottom sheet e destaque na imagem de compartilhamento.
 
 ## Mobile
 
