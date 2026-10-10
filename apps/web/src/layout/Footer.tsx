@@ -11,9 +11,6 @@ export function Footer({ children }: Props) {
     <footer className={styles.footer}>
       <div className={`flag-stripe ${styles.footerStripe}`} />
       {children}
-      <p className={styles.disclaimer}>
-        Site independente, sem vínculo com o TSE ou com candidatos.
-      </p>
     </footer>
   );
 }

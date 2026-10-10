@@ -76,10 +76,6 @@
   overflow: hidden;
 }
 
-.disclaimer {
-  color: var(--text-muted);
-}
-
 @media (min-width: 960px) {
   .headerInner {
     padding: 16px 24px;
