@@ -88,6 +88,10 @@ Escolher uma abrangência em qualquer lugar rola até o card de resultado, se el
 
 Não existe API web para postar direto nos Stories; a folha nativa do sistema oferece o Instagram.
 
+### Prévia de links
+
+Um link do site colado no WhatsApp, Facebook, X ou LinkedIn mostra título, descrição e a imagem `public/og.png` (1200×630), pelas meta tags Open Graph e `twitter:card` do `index.html` (ADR 0018). As URLs absolutas usam `%SITE_URL%`, que o plugin `site-url` do `vite.config.ts` troca pelo domínio de produção (`VERCEL_PROJECT_PRODUCTION_URL`, ou `segundo-turno-brasil.vercel.app`). A imagem é estática, sem placar, e se regera com `pnpm --filter @stb/web og:build` (precisa de Chromium: `npx playwright install chromium-headless-shell` ou `CHROME_PATH`). As redes guardam a prévia: depois de trocar a imagem, use o [depurador de compartilhamento do Facebook](https://developers.facebook.com/tools/debug/) para renovar o cache.
+
 ## Orçamento de performance
 
 JS inicial ≈ 118 KB gzip (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB, Vercel Analytics ≈ 1,4 KB — ADR 0010), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento e a seção de análise (~5,5 KB) são chunks separados.
