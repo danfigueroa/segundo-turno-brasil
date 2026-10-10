@@ -26,10 +26,18 @@ export interface BlobApi {
   readonly put: typeof put;
 }
 
+/**
+ * How to authenticate with the Blob store: a static read-write token, or the store id
+ * with Vercel OIDC (token taken from the request, or resolved by the SDK when absent).
+ */
+export type BlobCredentials =
+  { readonly token: string } | { readonly storeId: string; readonly oidcToken?: string };
+
 export interface BlobHistoryStoreOptions {
   /** Pathname of the history file inside the Blob store. */
   readonly pathname: string;
-  readonly token: string;
+  /** Called on every operation: OIDC tokens are short-lived and come with each request. */
+  readonly credentials: () => BlobCredentials;
   readonly timeoutMs?: number;
   readonly blob?: BlobApi;
 }
@@ -74,7 +82,7 @@ export class BlobHistoryStore implements HistoryStore {
       allowOverwrite: etag !== undefined,
       cacheControlMaxAge: 60,
       contentType: 'application/json',
-      token: this.options.token,
+      ...this.options.credentials(),
       abortSignal: this.signal(),
       ...(etag ? { ifMatch: etag } : {}),
     });
@@ -84,7 +92,7 @@ export class BlobHistoryStore implements HistoryStore {
     const result = await this.blob.get(this.options.pathname, {
       access: 'private',
       useCache,
-      token: this.options.token,
+      ...this.options.credentials(),
       abortSignal: this.signal(),
     });
     if (result?.statusCode !== 200) return { entries: [], etag: undefined };
