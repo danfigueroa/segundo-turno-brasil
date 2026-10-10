@@ -1,5 +1,6 @@
 import { countedPercentage, type Tally } from '@stb/domain';
 import { AnimatePresence, m } from 'motion/react';
+import type { ReactNode } from 'react';
 import { finalistResults, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import styles from './StateSheet.module.css';
@@ -9,10 +10,12 @@ interface Props {
   readonly tally: Tally | undefined;
   readonly finalists: readonly Finalist[];
   readonly onClose: () => void;
+  /** Extra actions, e.g. sharing. */
+  readonly children?: ReactNode;
 }
 
 /** Mobile bottom sheet with the tapped state's result, so the map stays in view. */
-export function StateSheet({ title, tally, finalists, onClose }: Props) {
+export function StateSheet({ title, tally, finalists, onClose, children }: Props) {
   return (
     <AnimatePresence>
       {title && tally && (
@@ -41,6 +44,7 @@ export function StateSheet({ title, tally, finalists, onClose }: Props) {
             ))}
           </div>
           <div className={styles.meta}>{formatPercent(countedPercentage(tally))} apurado</div>
+          {children && <div className={styles.actions}>{children}</div>}
         </m.aside>
       )}
     </AnimatePresence>

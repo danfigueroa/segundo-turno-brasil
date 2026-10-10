@@ -71,6 +71,10 @@
   transition: transform var(--duration) var(--ease-out);
 }
 
+.actions {
+  margin-top: 12px;
+}
+
 .meta {
   margin-top: 10px;
   font-size: 0.8rem;
