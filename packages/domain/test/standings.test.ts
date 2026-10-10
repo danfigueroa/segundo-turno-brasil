@@ -43,12 +43,20 @@ describe('lead', () => {
 
 describe('countedPercentage', () => {
   it('divides counted by total sections', () => {
-    const tally = makeTally({ kind: 'country' }, { '13': 1 }, { sections: { total: 8, counted: 2 } });
+    const tally = makeTally(
+      { kind: 'country' },
+      { '13': 1 },
+      { sections: { total: 8, counted: 2 } },
+    );
     expect(countedPercentage(tally)).toBe(25);
   });
 
   it('handles scopes without sections', () => {
-    const tally = makeTally({ kind: 'country' }, { '13': 1 }, { sections: { total: 0, counted: 0 } });
+    const tally = makeTally(
+      { kind: 'country' },
+      { '13': 1 },
+      { sections: { total: 0, counted: 0 } },
+    );
     expect(countedPercentage(tally)).toBe(0);
   });
 });
