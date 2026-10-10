@@ -113,6 +113,7 @@ Regras:
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
 - Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
+- **Avatares:** foto oficial de urna do TSE, servida de `apps/web/public/candidates/{número}.jpeg` (`pnpm --filter @stb/web photos:fetch`), num anel da cor do candidato; iniciais como fallback (ADR 0009). Única exceção pedida ao design.
 - 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
@@ -171,6 +172,7 @@ pnpm typecheck                     # tsc em todos os pacotes
 pnpm test                          # Vitest em todos os pacotes
 pnpm build                         # build da web + .vercel/output
 pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
+pnpm --filter @stb/web photos:fetch  # baixa as fotos oficiais dos candidatos do 2º turno
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
 ```
 
