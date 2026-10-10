@@ -139,6 +139,17 @@ describe('turnoutStats', () => {
     ]);
   });
 
+  it('abbreviates large valid vote counts', () => {
+    const base = tally({ kind: 'country' }, 450, 470);
+    const country = {
+      ...base,
+      votes: { valid: 119_300_788, blank: 1, null: 1 },
+      turnout: 125_275_835,
+      electorate: 158_000_000,
+    };
+    expect(turnoutStats(country)[0]?.value).toBe('119,3 mi');
+  });
+
   it('shows dashes before anyone has voted', () => {
     const empty = {
       ...tally({ kind: 'country' }, 0, 0, 0),
