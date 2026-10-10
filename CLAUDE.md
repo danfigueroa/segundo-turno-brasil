@@ -48,6 +48,7 @@ resultados.tse.jus.br (JSON público do TSE)
   - `GET /api/results/br` — resultado nacional
   - `GET /api/results/states` — as 27 UFs agregadas (alimenta o mapa)
   - `GET /api/results/states/:uf` — detalhe de uma UF
+  - `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews
   - Regiões (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) são derivadas das UFs no domínio.
 - **Falha do TSE:** `stale-if-error` mantém a última cópia; a UI exibe "Última atualização às HH:MM".
 
@@ -111,6 +112,24 @@ A maior parte do público acessa pelo **celular** — a experiência mobile **n�
 - Respeitar `safe-area-inset-*` (notch / barra de gestos) e funcionar em retrato e paisagem.
 - Desempenho em rede móvel: meta **Lighthouse mobile ≥ 90**, LCP < 2,5s em 4G, JS inicial enxuto, código não essencial carregado sob demanda.
 - Testar em viewports reais (iPhone SE, iPhone recente, Android médio) nos testes e2e e manualmente antes de cada release.
+
+## Compartilhamento em redes sociais (requisito crítico)
+
+O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração em tempo real** nos **Stories do Instagram** (e demais redes/WhatsApp).
+
+- Botão **"Compartilhar"** sempre acessível (fixo no mobile) gera uma imagem com os dados **do momento**:
+  - candidatos, percentuais e votos;
+  - % de urnas apuradas;
+  - abrangência atual (Brasil, região ou UF) com o mapa colorido;
+  - data/hora da atualização ("Atualizado às HH:MM — fonte: TSE");
+  - URL do site para gerar tráfego de volta.
+- **Formatos:**
+  - **Stories: 1080×1920 (9:16)** — padrão; respeitar as áreas seguras do Instagram (sem conteúdo essencial nos ~250px do topo e da base).
+  - Feed: 1080×1350 (4:5) como opção.
+- **Geração no cliente** com Canvas 2D em módulo carregado sob demanda: não consome funções/banda da Vercel, é instantânea e usa exatamente os dados exibidos na tela.
+- **Envio:** Web Share API com arquivo (`navigator.share({ files })`), que abre a folha de compartilhamento nativa do iOS/Android com Instagram Stories, WhatsApp etc. Fallback: **baixar a imagem** (desktop ou navegador sem suporte). Não existe API web oficial para postar direto nos Stories — não tentar deep links proprietários.
+- **Link preview (Open Graph):** imagem 1200×630 gerada no servidor com `@vercel/og`, cacheada pelo CDN como os demais endpoints, para que links compartilhados no WhatsApp/X/Facebook mostrem o placar atual.
+- Visual das imagens segue a identidade do site e é legível em tela pequena (números grandes, alto contraste).
 
 ## Atualização dos dados e limites do Vercel Hobby
 
