@@ -29,6 +29,20 @@ export function formatLead(value: number, decimals: 1 | 2 = 1): string {
   return `+${(decimals === 1 ? oneDecimal : percent).format(value)}`;
 }
 
+/** Compact vote count: `1234567` → `"1,2 mi"`, `45600` → `"46 mil"`, `980` → `"980"`. */
+export function formatCompactVotes(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 999_500) return `${oneDecimal.format(value / 1_000_000)} mi`;
+  if (abs >= 10_000) return `${integer.format(Math.round(value / 1_000))} mil`;
+  return integer.format(Math.round(value));
+}
+
+/** Signed percentage points: `2.5` → `"+2,50 p.p."`, `-1` → `"−1,00 p.p."`. */
+export function formatPointsChange(value: number): string {
+  const sign = value > 0.005 ? '+' : value < -0.005 ? '−' : '';
+  return `${sign}${percent.format(Math.abs(value))} p.p.`;
+}
+
 /** Percentage points: `2.5` → `"2,50 p.p."`. */
 export function formatPoints(value: number): string {
   return `${percent.format(value)} p.p.`;
