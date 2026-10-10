@@ -48,7 +48,7 @@ O exterior (`zz`) também tem um arquivo por cidade com seção eleitoral — 18
 ex.: /oficial/ele2026/6257/dados/zz/zz29254-c0001-e006257-u.json   (Abidjã)
 ```
 
-A lista de cidades está em `{base}/{ciclo}/{eleição}/config/mun-e{eleição}-cm.json` (abrangência `zz`), **sem o país**. O país e o continente de cada cidade estão em `apps/api/src/adapters/tse/abroad-cities.ts` (ADR 0008). O formato do arquivo é o mesmo dos estados.
+A lista de cidades está em `{base}/{ciclo}/{eleição}/config/mun-e{eleição}-cm.json` (abrangência `zz`), **sem o país**. O país, o continente e as coordenadas de cada cidade estão em `apps/api/src/adapters/tse/abroad-cities.ts` (ADR 0008 e 0013). As coordenadas vêm do OpenStreetMap: `pnpm --filter @stb/api geocode:abroad` gera um JSON para revisar e copiar para a tabela. O formato do arquivo é o mesmo dos estados.
 
 ## Fixtures
 

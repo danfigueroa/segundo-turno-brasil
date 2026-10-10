@@ -47,7 +47,7 @@ resultados.tse.jus.br (JSON público do TSE)
 
 - **Sem cron e sem banco de dados.** O CDN absorve o tráfego; a função só executa quando o cache expira. O próprio acesso dos usuários dispara a atualização.
 - **Endpoint:** `GET /api/results?round=1|2` (padrão 2) — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). O 1º turno é final e fica 1h em cache. Regiões são agregadas no cliente com `aggregateRegion`.
-- **Endpoint:** `GET /api/abroad?round=1|2` — votos no exterior **por país**, somando os 186 arquivos de cidade do TSE com a tabela cidade → país em `adapters/tse/abroad-cities.ts` (ADR 0008). Cache de 60s no 2º turno; buscado só com o Exterior aberto.
+- **Endpoint:** `GET /api/abroad?round=1|2` — votos no exterior **por país e por cidade** (com coordenadas), somando os 186 arquivos de cidade do TSE com a tabela cidade → país em `adapters/tse/abroad-cities.ts` (ADR 0008 e 0013). Cache de 60s no 2º turno; buscado só com o Exterior aberto.
 - **Endpoint:** `GET /api/history?scope=br|zz|<uf>|regiao-<código>` — curva da apuração do 2º turno (um ponto por avanço do total nacional), gravada por `RecordHistory` num JSON do **Vercel Blob** (ADR 0011; credenciais por OIDC ou token; em memória fora de `DATA_SOURCE=tse` ou sem credenciais). Cache de 60s; o front acrescenta os pontos do polling.
 - **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
@@ -63,7 +63,7 @@ apps/
       api/                # clientes /api/results e /api/abroad + polling (TanStack Query)
       lib/                # format, seleção (hash da URL), finalistas e faixas de margem
       components/         # peças genéricas (AnimatedNumber, ProgressBar)
-      features/           # result-card, map, scope-chips, states-list, countries, countdown, status, share
+      features/           # result-card, map, world-map, scope-chips, states-list, countries, countdown, status, share
       layout/
   api/
     src/
@@ -111,6 +111,7 @@ Regras:
 ## Frontend
 
 - Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
+- **Mapa-múndi do Exterior (ADR 0013):** substitui o mapa do Brasil com o Exterior aberto, carregado sob demanda; um ponto por cidade (área ∝ eleitorado, cor de quem lidera). Pré-projetado em Equal Earth (`pnpm --filter @stb/web map:world`); o navegador posiciona as cidades com `project.ts`, sem d3. Inspirado no seuimposto.com, exceção pedida ao design (falta levar ao Claude Design).
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
 - **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
 - Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento).
@@ -180,6 +181,8 @@ pnpm test                          # Vitest em todos os pacotes
 pnpm build                         # build da web + .vercel/output
 pnpm smoke                         # executa as funções empacotadas (rodar após o build)
 pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
+pnpm --filter @stb/web map:world   # regera o mapa-múndi (world-atlas)
+pnpm --filter @stb/api geocode:abroad  # coordenadas das cidades do exterior (OpenStreetMap; revisar à mão)
 pnpm --filter @stb/web photos:fetch  # baixa as fotos oficiais dos candidatos do 2º turno
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
 ```
@@ -191,7 +194,7 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 Pendente:
 
 - Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
-- Levar a seção de análise da apuração e a segunda linha de números-chave para o Claude Design.
+- Levar a seção de análise da apuração, a segunda linha de números-chave e o mapa-múndi para o Claude Design.
 
 - `GET /api/og` (prévia de links com o placar atual).
 - Pinch-zoom/pan do mapa no mobile.
