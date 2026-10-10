@@ -16,10 +16,12 @@ const envSchema = z.object({
   FIXTURES_DIR: z.string().default('test/fixtures/ele2026-6257'),
   SIMULATION_DURATION_MINUTES: z.coerce.number().positive().default(10),
   /**
-   * Vercel Blob read-write token. With `DATA_SOURCE=tse`, the runoff count history is
-   * kept in Blob (ADR 0011); without it, or in other modes, it stays in memory.
+   * Vercel Blob credentials: a static read-write token, or the store id set when the
+   * store is connected with OIDC. With either and `DATA_SOURCE=tse`, the runoff count
+   * history is kept in Blob (ADR 0011); otherwise it stays in memory.
    */
   BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
+  BLOB_STORE_ID: z.string().min(1).optional(),
 });
 
 export type Config = z.infer<typeof envSchema>;
