@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { historyResponseSchema } from '@stb/contracts';
+import { citiesResponseSchema, historyResponseSchema } from '@stb/contracts';
 import { BlobHistoryStore } from '../src/adapters/history/blob-history-store';
 import { MemoryHistoryStore } from '../src/adapters/history/memory-history-store';
 import { SimulatedAbroadSource } from '../src/adapters/simulation/simulated-abroad-source';
+import { SimulatedCitiesSource } from '../src/adapters/simulation/simulated-cities-source';
 import { SimulatedResultsSource } from '../src/adapters/simulation/simulated-results-source';
 import { TseAbroadSource } from '../src/adapters/tse/tse-abroad-source';
+import { TseCitiesSource } from '../src/adapters/tse/tse-cities-source';
 import { TseResultsSource } from '../src/adapters/tse/tse-results-source';
 import { loadConfig } from '../src/config';
 import {
   createAbroadSources,
+  createCitiesSources,
   createHistoryStore,
   createRoutes,
   createSources,
@@ -50,6 +53,23 @@ describe('createAbroadSources', () => {
   });
 });
 
+describe('createCitiesSources', () => {
+  it('reads the municipalities from the TSE in production', () => {
+    const sources = createCitiesSources(loadConfig({}));
+    expect(sources[1]).toBeInstanceOf(TseCitiesSource);
+    expect(sources[2]).toBeInstanceOf(TseCitiesSource);
+  });
+
+  it('replays the runoff by municipality in simulation', async () => {
+    const sources = createCitiesSources(
+      loadConfig({ DATA_SOURCE: 'simulation', FIXTURES_DIR: FIRST_ROUND_2026 }),
+      () => 0,
+    );
+    expect(sources[2]).toBeInstanceOf(SimulatedCitiesSource);
+    expect(await sources[1].fetchCities('RR')).toHaveLength(15);
+  });
+});
+
 describe('createHistoryStore', () => {
   it('uses Vercel Blob for the live TSE count when a token is set', () => {
     const store = createHistoryStore(loadConfig({ BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_x' }));
@@ -78,5 +98,17 @@ describe('createRoutes', () => {
     const body = historyResponseSchema.parse(await response.json());
     expect(body.points).toHaveLength(1);
     expect(body.points[0]?.counted).toBe(body.points[0]?.total);
+  });
+
+  it('serves the municipalities of a state', async () => {
+    const routes = createRoutes(
+      loadConfig({ DATA_SOURCE: 'fixture', FIXTURES_DIR: FIRST_ROUND_2026 }),
+    );
+    const response = await routes['/api/cities'](
+      new Request('http://localhost/api/cities?uf=ap&round=1'),
+    );
+    const body = citiesResponseSchema.parse(await response.json());
+    expect(body).toMatchObject({ round: 1, uf: 'AP', stale: false });
+    expect(body.cities).toHaveLength(16);
   });
 });
