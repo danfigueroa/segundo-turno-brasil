@@ -1,0 +1,53 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 16px 0;
+}
+
+.summary,
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-content: start;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr);
+    gap: 24px;
+    padding-top: 16px;
+  }
+
+  .summary {
+    order: 2;
+    position: sticky;
+    top: 16px;
+  }
+
+  .detail {
+    order: 1;
+  }
+}
+
+.message {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 64px 16px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.retry {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  cursor: pointer;
+}
