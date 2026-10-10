@@ -36,7 +36,7 @@ export function outlookView(tally: Tally, finalists: readonly Finalist[]): Outlo
       ...base,
       decided: true,
       status: 'Decidido',
-      headline: 'Não dá mais para virar',
+      headline: 'Não, já está decidido',
       sentence: `Mesmo que todos os eleitores ainda não apurados votassem em ${runnerUp.shortName}, ${leader.shortName} continuaria à frente.`,
       needs: undefined,
     };
@@ -46,7 +46,7 @@ export function outlookView(tally: Tally, finalists: readonly Finalist[]): Outlo
       ...base,
       decided: false,
       status: 'Em aberto',
-      headline: 'Virada improvável',
+      headline: 'Só com uma virada improvável',
       sentence: `Pela estimativa, ${runnerUp.shortName} precisaria de mais votos do que os que faltam apurar.`,
       needs: 100,
     };
@@ -55,7 +55,7 @@ export function outlookView(tally: Tally, finalists: readonly Finalist[]): Outlo
     ...base,
     decided: false,
     status: 'Em aberto',
-    headline: 'Ainda dá virada',
+    headline: 'Sim, ainda dá',
     sentence: `${runnerUp.shortName} precisa de ${formatPercent(needs)} dos votos válidos que faltam para virar.`,
     needs,
   };

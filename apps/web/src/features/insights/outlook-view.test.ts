@@ -13,7 +13,7 @@ describe('outlookView', () => {
     expect(view).toMatchObject({
       decided: false,
       status: 'Em aberto',
-      headline: 'Ainda dá virada',
+      headline: 'Sim, ainda dá',
       lead: 100,
       remaining: 3900,
     });
@@ -33,7 +33,11 @@ describe('outlookView', () => {
   it('caps the need when the estimate leaves too few votes', () => {
     const live = { ...tally(country, 700, 100, 99), electorate: 100_000 };
     const view = outlookView(live, finalists);
-    expect(view).toMatchObject({ decided: false, headline: 'Virada improvável', needs: 100 });
+    expect(view).toMatchObject({
+      decided: false,
+      headline: 'Só com uma virada improvável',
+      needs: 100,
+    });
   });
 
   it('is hidden once the count is over or before votes and on a tie', () => {
