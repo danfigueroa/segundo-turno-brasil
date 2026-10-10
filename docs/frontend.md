@@ -49,7 +49,7 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 Números-chave do card, em duas linhas:
 
 - **Primeira linha:** "Diferença"; "Demais candidatos" (1º turno) ou "Abstenção" (2º turno, % do eleitorado); "Seções apuradas" ("Países com votos" no Exterior).
-- **Segunda linha** (inspirada no seuimposto.com, exceção pedida ao design), igual em toda abrangência e nos dois turnos: "Votos válidos" (total e % do comparecimento), "Comparecimento" (% do eleitorado) e "Brancos e nulos" (% do comparecimento, como o TSE). Antes de haver votos, os percentuais aparecem como "—".
+- **Segunda linha** (inspirada no seuimposto.com, exceção pedida ao design), igual em toda abrangência e nos dois turnos: "Votos válidos" (total abreviado, ex.: "119,3 mi", e % do comparecimento), "Comparecimento" (% do eleitorado) e "Brancos e nulos" (% do comparecimento, como o TSE). Antes de haver votos, os percentuais aparecem como "—".
 
 Escolher uma abrangência em qualquer lugar rola até o card de resultado, se ele estiver fora da tela.
 
