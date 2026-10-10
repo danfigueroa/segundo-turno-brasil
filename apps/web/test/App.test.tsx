@@ -136,6 +136,24 @@ describe('App abroad votes', () => {
     expect(screen.queryByRole('heading', { name: 'Resultado por estado' })).not.toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Votação por país' })).toBeInTheDocument();
   });
+
+  it('swaps the map of Brazil for a world map of the cities abroad', async () => {
+    window.location.hash = '#/exterior';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Quem lidera em cada cidade' }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('img', { name: /Lula lidera em 1 cidade, .* lidera em 2 cidades/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Estados' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Voltar ao Brasil' }));
+    expect(window.location.hash).toBe('');
+    expect(await screen.findByRole('group', { name: 'Estados' })).toBeInTheDocument();
+  });
 });
 
 describe('App rounds', () => {
