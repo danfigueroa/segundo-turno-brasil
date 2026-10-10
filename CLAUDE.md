@@ -113,7 +113,7 @@ Regras:
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
 - Barra de progresso de **% de seções apuradas** sempre visível.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
-- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado, tema claro/escuro.
+- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
 - **Orçamento:** JS inicial ≈ 115 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 
 ## Mobile first (requisito crítico)
@@ -170,7 +170,7 @@ pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
 
 ## Status e próximos passos
 
-Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (redesenho verde e amarelo: card de resultado, mapa, regiões, lista de estados, contagem regressiva, tema escuro), compartilhamento Stories/Feed, build da Vercel e CI.
+Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (redesenho verde e amarelo: card de resultado, mapa, regiões, lista de estados, contagem regressiva), compartilhamento Stories/Feed, build da Vercel e CI.
 
 Pendente:
 
