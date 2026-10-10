@@ -13,6 +13,7 @@ Princípios:
 - **Confiável sob pico**: o tráfego se concentra em uma única noite.
 - **Acessível**: WCAG AA, sem depender só de cor.
 - **Código de qualidade**: arquitetura limpa, tipagem estrita, testes.
+- **Fiel ao design**: o desenho no Claude Design (https://claude.ai/artifact/QKqh5fDsjtfYyH7ZVGagxU) é a **fonte da verdade** visual — cores, tipografia, layout, textos e espaçamentos exatamente iguais, em celular e desktop. Não adicionar, remover nem "melhorar" elementos por conta própria; se uma regra deste arquivo conflitar com o design, vale o design (e este arquivo deve ser atualizado).
 
 ## Stack
 
@@ -107,11 +108,11 @@ Regras:
 - Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
 - **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
-- Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (bloco no mapa, chip, tabela, compartilhamento).
+- Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento).
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
 - Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
-- Barra de progresso de **% de seções apuradas** sempre visível.
+- **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
 - **Orçamento:** JS inicial ≈ 115 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
@@ -121,7 +122,7 @@ Regras:
 A maior parte do público acessa pelo **celular** — a experiência mobile **não pode** ser inferior à desktop.
 
 - Projetar e implementar **primeiro para 360px** de largura e só depois expandir para tablet/desktop.
-- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e rola até o card de resultado dela. (Pendente: pinch-zoom/pan no mapa sem quebrar a rolagem da página.)
+- Interações por **toque**: nada depende de hover (o design não tem tooltip nem efeito de hover). Tocar numa UF seleciona e rola até o card de resultado dela. (Pendente: pinch-zoom/pan no mapa sem quebrar a rolagem da página.)
 - Alvos de toque com no mínimo **44×44px**; textos legíveis sem zoom (≥ 16px no corpo).
 - Respeitar `safe-area-inset-*` (notch / barra de gestos) e funcionar em retrato e paisagem.
 - Desempenho em rede móvel: meta **Lighthouse mobile ≥ 90**, LCP < 2,5s em 4G, JS inicial enxuto, código não essencial carregado sob demanda.
