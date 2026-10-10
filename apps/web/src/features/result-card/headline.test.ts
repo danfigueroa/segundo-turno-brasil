@@ -36,18 +36,45 @@ describe('headlineOf', () => {
     expect(headline.stats[0]?.note).toBe('Lula à frente');
   });
 
-  it('counts the states each finalist leads in a region', () => {
+  it('shows shares, votes and states won in a region', () => {
     const headline = headlineOf(data, { kind: 'region', code: 'NE' }, finalists);
     expect(headline.title).toBe('Região Nordeste');
-    expect(headline.columns.map((c) => [c.value, c.note, c.leads])).toEqual([
-      [9, 'estados', true],
-      [0, 'estados', false],
+    expect(headline.eyebrow).toBe('Presidente · 2º turno · votos na região');
+    expect(headline.columns.map((c) => [c.value.toFixed(2), c.note, c.states, c.leads])).toEqual([
+      ['70.00', 'PT · 6.300 votos', 'Lidera em 9 estados', true],
+      ['30.00', 'PL · 2.700 votos', 'Lidera em 0 estados', false],
     ]);
-    expect(headline.badge).toBe('Lidera mais');
-    expect(headline.stats[1]).toEqual({
-      label: 'Maior vantagem',
+    expect(headline.stats[0]).toEqual({
+      label: 'Diferença',
       value: '40,00 p.p.',
-      note: 'Lula · AL',
+      note: '3.600 votos',
+    });
+  });
+
+  it('counts the countries with votes abroad once they are loaded', () => {
+    const countries = [
+      {
+        name: 'Portugal',
+        continent: 'EU' as const,
+        votes: { '13': 3, '22': 1 },
+        sections: { total: 1, counted: 1 },
+      },
+      {
+        name: 'Japão',
+        continent: 'AS' as const,
+        votes: { '13': 1, '22': 4 },
+        sections: { total: 1, counted: 1 },
+      },
+    ];
+    expect(headlineOf(data, { kind: 'abroad' }, finalists).stats[2]).toEqual({
+      label: 'Países com votos',
+      value: '—',
+      note: '',
+    });
+    expect(headlineOf(data, { kind: 'abroad' }, finalists, countries).stats[2]).toEqual({
+      label: 'Países com votos',
+      value: '2',
+      note: '1 Lula · 1 Flávio',
     });
   });
 

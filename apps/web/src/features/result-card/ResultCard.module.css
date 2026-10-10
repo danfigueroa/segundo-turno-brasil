@@ -176,6 +176,11 @@
   color: var(--text-secondary);
 }
 
+.states {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .barBlock {
   display: flex;
   flex-direction: column;
@@ -345,6 +350,10 @@
 
   .note {
     font-size: 14px;
+  }
+
+  .states {
+    font-size: 15px;
   }
 
   .bar {

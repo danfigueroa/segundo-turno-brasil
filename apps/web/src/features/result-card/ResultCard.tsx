@@ -1,4 +1,5 @@
 import type { ResultsResponse } from '@stb/contracts';
+import type { CountryResult } from '@stb/domain';
 import type { ReactNode, Ref } from 'react';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
 import type { Finalist } from '../../lib/finalists';
@@ -12,20 +13,29 @@ interface Props {
   readonly selection: Selection;
   readonly finalists: readonly Finalist[];
   readonly onSelect: (selection: Selection) => void;
+  /** Votes abroad by country, once loaded (abroad only). */
+  readonly countries?: readonly CountryResult[] | undefined;
   /** Actions at the bottom of the card, e.g. sharing. */
   readonly children?: ReactNode;
   readonly ref?: Ref<HTMLElement>;
 }
 
-const formatCount = (value: number) => String(Math.round(value));
 const formatCounted = (value: number) => (value >= 100 ? '100%' : formatPercent(value));
 
 /**
  * Headline of the selection: where we are (breadcrumbs), both finalists side by side, the
  * vote bar with the 50% marker, three key figures and the share action.
  */
-export function ResultCard({ data, selection, finalists, onSelect, children, ref }: Props) {
-  const headline = headlineOf(data, selection, finalists);
+export function ResultCard({
+  data,
+  selection,
+  finalists,
+  onSelect,
+  countries,
+  children,
+  ref,
+}: Props) {
+  const headline = headlineOf(data, selection, finalists, countries);
   const crumbs = breadcrumbsOf(selection);
   const total = headline.bar.reduce((sum, s) => sum + s.weight, 0);
 
@@ -104,7 +114,7 @@ export function ResultCard({ data, selection, finalists, onSelect, children, ref
 }
 
 function Column({ column, badge }: { readonly column: HeadlineColumn; readonly badge: string }) {
-  const { finalist, value, unit, note, leads } = column;
+  const { finalist, value, note, states, leads } = column;
   return (
     <div className={styles.column} data-hue={finalist.hue}>
       <div className={styles.identity}>
@@ -116,12 +126,9 @@ function Column({ column, badge }: { readonly column: HeadlineColumn; readonly b
           {leads && <span className={styles.badge}>{badge}</span>}
         </span>
       </div>
-      <AnimatedNumber
-        className={styles.value}
-        value={value}
-        format={unit === 'percent' ? formatPercent : formatCount}
-      />
+      <AnimatedNumber className={styles.value} value={value} format={formatPercent} />
       <div className={styles.note}>{note}</div>
+      {states && <div className={styles.states}>{states}</div>}
     </div>
   );
 }

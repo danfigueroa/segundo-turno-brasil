@@ -1,5 +1,12 @@
 import type { ResultsResponse } from '@stb/contracts';
-import { countedPercentage, statesInRegion, type Round, type Tally } from '@stb/domain';
+import {
+  countedPercentage,
+  statesInRegion,
+  type CountryResult,
+  type Round,
+  type Tally,
+} from '@stb/domain';
+import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent, formatPoints, formatVotes } from '../../lib/format';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
@@ -7,10 +14,12 @@ import { stateLeads } from '../../lib/state-leads';
 
 export interface HeadlineColumn {
   readonly finalist: Finalist;
-  /** Big number: a vote share, or a count of states in a region. */
+  /** Big number: the share of valid votes, always. */
   readonly value: number;
-  readonly unit: 'percent' | 'count';
+  /** Party and total votes, always. */
   readonly note: string;
+  /** In a region: how many of its states the finalist won (or leads). */
+  readonly states: string | undefined;
   readonly leads: boolean;
 }
 
@@ -45,7 +54,7 @@ function isFinal(round: Round, counted: number) {
   return round === 1 || counted >= 100;
 }
 
-function eyebrowOf(round: Round, selection: Selection, final: boolean): string {
+function eyebrowOf(round: Round, selection: Selection): string {
   const base = `Presidente · ${ROUND_LABELS[round]}`;
   switch (selection.kind) {
     case 'country':
@@ -55,7 +64,7 @@ function eyebrowOf(round: Round, selection: Selection, final: boolean): string {
     case 'abroad':
       return `${base} · votos de brasileiros no exterior`;
     case 'region':
-      return `${base} · estados em que cada um ${final ? 'ficou à frente' : 'lidera'}`;
+      return `${base} · votos na região`;
   }
 }
 
@@ -68,57 +77,40 @@ function sectionsStat(tally: Tally, final: boolean): Stat {
   };
 }
 
-/** Headline of a region: how many of its states each finalist leads. */
-function regionHeadline(
-  data: ResultsResponse,
-  selection: Extract<Selection, { kind: 'region' }>,
+const statesText = (n: number) => (n === 1 ? '1 estado' : `${n} estados`);
+
+/** Third key figure abroad: in how many countries anyone voted, and who won where. */
+function countriesStat(
+  countries: readonly CountryResult[] | undefined,
   finalists: readonly Finalist[],
-  tally: Tally,
-  final: boolean,
-): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats'> {
-  const codes = statesInRegion(selection.code);
-  const { counts, undecided, widest } = stateLeads(data, finalists, codes);
-  const top = Math.max(...finalists.map((f) => counts[f.number] ?? 0));
-  const tied = finalists.filter((f) => counts[f.number] === top).length > 1;
-  const [first, second] = finalists;
+): Stat {
+  if (!countries) return { label: 'Países com votos', value: '—', note: '' };
+  const rows = countryRows(countries, finalists);
+  const { wins } = countryStandings(rows, finalists);
   return {
-    columns: finalists.map((finalist) => {
-      const value = counts[finalist.number] ?? 0;
-      return {
-        finalist,
-        value,
-        unit: 'count',
-        note: value === 1 ? 'estado' : 'estados',
-        leads: !tied && value === top && value > 0,
-      };
-    }),
-    badge: 'Lidera mais',
-    bar: [
-      { key: 'first', tone: first?.hue ?? 'red', weight: counts[first?.number ?? ''] ?? 0 },
-      { key: 'undecided', tone: 'undecided', weight: undecided },
-      { key: 'second', tone: second?.hue ?? 'blue', weight: counts[second?.number ?? ''] ?? 0 },
-    ],
-    barLabel: 'metade dos estados',
-    stats: [
-      { label: 'Estados na região', value: String(codes.length), note: '' },
-      {
-        label: 'Maior vantagem',
-        value: widest ? formatPoints(widest.lead.margin) : '—',
-        note: widest ? `${widest.lead.leader.shortName} · ${widest.code}` : '',
-      },
-      sectionsStat(tally, final),
-    ],
+    label: 'Países com votos',
+    value: String(rows.length),
+    note: finalists.map((f) => `${wins[f.number] ?? 0} ${f.shortName}`).join(' · '),
   };
 }
 
-/** Headline of a single tally: Brasil, a state or abroad. */
+/**
+ * Headline of a tally: Brasil, a region, a state or abroad. Shares and vote totals are
+ * always shown; a region also counts the states each finalist won.
+ */
 function tallyHeadline(
-  round: Round,
+  data: ResultsResponse,
   selection: Selection,
   finalists: readonly Finalist[],
   tally: Tally,
   final: boolean,
+  countries: readonly CountryResult[] | undefined,
 ): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats'> {
+  const { round } = data;
+  const regionLeads =
+    selection.kind === 'region'
+      ? stateLeads(data, finalists, statesInRegion(selection.code)).counts
+      : undefined;
   const results = finalistResults(tally, finalists);
   const lead = leadOf(results);
   const finalistNumbers = new Set(finalists.map((f) => f.number));
@@ -142,8 +134,10 @@ function tallyHeadline(
     columns: results.map(({ votes, share, ...finalist }) => ({
       finalist,
       value: share,
-      unit: 'percent',
       note: `${finalist.party} · ${formatVotes(votes)} votos`,
+      states: regionLeads
+        ? `${final ? 'Venceu' : 'Lidera'} em ${statesText(regionLeads[finalist.number] ?? 0)}`
+        : undefined,
       leads: lead?.leader.number === finalist.number,
     })),
     badge: final ? 'Mais votado' : 'Lidera',
@@ -164,7 +158,9 @@ function tallyHeadline(
             : `${formatVotes(gap)} votos`,
       },
       secondStat,
-      sectionsStat(tally, final),
+      selection.kind === 'abroad'
+        ? countriesStat(countries, finalists)
+        : sectionsStat(tally, final),
     ],
   };
 }
@@ -173,16 +169,15 @@ export function headlineOf(
   data: ResultsResponse,
   selection: Selection,
   finalists: readonly Finalist[],
+  /** Votes abroad by country, once loaded; only used for abroad. */
+  countries?: readonly CountryResult[],
 ): Headline {
   const tally = resolveTally(data, selection);
   const counted = countedPercentage(tally);
   const final = isFinal(data.round, counted);
-  const body =
-    selection.kind === 'region'
-      ? regionHeadline(data, selection, finalists, tally, final)
-      : tallyHeadline(data.round, selection, finalists, tally, final);
+  const body = tallyHeadline(data, selection, finalists, tally, final, countries);
   return {
-    eyebrow: eyebrowOf(data.round, selection, final),
+    eyebrow: eyebrowOf(data.round, selection),
     title: selectionTitle(selection),
     counted,
     ...body,
