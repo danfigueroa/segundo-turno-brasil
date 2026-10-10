@@ -46,6 +46,7 @@ resultados.tse.jus.br (JSON público do TSE)
 
 - **Sem cron e sem banco de dados.** O CDN absorve o tráfego; a função só executa quando o cache expira. O próprio acesso dos usuários dispara a atualização.
 - **Endpoint:** `GET /api/results?round=1|2` (padrão 2) — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). O 1º turno é final e fica 1h em cache. Regiões são agregadas no cliente com `aggregateRegion`.
+- **Endpoint:** `GET /api/abroad?round=1|2` — votos no exterior **por país**, somando os 186 arquivos de cidade do TSE com a tabela cidade → país em `adapters/tse/abroad-cities.ts` (ADR 0008). Cache de 60s no 2º turno; buscado só com o Exterior aberto.
 - **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003).
@@ -57,10 +58,10 @@ apps/
   web/                    # React SPA — consome apenas packages/contracts e domain
     scripts/build-map.ts  # pré-projeta a malha do IBGE em caminhos SVG
     src/
-      api/                # cliente /api/results + polling (TanStack Query)
+      api/                # clientes /api/results e /api/abroad + polling (TanStack Query)
       lib/                # format, seleção (hash da URL), finalistas e faixas de margem
       components/         # peças genéricas (AnimatedNumber, ProgressBar)
-      features/           # result-card, map, scope-chips, states-list, countdown, status, share
+      features/           # result-card, map, scope-chips, states-list, countries, countdown, status, share
       layout/
   api/
     src/
@@ -100,7 +101,7 @@ Regras:
   - `DATA_SOURCE` = `tse` | `fixture` | `simulation`
   - `TSE_BASE_URL`, `TSE_ELECTION_CODE`, `TSE_FIRST_ROUND_ELECTION_CODE`, `TSE_TIMEOUT_MS`
   - `FIXTURES_DIR`, `SIMULATION_DURATION_MINUTES`
-- Fixtures reais em `apps/api/test/fixtures/`: `ele2026-6257` (1º turno, final) e `ele2026-6258-pre` (2º turno zerado).
+- Fixtures reais em `apps/api/test/fixtures/`: `ele2026-6257` (1º turno, final) e `ele2026-6258-pre` (2º turno zerado), incluindo as 186 cidades do exterior (`pnpm --filter @stb/api fixtures:abroad <eleição> <pasta>` baixa de novo).
 - **Nunca** chamar o TSE diretamente do navegador.
 
 ## Frontend
@@ -111,6 +112,8 @@ Regras:
 - Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento).
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
 - Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
+- **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
+- Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
@@ -167,6 +170,7 @@ pnpm typecheck                     # tsc em todos os pacotes
 pnpm test                          # Vitest em todos os pacotes
 pnpm build                         # build da web + .vercel/output
 pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
+pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
 ```
 
 ## Status e próximos passos
@@ -175,7 +179,6 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 
 Pendente:
 
-- "Votação por país" no Exterior (do desenho): exige nova fonte de dados — o TSE publica o exterior em 186 arquivos por cidade, sem país (ADR 0007).
 - `GET /api/og` (prévia de links com o placar atual).
 - Pinch-zoom/pan do mapa no mobile.
 - Testes e2e (Playwright) em viewports de celular e auditoria Lighthouse.
