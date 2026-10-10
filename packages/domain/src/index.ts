@@ -1,5 +1,6 @@
 export * from './aggregate';
 export * from './countries';
+export * from './history';
 export * from './outlook';
 export * from './standings';
 export * from './states';
