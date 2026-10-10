@@ -1,6 +1,7 @@
 import type { ResultsResponse } from '@stb/contracts';
 import {
   aggregateRegion,
+  countryTally,
   isStateCode,
   municipalityTally,
   REGION_CODES,
@@ -10,6 +11,7 @@ import {
   type MunicipalityResult,
   type StateCode,
   type Tally,
+  type CountryResult,
 } from '@stb/domain';
 import { formatName } from './format';
 
@@ -21,13 +23,43 @@ export type Selection =
   /** Votes cast by Brazilians living abroad (TSE scope `zz`). */
   | { readonly kind: 'abroad' }
   /** A municipality, by IBGE code, within its state. */
-  | { readonly kind: 'city'; readonly state: StateCode; readonly ibge: string };
+  | { readonly kind: 'city'; readonly state: StateCode; readonly ibge: string }
+  /** A country abroad, by the slug of its name ("estados-unidos"). */
+  | { readonly kind: 'abroadCountry'; readonly slug: string };
 
 /** Municipalities of the selected state, once loaded (`/api/cities`). */
 export type Municipalities = readonly MunicipalityResult[] | undefined;
 
+/** Countries abroad, once loaded (`/api/abroad`). */
+export type Countries = readonly CountryResult[] | undefined;
+
+/** URL slug of a country's name: "Estados Unidos" → "estados-unidos". */
+export function countrySlug(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** The selection of a country abroad, by its name. */
+export function abroadCountry(name: string): Selection {
+  return { kind: 'abroadCountry', slug: countrySlug(name) };
+}
+
+/** The country a selection points to, once the countries abroad are loaded. */
+export function countryOf(selection: Selection, countries: Countries): CountryResult | undefined {
+  if (selection.kind !== 'abroadCountry') return undefined;
+  return countries?.find((c) => countrySlug(c.name) === selection.slug);
+}
+
 export const COUNTRY: Selection = { kind: 'country' };
 export const ABROAD: Selection = { kind: 'abroad' };
+
+/** Whether the selection is abroad as a whole or one of its countries. */
+export const isAbroad = (selection: Selection): boolean =>
+  selection.kind === 'abroad' || selection.kind === 'abroadCountry';
 
 /** The municipality a city selection points to, once the state's municipalities are loaded. */
 export function municipalityOf(
@@ -47,12 +79,14 @@ export function stateOf(selection: Selection): StateCode | undefined {
 
 /**
  * The tally of a selection. A city falls back to its state's tally until the
- * municipalities are loaded.
+ * municipalities are loaded, and a country abroad to the abroad tally until the
+ * countries are.
  */
 export function resolveTally(
   data: ResultsResponse,
   selection: Selection,
   cities?: Municipalities,
+  countries?: Countries,
 ): Tally {
   switch (selection.kind) {
     case 'country':
@@ -68,11 +102,19 @@ export function resolveTally(
       const municipality = municipalityOf(selection, cities);
       return municipality ? municipalityTally(municipality, state) : state;
     }
+    case 'abroadCountry': {
+      const country = countryOf(selection, countries);
+      return country ? countryTally(country, data.abroad) : data.abroad;
+    }
   }
 }
 
-/** "Brasil", "Região Nordeste", "Bahia", "Exterior" or the city's name ("São Paulo"). */
-export function selectionTitle(selection: Selection, cities?: Municipalities): string {
+/** "Brasil", "Região Nordeste", "Bahia", "Exterior", a city ("São Paulo") or a country abroad. */
+export function selectionTitle(
+  selection: Selection,
+  cities?: Municipalities,
+  countries?: Countries,
+): string {
   switch (selection.kind) {
     case 'country':
       return 'Brasil';
@@ -86,10 +128,15 @@ export function selectionTitle(selection: Selection, cities?: Municipalities): s
       const municipality = municipalityOf(selection, cities);
       return municipality ? formatName(municipality.name) : STATES[selection.state].name;
     }
+    case 'abroadCountry':
+      return countryOf(selection, countries)?.name ?? 'Exterior';
   }
 }
 
-/** URL path segment of a selection: `''`, `sp`, `regiao/ne`, `exterior` or `sp/3550308`. */
+/**
+ * URL path segment of a selection: `''`, `sp`, `regiao/ne`, `exterior`, `sp/3550308` or
+ * `exterior/portugal`.
+ */
 export function selectionPath(selection: Selection): string {
   switch (selection.kind) {
     case 'country':
@@ -102,6 +149,8 @@ export function selectionPath(selection: Selection): string {
       return 'exterior';
     case 'city':
       return `${selection.state.toLowerCase()}/${selection.ibge}`;
+    case 'abroadCountry':
+      return `exterior/${selection.slug}`;
   }
 }
 
@@ -111,7 +160,13 @@ export function parseSelectionPath(path: string): Selection {
   if (parts[0] === 'REGIAO' && REGION_CODES.includes(parts[1] as RegionCode)) {
     return { kind: 'region', code: parts[1] as RegionCode };
   }
-  if (parts.length === 1 && parts[0] === 'EXTERIOR') return ABROAD;
+  if (parts[0] === 'EXTERIOR') {
+    const slug = parts[1]?.toLowerCase();
+    if (parts.length === 2 && slug && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+      return { kind: 'abroadCountry', slug };
+    }
+    return ABROAD;
+  }
   const [state, ibge] = parts;
   if (!state || !isStateCode(state) || parts.length > 2) return COUNTRY;
   if (ibge === undefined) return { kind: 'state', code: state };
@@ -138,8 +193,15 @@ export interface Breadcrumb {
   readonly target: Selection;
 }
 
-/** Path from the country down to the selection: Brasil › Nordeste › Bahia › Salvador. */
-export function breadcrumbsOf(selection: Selection, cities?: Municipalities): Breadcrumb[] {
+/**
+ * Path from Brazil down to the selection: Brasil › Nordeste › Bahia › Salvador, or
+ * Brasil › Exterior › Portugal.
+ */
+export function breadcrumbsOf(
+  selection: Selection,
+  cities?: Municipalities,
+  countries?: Countries,
+): Breadcrumb[] {
   const crumbs: Breadcrumb[] = [{ label: 'Brasil', target: COUNTRY }];
   const region = regionOf(selection);
   if (region)
@@ -149,6 +211,11 @@ export function breadcrumbsOf(selection: Selection, cities?: Municipalities): Br
   if (selection.kind === 'city') {
     crumbs.push({ label: selectionTitle(selection, cities), target: selection });
   }
-  if (selection.kind === 'abroad') crumbs.push({ label: 'Exterior', target: ABROAD });
+  if (selection.kind === 'abroad' || selection.kind === 'abroadCountry') {
+    crumbs.push({ label: 'Exterior', target: ABROAD });
+  }
+  if (selection.kind === 'abroadCountry') {
+    crumbs.push({ label: selectionTitle(selection, cities, countries), target: selection });
+  }
   return crumbs;
 }

@@ -3,7 +3,7 @@ import { CONTINENT_CODES, CONTINENT_NAMES, type ContinentCode } from '@stb/domai
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { leadOfVotes, type Finalist } from '../../lib/finalists';
-import { COUNTRY, type Selection } from '../../lib/selection';
+import { abroadCountry, countryOf, COUNTRY, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
 import filterStyles from '../countries/CountriesList.module.css';
 import mapStyles from '../map/BrazilMap.module.css';
@@ -16,6 +16,8 @@ interface Props {
   /** Votes abroad by country; `undefined` while loading (the countries are drawn gray). */
   readonly abroad: AbroadResponse | undefined;
   readonly finalists: readonly Finalist[];
+  /** Abroad, or one of its countries (outlined, and its continent on screen). */
+  readonly selection: Selection;
   readonly onSelect: (selection: Selection) => void;
 }
 
@@ -33,12 +35,19 @@ const MARKER_RADIUS = 9;
 /**
  * Votes abroad on a map of one continent at a time, so every country is big enough to
  * see: each country with polling stations in the color of its leader (same margins and
- * legend as the states), the others in a lighter gray. The map is a picture; the list
- * by country below is the accessible way through the numbers.
+ * legend as the states), the others in a lighter gray. Tapping a country selects it, like
+ * a state; the list by country below is the keyboard and screen reader path.
  */
-export default function WorldMap({ abroad, finalists, onSelect }: Props) {
+export default function WorldMap({ abroad, finalists, selection, onSelect }: Props) {
   const wide = useMediaQuery('(min-width: 960px)');
   const [continent, setContinent] = useState<ContinentCode>(FIRST_CONTINENT);
+  // A country picked anywhere (list, link, map) brings its continent on screen.
+  const selected = countryOf(selection, abroad?.countries);
+  const [followed, setFollowed] = useState<string | undefined>();
+  if (selected && selected.name !== followed) {
+    setFollowed(selected.name);
+    setContinent(selected.continent);
+  }
   const map = useQuery({
     queryKey: ['continent-map', continent],
     queryFn: () => loadContinentMap(continent),
@@ -51,7 +60,10 @@ export default function WorldMap({ abroad, finalists, onSelect }: Props) {
   const anyLead = ofContinent.some((c) => leads.get(c.name));
   const anyWithoutLead = ofContinent.some((c) => !leads.get(c.name));
 
-  const shapes = map.data?.countries ?? [];
+  const shapes = (map.data?.countries ?? []).toSorted(
+    // The selected country goes last so its outline is drawn on top of its neighbors.
+    (a, b) => Number(a.name === selected?.name) - Number(b.name === selected?.name),
+  );
   const fontSize = wide ? LABEL_SIZE.wide : LABEL_SIZE.phone;
   // Names and markers only for this continent: a neighbor's edge may show (Morocco in Europe).
   const own = shapes.flatMap((shape) => {
@@ -81,7 +93,7 @@ export default function WorldMap({ abroad, finalists, onSelect }: Props) {
         <p className={mapStyles.subtitle}>
           {!anyLead
             ? 'Os países com seção eleitoral ganham cor conforme as urnas são apuradas.'
-            : 'Países sem seção eleitoral ficam em cinza claro.'}
+            : `${wide ? 'Clique' : 'Toque'} em um país para ver o resultado. Os sem seção eleitoral ficam em cinza claro.`}
         </p>
       </div>
 
@@ -116,7 +128,8 @@ export default function WorldMap({ abroad, finalists, onSelect }: Props) {
             }
           >
             {shapes.map((shape, index) => {
-              const lead = shape.name ? leads.get(shape.name) : undefined;
+              const country = shape.name ? byName.get(shape.name) : undefined;
+              const lead = country && leads.get(country.name);
               return (
                 <path
                   key={shape.name ?? index}
@@ -125,6 +138,8 @@ export default function WorldMap({ abroad, finalists, onSelect }: Props) {
                   data-hue={lead?.hue ?? 'none'}
                   data-intensity={lead?.intensity ?? 0}
                   data-kind={shape.brazil ? 'brazil' : shape.name ? undefined : 'other'}
+                  data-selected={(country && country === selected) || undefined}
+                  onClick={country ? () => onSelect(abroadCountry(country.name)) : undefined}
                 />
               );
             })}
@@ -141,6 +156,8 @@ export default function WorldMap({ abroad, finalists, onSelect }: Props) {
                     className={`${mapStyles.state} ${styles.country}`}
                     data-hue={lead?.hue ?? 'none'}
                     data-intensity={lead?.intensity ?? 0}
+                    data-selected={country === selected || undefined}
+                    onClick={() => onSelect(abroadCountry(country.name))}
                   />
                 );
               })}

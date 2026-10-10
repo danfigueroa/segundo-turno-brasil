@@ -87,6 +87,7 @@ function eyebrowOf(round: Round, selection: Selection): string {
     case 'state':
       return `${base} · ${selection.code}`;
     case 'abroad':
+    case 'abroadCountry':
       return `${base} · votos de brasileiros no exterior`;
     case 'city':
       return `${base} · ${selection.state}`;
@@ -233,18 +234,18 @@ export function headlineOf(
   data: ResultsResponse,
   selection: Selection,
   finalists: readonly Finalist[],
-  /** Votes abroad by country, once loaded; only used for abroad. */
+  /** Votes abroad by country, once loaded; only used for abroad and its countries. */
   countries?: readonly CountryResult[],
   /** Municipalities of the selected state, once loaded; only used for a city. */
   cities?: Municipalities,
 ): Headline {
-  const tally = resolveTally(data, selection, cities);
+  const tally = resolveTally(data, selection, cities, countries);
   const counted = countedPercentage(tally);
   const final = isFinal(data.round, counted);
   const body = tallyHeadline(data, selection, finalists, tally, final, countries);
   return {
     eyebrow: eyebrowOf(data.round, selection),
-    title: selectionTitle(selection, cities),
+    title: selectionTitle(selection, cities, countries),
     counted,
     ...body,
   };

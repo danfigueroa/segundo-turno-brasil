@@ -24,7 +24,15 @@
 /* Hundreds of borders on a continent: thinner than the states. */
 .country {
   stroke-width: 1;
+}
+
+/* Only countries with Brazilian polling stations can be selected. */
+.country[data-kind] {
   cursor: default;
+}
+
+.country[data-selected] {
+  stroke-width: 4;
 }
 
 /* Countries without Brazilian polling stations: lighter than "no votes yet". */

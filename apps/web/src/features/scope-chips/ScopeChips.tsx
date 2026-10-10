@@ -18,16 +18,20 @@ const CHIPS: { label: string; target: Selection }[] = [
 
 /**
  * Sticky bar with Brasil, the five regions and abroad. While a state is selected, its
- * region's chip stays marked as the parent of the selection.
+ * region's chip stays marked as the parent of the selection; while a country abroad is,
+ * the abroad chip does.
  */
 export function ScopeChips({ selection, onSelect }: Props) {
   const parent = selection.kind === 'state' ? regionOf(selection) : undefined;
+  const inAbroad = selection.kind === 'abroadCountry';
   return (
     <div className={styles.bar}>
       <div className={styles.chips} role="group" aria-label="Ver resultado de">
         {CHIPS.map(({ label, target }) => {
           const exact = isSameSelection(selection, target);
-          const isParent = target.kind === 'region' && target.code === parent;
+          const isParent =
+            (target.kind === 'region' && target.code === parent) ||
+            (target.kind === 'abroad' && inAbroad);
           return (
             <button
               key={label}

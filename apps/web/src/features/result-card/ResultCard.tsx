@@ -19,7 +19,7 @@ interface Props {
   readonly selection: Selection;
   readonly finalists: readonly Finalist[];
   readonly onSelect: (selection: Selection) => void;
-  /** Votes abroad by country, once loaded (abroad only). */
+  /** Votes abroad by country, once loaded (abroad and its countries only). */
   readonly countries?: readonly CountryResult[] | undefined;
   /** Municipalities of the selected state, once loaded (city only). */
   readonly cities?: Municipalities;
@@ -45,7 +45,7 @@ export function ResultCard({
   ref,
 }: Props) {
   const headline = headlineOf(data, selection, finalists, countries, cities);
-  const crumbs = breadcrumbsOf(selection, cities);
+  const crumbs = breadcrumbsOf(selection, cities, countries);
   const total = headline.bar.reduce((sum, s) => sum + s.weight, 0);
 
   return (

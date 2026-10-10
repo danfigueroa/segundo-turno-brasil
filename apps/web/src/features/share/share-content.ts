@@ -3,12 +3,14 @@ import {
   countedPercentage,
   STATE_CODES,
   STATES,
+  type CountryResult,
   type MunicipalityResult,
   type Round,
   type StateCode,
   type Tally,
 } from '@stb/domain';
 import { cityRows, cityWins } from '../../lib/cities';
+import { countryRows, countryStandings } from '../../lib/countries';
 import {
   finalistResults,
   leadOf,
@@ -18,8 +20,9 @@ import {
   type FinalistResult,
 } from '../../lib/finalists';
 import { formatDate, formatPercent, formatPoints, formatTime } from '../../lib/format';
-import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
+import { countryOf, resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import type { StateMapShape } from '../state-map/state-maps';
+import type { ContinentMapShape } from '../world-map/continent-maps';
 import { SHARE_PALETTE } from './palette';
 
 /** "Lula lidera em" / "12 estados". */
@@ -55,7 +58,8 @@ export interface ShareContent {
   readonly detailMap: DetailMap | undefined;
   /**
    * How many states each finalist leads, within the region or the whole country; for a
-   * city, how many of its state's municipalities.
+   * city, how many of its state's municipalities; for a country abroad, how many
+   * countries.
    */
   readonly leadCounts: readonly LeadCount[];
   readonly siteUrl: string;
@@ -75,7 +79,18 @@ export interface StateDetail {
   readonly map: StateMapShape;
 }
 
+/** The countries abroad and the selected country's continent map, to share a country. */
+export interface AbroadDetail {
+  readonly countries: readonly CountryResult[];
+  /** `undefined` while loading: the country is then shared on the map of Brazil. */
+  readonly map: ContinentMapShape | undefined;
+}
+
+/** Radius of the marker of a country too small to see, as on the site's map. */
+const MARKER_RADIUS = 9;
+
 const citiesText = (n: number) => (n === 1 ? '1 cidade' : `${n} cidades`);
+const countriesText = (n: number) => (n === 1 ? '1 país' : `${n} países`);
 
 function statesText(count: number, withDistrict: boolean): string {
   const states = count === 1 ? '1 estado' : `${count} estados`;
@@ -111,9 +126,12 @@ export function shareContentFrom(
   siteUrl: string,
   /** Needed to share a city; without it, a city is shared like its state. */
   detail?: StateDetail,
+  /** Needed to share a country abroad; without it, it is shared like abroad. */
+  abroad?: AbroadDetail,
 ): ShareContent {
   const cities = detail?.cities;
-  const tally = resolveTally(data, selection, cities);
+  const countries = abroad?.countries;
+  const tally = resolveTally(data, selection, cities, countries);
   const results = finalistResults(tally, finalists);
   const lead = leadOf(results);
   const counted = countedPercentage(tally);
@@ -139,6 +157,7 @@ export function shareContentFrom(
       (code) =>
         selection.kind === 'country' ||
         selection.kind === 'abroad' ||
+        selection.kind === 'abroadCountry' ||
         (selection.kind === 'region' && STATES[code].region === selection.code) ||
         (selection.kind === 'state' && selection.code === code) ||
         (selection.kind === 'city' && selection.state === code),
@@ -153,12 +172,22 @@ export function shareContentFrom(
       : undefined;
   const cityLeadCounts = detailMap && cities ? cityLeadCountsOf(cities, finalists) : undefined;
 
+  const country = countryOf(selection, countries);
+  const continentMap =
+    country && abroad?.map
+      ? continentMapOf(abroad.map, abroad.countries, country, (votes) =>
+          fillOfLead(leadOfVotes(votes, finalists)),
+        )
+      : undefined;
+  const countryLeadCounts =
+    countries && country ? countryLeadCountsOf(countries, finalists) : undefined;
+
   const { updatedAt } = tally;
   return {
     round: data.round,
     kicker:
       `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`.toUpperCase(),
-    title: selectionTitle(selection, cities),
+    title: selectionTitle(selection, cities, countries),
     results,
     leaderNumber: lead?.leader.number,
     othersVotes: others.reduce((sum, c) => sum + c.votes, 0),
@@ -172,8 +201,8 @@ export function shareContentFrom(
       : `Atualizado às ${formatTime(updatedAt)} · Fonte: TSE`,
     mapFills,
     focus,
-    detailMap,
-    leadCounts: cityLeadCounts ?? leadCountsOf(data, finalists, countScope),
+    detailMap: detailMap ?? continentMap,
+    leadCounts: cityLeadCounts ?? countryLeadCounts ?? leadCountsOf(data, finalists, countScope),
     siteUrl,
   };
 }
@@ -203,5 +232,64 @@ function cityLeadCountsOf(
     hue: f.hue,
     label: `${f.shortName} lidera em`,
     value: citiesText(wins[f.number] ?? 0),
+  }));
+}
+
+/**
+ * The continent of the selected country, as on the site: countries with polling stations
+ * colored by leader, the others lighter, Brazil darker and tiny countries of the continent
+ * with a round marker.
+ */
+function continentMapOf(
+  map: ContinentMapShape,
+  countries: readonly CountryResult[],
+  selected: CountryResult,
+  fillOf: (votes: CountryResult['votes']) => string,
+): DetailMap {
+  const byName = new Map(countries.map((c) => [c.name, c]));
+  const fill = (name: string | undefined, brazil: boolean | undefined) => {
+    const country = name ? byName.get(name) : undefined;
+    if (country) return fillOf(country.votes);
+    return brazil ? SHARE_PALETTE.mapBrazil : SHARE_PALETTE.mapOther;
+  };
+  const markers = map.countries.flatMap((shape) => {
+    const country = shape.name ? byName.get(shape.name) : undefined;
+    const [x, y] = shape.label ?? [];
+    if (!shape.tiny || !country || country.continent !== selected.continent) return [];
+    if (x === undefined || y === undefined) return [];
+    return [{ name: country.name, d: circle(x, y, MARKER_RADIUS), fill: fillOf(country.votes) }];
+  });
+  const shapes = [
+    ...map.countries.map((shape) => ({
+      name: shape.name,
+      d: shape.d,
+      fill: fill(shape.name, shape.brazil),
+    })),
+    ...markers,
+  ];
+  // A tiny country is outlined by its marker, the others by their shape.
+  const outline =
+    markers.find((m) => m.name === selected.name) ?? shapes.find((s) => s.name === selected.name);
+  return {
+    viewBox: map.viewBox,
+    shapes: shapes.map(({ d, fill }) => ({ d, fill })),
+    selected: outline?.d,
+  };
+}
+
+/** SVG path of a circle, for `Path2D`. */
+function circle(x: number, y: number, r: number): string {
+  return `M${x - r},${y}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0Z`;
+}
+
+function countryLeadCountsOf(
+  countries: readonly CountryResult[],
+  finalists: readonly Finalist[],
+): LeadCount[] {
+  const { wins } = countryStandings(countryRows(countries, finalists), finalists);
+  return finalists.map((f) => ({
+    hue: f.hue,
+    label: `${f.shortName} lidera em`,
+    value: countriesText(wins[f.number] ?? 0),
   }));
 }

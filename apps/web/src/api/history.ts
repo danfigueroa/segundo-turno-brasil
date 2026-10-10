@@ -8,7 +8,9 @@ export function historyScopeOf(selection: Selection): string {
   switch (selection.kind) {
     case 'country':
       return 'br';
+    // No history per country abroad: a country follows abroad.
     case 'abroad':
+    case 'abroadCountry':
       return 'zz';
     case 'state':
       return selection.code.toLowerCase();

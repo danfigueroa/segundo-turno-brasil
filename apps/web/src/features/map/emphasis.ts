@@ -1,5 +1,5 @@
 import { STATES, type StateCode } from '@stb/domain';
-import { regionOf, type Selection } from '../../lib/selection';
+import { isAbroad, regionOf, type Selection } from '../../lib/selection';
 
 /** A clickable area of the map: a state or the abroad button. */
 export type Area = StateCode | 'abroad';
@@ -13,9 +13,10 @@ export type Emphasis = 'full' | 'near' | 'far';
  */
 export function emphasisOf(area: Area, selection: Selection): Emphasis {
   if (selection.kind === 'country') return 'full';
-  if (area === 'abroad') return selection.kind === 'abroad' ? 'full' : 'near';
+  if (area === 'abroad') return isAbroad(selection) ? 'full' : 'near';
   switch (selection.kind) {
     case 'abroad':
+    case 'abroadCountry':
       return 'far';
     case 'region':
       return STATES[area].region === selection.code ? 'full' : 'far';

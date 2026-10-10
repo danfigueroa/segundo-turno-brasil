@@ -9,7 +9,9 @@ import { useState } from 'react';
 import { countryRows, countryStandings, matchesSearch } from '../../lib/countries';
 import type { Finalist } from '../../lib/finalists';
 import { formatVotes } from '../../lib/format';
+import { abroadCountry, countryOf, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
+import rowStyles from '../cities/CitiesList.module.css';
 import { abroadSummary } from './summary';
 import styles from './CountriesList.module.css';
 
@@ -18,6 +20,9 @@ interface Props {
   readonly abroad: AbroadResponse | undefined;
   readonly failed: boolean;
   readonly finalists: readonly Finalist[];
+  /** Abroad, or the country selected in it. */
+  readonly selection: Selection;
+  readonly onSelect: (selection: Selection) => void;
 }
 
 type ContinentFilter = ContinentCode | 'ALL';
@@ -32,9 +37,9 @@ const votes = (n: number) => (n === 1 ? '1 voto' : `${formatVotes(n)} votos`);
 /**
  * Votes abroad by country, as in the design: summary, search, continent filter and one
  * row per country with the two finalists. Collapsed to the 12 (phone) or 20 (desktop)
- * countries with most votes.
+ * countries with most votes. Each row selects its country.
  */
-export function CountriesList({ data, abroad, failed, finalists }: Props) {
+export function CountriesList({ data, abroad, failed, finalists, selection, onSelect }: Props) {
   const wide = useMediaQuery('(min-width: 960px)');
   const [query, setQuery] = useState('');
   const [continent, setContinent] = useState<ContinentFilter>('ALL');
@@ -57,6 +62,7 @@ export function CountriesList({ data, abroad, failed, finalists }: Props) {
   const searching = query.trim() !== '';
   const shown = expanded || searching ? filtered : filtered.slice(0, limit);
   const [first, second] = finalists;
+  const selected = countryOf(selection, abroad?.countries)?.name;
   const count = filtered.length === 1 ? '1 país' : `${filtered.length} países`;
 
   return (
@@ -118,33 +124,40 @@ export function CountriesList({ data, abroad, failed, finalists }: Props) {
         </div>
         <ul className={styles.list}>
           {shown.map((row) => (
-            <li key={row.name} className={styles.row}>
-              <span className={styles.name}>{row.name}</span>
-              <span className={styles.total}>
-                {wide ? formatVotes(row.total) : votes(row.total)}
-              </span>
-              <span className={styles.bar} aria-hidden="true">
+            <li key={row.name}>
+              <button
+                type="button"
+                className={`${styles.row} ${rowStyles.row}`}
+                aria-current={row.name === selected ? 'location' : undefined}
+                onClick={() => onSelect(abroadCountry(row.name))}
+              >
+                <span className={styles.name}>{row.name}</span>
+                <span className={styles.total}>
+                  {wide ? formatVotes(row.total) : votes(row.total)}
+                </span>
+                <span className={styles.bar} aria-hidden="true">
+                  {finalists.map((f, index) => (
+                    <span
+                      key={f.number}
+                      className={styles.part}
+                      data-hue={f.hue}
+                      style={{ width: `${((row.votes[index] ?? 0) / row.total) * 100}%` }}
+                    />
+                  ))}
+                </span>
                 {finalists.map((f, index) => (
                   <span
                     key={f.number}
-                    className={styles.part}
+                    className={styles.votes}
                     data-hue={f.hue}
-                    style={{ width: `${((row.votes[index] ?? 0) / row.total) * 100}%` }}
-                  />
+                    data-side={index === 0 ? 'first' : 'second'}
+                    data-leader={row.leader === f.number || undefined}
+                  >
+                    <span className={styles.votesName}>{f.shortName}</span>{' '}
+                    {formatVotes(row.votes[index] ?? 0)}
+                  </span>
                 ))}
-              </span>
-              {finalists.map((f, index) => (
-                <span
-                  key={f.number}
-                  className={styles.votes}
-                  data-hue={f.hue}
-                  data-side={index === 0 ? 'first' : 'second'}
-                  data-leader={row.leader === f.number || undefined}
-                >
-                  <span className={styles.votesName}>{f.shortName}</span>{' '}
-                  {formatVotes(row.votes[index] ?? 0)}
-                </span>
-              ))}
+              </button>
             </li>
           ))}
         </ul>

@@ -26,7 +26,7 @@ export function liveSeries(data: ResultsResponse, selection: Selection): CountPo
   const series =
     selection.kind === 'country'
       ? seriesOf(entries, 'BR')
-      : selection.kind === 'abroad'
+      : selection.kind === 'abroad' || selection.kind === 'abroadCountry'
         ? seriesOf(entries, 'ZZ')
         : selection.kind === 'state'
           ? seriesOf(entries, selection.code)

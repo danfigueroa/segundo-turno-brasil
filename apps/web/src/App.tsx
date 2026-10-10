@@ -14,20 +14,29 @@ import { ScopeChips } from './features/scope-chips/ScopeChips';
 import { ShareButton } from './features/share/ShareButton';
 import { shareContentFrom } from './features/share/share-content';
 import { loadStateMap } from './features/state-map/state-maps';
+import { loadContinentMap } from './features/world-map/continent-maps';
 import { StatesList } from './features/states-list/StatesList';
 import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { finalistsOf } from './lib/finalists';
-import { selectionTitle, stateOf, type Municipalities, type Selection } from './lib/selection';
+import {
+  countryOf,
+  isAbroad,
+  selectionTitle,
+  stateOf,
+  type Countries,
+  type Municipalities,
+  type Selection,
+} from './lib/selection';
 import { useMediaQuery } from './lib/use-media-query';
 import { useView } from './lib/use-view';
 import { resolveRound } from './lib/view';
 import styles from './App.module.css';
 
 /** What the share button names: "Compartilhar Bahia". */
-function shareLabel(selection: Selection, cities: Municipalities): string {
+function shareLabel(selection: Selection, cities: Municipalities, countries: Countries): string {
   switch (selection.kind) {
     case 'country':
       return 'Compartilhar resultado';
@@ -38,7 +47,8 @@ function shareLabel(selection: Selection, cities: Municipalities): string {
     case 'abroad':
       return 'Compartilhar Exterior';
     case 'city':
-      return `Compartilhar ${selectionTitle(selection, cities)}`;
+    case 'abroadCountry':
+      return `Compartilhar ${selectionTitle(selection, cities, countries)}`;
   }
 }
 
@@ -65,7 +75,7 @@ export function App() {
   const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
   // The breakdown by country is heavier and only needed while abroad is on screen.
   const abroad = useAbroad(round, {
-    enabled: view.selection.kind === 'abroad' && !waitingForDefault,
+    enabled: isAbroad(view.selection) && !waitingForDefault,
   });
   // Municipalities and their map: only for the state (or city) on screen.
   const uf = stateOf(view.selection);
@@ -74,6 +84,15 @@ export function App() {
     queryKey: ['state-map', uf],
     queryFn: () => (uf ? loadStateMap(uf) : Promise.reject(new Error('No state selected'))),
     enabled: uf !== undefined,
+    staleTime: Infinity,
+  });
+  // The continent of the selected country abroad, shared with the map's cache, to share it.
+  const continent = countryOf(view.selection, abroad.data?.countries)?.continent;
+  const continentMap = useQuery({
+    queryKey: ['continent-map', continent],
+    queryFn: () =>
+      continent ? loadContinentMap(continent) : Promise.reject(new Error('No country selected')),
+    enabled: continent !== undefined,
     staleTime: Infinity,
   });
   const resultRef = useRef<HTMLElement>(null);
@@ -123,8 +142,9 @@ export function App() {
   const waiting = data.round === 2 && data.country.sections.counted === 0;
   const detail =
     cities.data && stateMap.data ? { cities: cities.data.cities, map: stateMap.data } : undefined;
+  const abroadDetail = abroad.data && { countries: abroad.data.countries, map: continentMap.data };
   const getShareContent = () =>
-    shareContentFrom(data, selection, finalists, window.location.host, detail);
+    shareContentFrom(data, selection, finalists, window.location.host, detail, abroadDetail);
 
   return (
     <>
@@ -158,13 +178,18 @@ export function App() {
             >
               <ShareButton
                 getContent={getShareContent}
-                label={shareLabel(selection, cities.data?.cities)}
+                label={shareLabel(selection, cities.data?.cities, abroad.data?.countries)}
               />
             </ResultCard>
           )}
-          {selection.kind === 'abroad' ? (
+          {isAbroad(selection) ? (
             <Suspense fallback={null}>
-              <WorldMap abroad={abroad.data} finalists={finalists} onSelect={select} />
+              <WorldMap
+                abroad={abroad.data}
+                finalists={finalists}
+                selection={selection}
+                onSelect={select}
+              />
             </Suspense>
           ) : uf ? (
             <Suspense fallback={null}>
@@ -181,18 +206,22 @@ export function App() {
             <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
           )}
         </div>
-        {!waiting && runoff.data && selection.kind !== 'city' && (
-          <Suspense fallback={null}>
-            <Insights
-              round={round}
-              runoff={runoff.data}
-              firstRound={firstRound.data}
-              selection={selection}
-              finalists={finalists}
-              onSelect={select}
-            />
-          </Suspense>
-        )}
+        {/* No count analysis for a city or a country abroad: no history at that level. */}
+        {!waiting &&
+          runoff.data &&
+          selection.kind !== 'city' &&
+          selection.kind !== 'abroadCountry' && (
+            <Suspense fallback={null}>
+              <Insights
+                round={round}
+                runoff={runoff.data}
+                firstRound={firstRound.data}
+                selection={selection}
+                finalists={finalists}
+                onSelect={select}
+              />
+            </Suspense>
+          )}
         {!waiting && uf && (
           <CitiesList
             uf={uf}
@@ -203,15 +232,17 @@ export function App() {
             onSelect={select}
           />
         )}
-        {!waiting && !uf && selection.kind !== 'abroad' && (
+        {!waiting && !uf && !isAbroad(selection) && (
           <StatesList data={data} finalists={finalists} selection={selection} onSelect={select} />
         )}
-        {!waiting && selection.kind === 'abroad' && (
+        {!waiting && isAbroad(selection) && (
           <CountriesList
             data={data}
             abroad={abroad.data}
             failed={abroad.isError}
             finalists={finalists}
+            selection={selection}
+            onSelect={select}
           />
         )}
       </main>
