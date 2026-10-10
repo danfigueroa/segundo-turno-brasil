@@ -12,7 +12,14 @@ const FUNCTIONS = {
   'api/results': 'apps/api/src/vercel/results.ts',
   'api/abroad': 'apps/api/src/vercel/abroad.ts',
   'api/history': 'apps/api/src/vercel/history.ts',
+  'api/cities': 'apps/api/src/vercel/cities.ts',
 };
+
+/**
+ * Seconds a function may run, when the default is not enough: with a cold instance,
+ * `/api/cities` downloads every municipality of a state (853 files in Minas Gerais).
+ */
+const MAX_DURATION = { 'api/cities': 60 };
 
 /**
  * Dependencies published as CommonJS (e.g. `undici`, pulled in by `@vercel/blob`) call
@@ -49,6 +56,7 @@ for (const [route, entry] of Object.entries(FUNCTIONS)) {
     handler: 'index.mjs',
     launcherType: 'Nodejs',
     shouldAddHelpers: false,
+    ...(MAX_DURATION[route] && { maxDuration: MAX_DURATION[route] }),
   });
 }
 

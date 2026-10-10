@@ -20,6 +20,7 @@ const CASES = [
   { fn: 'results', path: '/api/results?round=1', env: fixtures, expect: [200] },
   { fn: 'results', path: '/api/results', env: fixtures, expect: [200] },
   { fn: 'abroad', path: '/api/abroad?round=1', env: fixtures, expect: [200] },
+  { fn: 'cities', path: '/api/cities?uf=ac&round=1', env: fixtures, expect: [200] },
   { fn: 'history', path: '/api/history', env: fixtures, expect: [200] },
   { fn: 'history', path: '/api/history', env: blob, expect: [200, 503] },
 ];
