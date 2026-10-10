@@ -52,6 +52,25 @@ describe('TseAbroadSource', () => {
     expect(electorate).toBe(snapshot.abroad.electorate);
   });
 
+  it('gives each country its voters and ballots, adding up to the abroad total', async () => {
+    const loader = createFixtureLoader(FIRST_ROUND_2026);
+    const [{ countries }, snapshot] = await Promise.all([
+      new TseAbroadSource(loader).fetchAbroad(),
+      new TseResultsSource(loader).fetchSnapshot(),
+    ]);
+    const sum = (pick: (c: (typeof countries)[number]) => number) =>
+      countries.reduce((acc, c) => acc + pick(c), 0);
+    expect(sum((c) => c.electorate)).toBe(snapshot.abroad.electorate);
+    expect(sum((c) => c.turnout)).toBe(snapshot.abroad.turnout);
+    expect({
+      valid: sum((c) => c.ballots.valid),
+      blank: sum((c) => c.ballots.blank),
+      null: sum((c) => c.ballots.null),
+    }).toEqual(snapshot.abroad.votes);
+    const portugal = countries.find((c) => c.name === 'Portugal');
+    expect(portugal?.updatedAt).toMatch(/^2026-10-0\dT/);
+  });
+
   it('keeps each city with its place and electorate', async () => {
     const { cities } = await new TseAbroadSource(
       createFixtureLoader(FIRST_ROUND_2026),
