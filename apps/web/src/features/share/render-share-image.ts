@@ -1,6 +1,6 @@
 import { STATE_CODES } from '@stb/domain';
-import { formatPercent, formatTime, formatVotes } from '../../lib/format';
-import { ABROAD_TILE, BRAZIL_MAP } from '../map/brazil-map';
+import { formatPercent, formatVotes } from '../../lib/format';
+import { BRAZIL_MAP } from '../map/brazil-map';
 import { SHARE_PALETTE as P } from './palette';
 import type { ShareContent } from './share-content';
 
@@ -9,58 +9,65 @@ export type ShareFormat = 'story' | 'feed';
 interface Layout {
   readonly width: number;
   readonly height: number;
+  /** Bottom of the green header band. */
+  readonly band: number;
+  /** The flag rhombus in the band's corner: center height and half-diagonal. */
+  readonly rhombus: { readonly y: number; readonly radius: number };
+  readonly brand: number;
   readonly kicker: number;
   readonly title: number;
-  readonly names: number;
-  readonly shares: number;
-  readonly votes: number;
-  readonly split: number;
-  readonly map: { readonly top: number; readonly height: number };
-  readonly progressText: number;
-  readonly progressBar: number;
-  readonly updated: number;
+  /** Top of the white result card. */
+  readonly card: number;
+  readonly map: { readonly top: number; readonly size: number };
+  readonly progress: number;
   readonly url: number;
 }
 
 /**
  * Stories: 1080×1920 (9:16). Nothing essential in the top/bottom ~250px, which the
- * Instagram UI covers. Feed: 1080×1350 (4:5).
+ * Instagram UI covers: there only the green band and the flag stripe. Feed: 1080×1350 (4:5).
  */
 export const LAYOUTS: Readonly<Record<ShareFormat, Layout>> = {
   story: {
     width: 1080,
     height: 1920,
-    kicker: 300,
-    title: 380,
-    names: 480,
-    shares: 610,
-    votes: 670,
-    split: 720,
-    map: { top: 790, height: 660 },
-    progressText: 1500,
-    progressBar: 1530,
-    updated: 1600,
-    url: 1650,
+    band: 760,
+    rhombus: { y: 330, radius: 321 },
+    brand: 300,
+    kicker: 450,
+    title: 590,
+    card: 652,
+    map: { top: 1120, size: 400 },
+    progress: 1556,
+    url: 1662,
   },
   feed: {
     width: 1080,
     height: 1350,
-    kicker: 100,
-    title: 175,
-    names: 260,
-    shares: 380,
-    votes: 435,
-    split: 480,
-    map: { top: 540, height: 540 },
-    progressText: 1135,
-    progressBar: 1162,
-    updated: 1235,
-    url: 1285,
+    band: 520,
+    rhombus: { y: 110, radius: 230 },
+    brand: 70,
+    kicker: 220,
+    title: 350,
+    card: 410,
+    map: { top: 880, size: 300 },
+    progress: 1214,
+    url: 1312,
   },
 };
 
-const MARGIN = 80;
-const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+const MARGIN = 66;
+const CARD = { x: 42, padding: 48, height: 436, radius: 54 } as const;
+const FAMILY = '"Schibsted Grotesk Variable", "Helvetica Neue", Helvetica, sans-serif';
+
+/** The canvas only uses web fonts that are already loaded: load them before drawing. */
+export async function loadShareFonts(): Promise<void> {
+  await Promise.all(
+    [600, 700, 800, 900].map((weight) =>
+      document.fonts?.load(`${weight} 40px "Schibsted Grotesk Variable"`),
+    ),
+  );
+}
 
 /** Draws the share image for the given content into a new canvas. */
 export function renderShareImage(content: ShareContent, format: ShareFormat): HTMLCanvasElement {
@@ -74,17 +81,17 @@ export function renderShareImage(content: ShareContent, format: ShareFormat): HT
   ctx.fillStyle = P.background;
   ctx.fillRect(0, 0, layout.width, layout.height);
 
-  drawHeader(ctx, content, layout);
-  drawCandidates(ctx, content, layout);
-  drawSplitBar(ctx, content, layout);
+  drawBand(ctx, content, layout);
+  drawResultCard(ctx, content, layout);
   drawMap(ctx, content, layout);
-  drawProgress(ctx, content, layout);
+  drawLeadCounts(ctx, content, layout);
   drawFooter(ctx, content, layout);
+  drawFlagStripe(ctx, layout.height - 18, layout.width, 18);
   return canvas;
 }
 
 function font(weight: number, size: number) {
-  return `${weight} ${size}px ${FONT}`;
+  return `${weight} ${size}px ${FAMILY}`;
 }
 
 /** Shrinks the font until the text fits the width. */
@@ -103,98 +110,165 @@ function fitText(
   }
 }
 
-function drawHeader(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+function drawLogo(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  const unit = size / 34;
+  ctx.fillStyle = P.onBrand;
+  roundRect(ctx, x, y, size, size, 9 * unit);
+  ctx.fillStyle = P.yellow;
+  ctx.beginPath();
+  ctx.moveTo(x + 17 * unit, y + 5 * unit);
+  ctx.lineTo(x + 30 * unit, y + 17 * unit);
+  ctx.lineTo(x + 17 * unit, y + 29 * unit);
+  ctx.lineTo(x + 4 * unit, y + 17 * unit);
+  ctx.fill();
+  ctx.fillStyle = P.brand;
+  ctx.beginPath();
+  ctx.arc(x + 17 * unit, y + 17 * unit, 6 * unit, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBand(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+  ctx.fillStyle = P.brand;
+  ctx.fillRect(0, 0, layout.width, layout.band);
+
+  // The flag's rhombus and globe, cropped by the right edge.
+  const { y, radius } = layout.rhombus;
+  const cx = layout.width - radius * 0.35;
+  ctx.fillStyle = P.yellow;
+  ctx.beginPath();
+  ctx.moveTo(cx, y - radius);
+  ctx.lineTo(cx + radius, y);
+  ctx.lineTo(cx, y + radius);
+  ctx.lineTo(cx - radius, y);
+  ctx.fill();
+  ctx.fillStyle = P.onBrand;
+  ctx.beginPath();
+  ctx.arc(cx, y, radius * 0.43, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawLogo(ctx, MARGIN, layout.brand, 66);
   ctx.textAlign = 'left';
-  ctx.fillStyle = P.muted;
-  ctx.font = font(700, 32);
+  ctx.fillStyle = P.onBrand;
+  ctx.font = font(800, 39);
+  ctx.fillText('Segundo Turno', MARGIN + 90, layout.brand + 47);
+
+  ctx.font = font(700, 33);
   ctx.letterSpacing = '4px';
-  const kicker =
-    content.round === 1 ? '1º TURNO 2026 · RESULTADO FINAL' : '2º TURNO 2026 · PRESIDENTE';
-  ctx.fillText(kicker, MARGIN, layout.kicker);
+  ctx.fillText(content.kicker, MARGIN, layout.kicker);
   ctx.letterSpacing = '0px';
 
-  ctx.fillStyle = P.text;
-  fitText(ctx, content.title, 800, 76, layout.width - MARGIN * 2);
+  // Kept clear of the rhombus tip on the right.
+  fitText(ctx, content.title, 900, 138, layout.width - MARGIN * 2 - 60);
   ctx.fillText(content.title, MARGIN, layout.title);
 }
 
-function drawCandidates(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
-  const columnWidth = (layout.width - MARGIN * 2) / 2 - 20;
+function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+  const width = layout.width - CARD.x * 2;
+  const top = layout.card;
+  ctx.save();
+  ctx.shadowColor = 'rgba(15, 26, 20, 0.12)';
+  ctx.shadowBlur = 60;
+  ctx.shadowOffsetY = 18;
+  ctx.fillStyle = P.card;
+  roundRect(ctx, CARD.x, top, width, CARD.height, CARD.radius);
+  ctx.restore();
+
+  const left = CARD.x + CARD.padding;
+  const right = CARD.x + width - CARD.padding;
+  const columnWidth = (right - left) / 2 - 15;
+
   content.results.forEach((r, index) => {
-    const right = index === 1;
-    const x = right ? layout.width - MARGIN : MARGIN;
-    ctx.textAlign = right ? 'right' : 'left';
+    const isRight = index === 1;
+    const x = isRight ? right : left;
+    ctx.textAlign = isRight ? 'right' : 'left';
 
-    ctx.fillStyle = P.text;
-    fitText(ctx, r.name, 650, 44, columnWidth - 40);
-    ctx.fillText(r.name, right ? x - 40 : x + 40, layout.names);
     ctx.fillStyle = P.candidates[r.hue];
-    roundRect(ctx, right ? x - 24 : x, layout.names - 30, 24, 24, 6);
+    roundRect(ctx, isRight ? x - 30 : x, top + 61, 30, 30, 9);
+    ctx.fillStyle = P.text;
+    fitText(ctx, r.name, 700, 39, columnWidth - 48);
+    ctx.fillText(r.name, isRight ? x - 48 : x + 48, top + 87);
 
-    // The leader's number stands out; the runner-up's recedes to secondary ink.
-    ctx.fillStyle = content.leaderNumber === r.number ? P.text : P.secondary;
-    fitText(ctx, formatPercent(r.share), 800, 128, columnWidth);
-    ctx.fillText(formatPercent(r.share), x, layout.shares);
+    fitText(ctx, formatPercent(r.share), 800, 102, columnWidth);
+    ctx.fillText(formatPercent(r.share), x, top + 209);
 
     ctx.fillStyle = P.secondary;
-    ctx.font = font(500, 34);
-    ctx.fillText(`${r.party} · ${formatVotes(r.votes)} votos`, x, layout.votes);
+    fitText(ctx, `${r.party} · ${formatVotes(r.votes)} votos`, 500, 30, columnWidth);
+    ctx.fillText(`${r.party} · ${formatVotes(r.votes)} votos`, x, top + 254);
   });
+
+  drawSplitBar(ctx, content, left, top + 294, right - left);
+
+  ctx.fillStyle = P.secondary;
+  ctx.font = font(600, 33);
+  const [margin, others] = content.notes;
+  ctx.textAlign = 'left';
+  ctx.fillText(margin, left, top + 388);
+  ctx.textAlign = 'right';
+  ctx.fillText(others, right, top + 388);
 }
 
-function drawSplitBar(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
-  const width = layout.width - MARGIN * 2;
-  const total = content.results.reduce((sum, r) => sum + r.votes, 0);
-  const [left, right] = content.results;
-  if (!left || !right) return;
-  const leftWidth = total === 0 ? width / 2 : (left.votes / total) * width;
-  const gap = 4;
+/** Finalists at the ends, the other candidates in gray between them, 50% marked. */
+function drawSplitBar(
+  ctx: CanvasRenderingContext2D,
+  content: ShareContent,
+  x: number,
+  y: number,
+  width: number,
+) {
+  const [first, second] = content.results;
+  const height = 36;
+  ctx.fillStyle = P.track;
+  roundRect(ctx, x, y, width, height, height / 2);
 
-  ctx.fillStyle = P.candidates[left.hue];
-  roundRect(ctx, MARGIN, layout.split, Math.max(leftWidth - gap / 2, 0), 28, 8);
-  ctx.fillStyle = P.candidates[right.hue];
-  roundRect(
-    ctx,
-    MARGIN + leftWidth + gap / 2,
-    layout.split,
-    Math.max(width - leftWidth - gap / 2, 0),
-    28,
-    8,
-  );
+  const total = (first?.votes ?? 0) + content.othersVotes + (second?.votes ?? 0);
+  if (first && second && total > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, height / 2);
+    ctx.clip();
+    const firstWidth = (first.votes / total) * width;
+    const secondWidth = (second.votes / total) * width;
+    ctx.fillStyle = P.candidates[first.hue];
+    ctx.fillRect(x, y, firstWidth, height);
+    ctx.fillStyle = P.others;
+    ctx.fillRect(x + firstWidth, y, width - firstWidth - secondWidth, height);
+    ctx.fillStyle = P.candidates[second.hue];
+    ctx.fillRect(x + width - secondWidth, y, secondWidth, height);
+    ctx.restore();
+  }
+
   ctx.fillStyle = P.text;
-  ctx.fillRect(layout.width / 2 - 2, layout.split - 8, 4, 44);
+  ctx.fillRect(x + width / 2 - 3, y - 12, 6, height + 24);
 }
 
 function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
   const [minX = 0, minY = 0, vbWidth = 1000, vbHeight = 1000] = BRAZIL_MAP.viewBox
     .split(' ')
     .map(Number);
-  const scale = Math.min((layout.width - MARGIN * 2) / vbWidth, layout.map.height / vbHeight);
-  const offsetX = (layout.width - vbWidth * scale) / 2;
+  const { top, size } = layout.map;
+  const scale = Math.min(size / vbWidth, size / vbHeight);
 
   ctx.save();
-  ctx.translate(offsetX, layout.map.top);
+  ctx.translate(MARGIN, top);
   ctx.scale(scale, scale);
   ctx.translate(-minX, -minY);
   ctx.lineWidth = 2 / scale;
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = P.background;
+  ctx.strokeStyle = P.mapStroke;
 
   for (const code of STATE_CODES) {
     const path = new Path2D(BRAZIL_MAP.states[code].d);
-    ctx.globalAlpha = content.focus.has(code) ? 1 : 0.5;
-    ctx.fillStyle = content.focus.has(code) ? content.mapFills[code] : P.mapEmpty;
+    ctx.globalAlpha = content.focus.has(code) ? 1 : 0.25;
+    ctx.fillStyle = content.mapFills[code];
     ctx.fill(path);
     ctx.stroke(path);
   }
-
-  drawAbroadTile(ctx, content, scale);
 
   if (content.focus.size === 1) {
     const [code] = content.focus;
     if (code) {
       ctx.globalAlpha = 1;
-      ctx.lineWidth = 5 / scale;
+      ctx.lineWidth = 6 / scale;
       ctx.strokeStyle = P.text;
       ctx.stroke(new Path2D(BRAZIL_MAP.states[code].d));
     }
@@ -202,58 +276,54 @@ function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: L
   ctx.restore();
 }
 
-function drawAbroadTile(ctx: CanvasRenderingContext2D, content: ShareContent, scale: number) {
-  const { x, y, width, height, radius } = ABROAD_TILE;
-  const highlighted = content.abroadInFocus && content.focus.size === 0;
-  ctx.globalAlpha = content.abroadInFocus ? 1 : 0.5;
-  ctx.fillStyle = content.abroadInFocus ? content.abroadFill : P.mapEmpty;
-  ctx.beginPath();
-  ctx.roundRect(x, y, width, height, radius);
-  ctx.fill();
-  if (highlighted) {
-    ctx.lineWidth = 5 / scale;
-    ctx.strokeStyle = P.text;
-    ctx.stroke();
-  }
-
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = P.text;
-  ctx.font = font(700, 36);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Exterior', x + width / 2, y + height / 2);
-  ctx.textBaseline = 'alphabetic';
-}
-
-function drawProgress(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
-  const width = layout.width - MARGIN * 2;
+function drawLeadCounts(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+  const { top, size } = layout.map;
+  const x = MARGIN + size + 54;
+  const maxWidth = layout.width - MARGIN - x;
+  const rowHeight = 132;
+  const firstRow = top + size / 2 - rowHeight + 40;
   ctx.textAlign = 'left';
-  ctx.fillStyle = P.secondary;
-  ctx.font = font(500, 36);
-  ctx.fillText(
-    `${formatPercent(content.counted)} das seções apuradas`,
-    MARGIN,
-    layout.progressText,
-  );
-
-  ctx.fillStyle = P.track;
-  roundRect(ctx, MARGIN, layout.progressBar, width, 12, 6);
-  ctx.fillStyle = P.text;
-  roundRect(ctx, MARGIN, layout.progressBar, (width * content.counted) / 100, 12, 6);
+  content.leadCounts.forEach((count, index) => {
+    const y = firstRow + index * rowHeight;
+    ctx.fillStyle = P.secondary;
+    ctx.font = font(600, 33);
+    ctx.fillText(count.label, x, y);
+    ctx.fillStyle = P.candidateText[count.hue];
+    fitText(ctx, count.value, 800, 60, maxWidth);
+    ctx.fillText(count.value, x, y + 66);
+  });
 }
 
 function drawFooter(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+  const width = layout.width - MARGIN * 2;
+  ctx.fillStyle = P.track;
+  roundRect(ctx, MARGIN, layout.progress, width, 12, 6);
+  ctx.fillStyle = P.brand;
+  roundRect(ctx, MARGIN, layout.progress, (width * content.counted) / 100, 12, 6);
+
+  ctx.fillStyle = P.secondary;
+  ctx.font = font(600, 30);
   ctx.textAlign = 'left';
-  ctx.fillStyle = P.muted;
-  ctx.font = font(500, 30);
   ctx.fillText(
-    `Atualizado às ${formatTime(content.updatedAt)} (Brasília) · Fonte: TSE`,
+    `${formatPercent(content.counted)} das seções apuradas`,
     MARGIN,
-    layout.updated,
+    layout.progress + 54,
   );
+  ctx.textAlign = 'right';
+  ctx.fillText(content.source, layout.width - MARGIN, layout.progress + 54);
+
+  ctx.textAlign = 'left';
   ctx.fillStyle = P.text;
-  ctx.font = font(700, 36);
+  ctx.font = font(800, 39);
   ctx.fillText(content.siteUrl, MARGIN, layout.url);
+}
+
+/** Green and yellow, 3:1, as at the top of the site. */
+function drawFlagStripe(ctx: CanvasRenderingContext2D, y: number, width: number, height: number) {
+  ctx.fillStyle = P.brand;
+  ctx.fillRect(0, y, width * 0.75, height);
+  ctx.fillStyle = P.yellow;
+  ctx.fillRect(width * 0.75, y, width * 0.25, height);
 }
 
 function roundRect(

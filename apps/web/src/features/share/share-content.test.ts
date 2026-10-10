@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finalistsOf } from '../../lib/finalists';
-import { resultsResponse } from '../../../test/fixtures';
+import { resultsResponse, tally } from '../../../test/fixtures';
 import { SHARE_PALETTE } from './palette';
 import { shareContentFrom } from './share-content';
 
@@ -11,9 +11,11 @@ describe('shareContentFrom', () => {
   it('summarizes the national result', () => {
     const content = shareContentFrom(data, { kind: 'country' }, finalists, 'example.com');
     expect(content.title).toBe('Brasil');
-    expect(content.round).toBe(2);
+    expect(content.kicker).toBe('2º TURNO 2026 · APURAÇÃO AO VIVO');
     expect(content.leaderNumber).toBe('22');
     expect(content.counted).toBe(50);
+    expect(content.notes).toEqual(['Diferença: 1,64 p.p.', '']);
+    expect(content.source).toBe('Atualizado às 19:42 · Fonte: TSE');
     expect(content.focus.size).toBe(27);
     expect(content.siteUrl).toBe('example.com');
   });
@@ -25,22 +27,42 @@ describe('shareContentFrom', () => {
     expect(content.mapFills.SP).toBe(SHARE_PALETTE.ramps.blue[4]);
   });
 
+  it('counts the states each finalist leads, naming the Federal District apart', () => {
+    const content = shareContentFrom(data, { kind: 'country' }, finalists, 'x');
+    expect(content.leadCounts.map((c) => [c.label, c.value])).toEqual([
+      ['Lula lidera em', '9 estados'],
+      ['Flávio lidera em', '17 estados + DF'],
+    ]);
+  });
+
   it('focuses on the selected region or state', () => {
     const region = shareContentFrom(data, { kind: 'region', code: 'S' }, finalists, 'x');
     expect([...region.focus].sort()).toEqual(['PR', 'RS', 'SC']);
+    expect(region.leadCounts[1]?.value).toBe('3 estados');
     const state = shareContentFrom(data, { kind: 'state', code: 'BA' }, finalists, 'x');
     expect(state.title).toBe('Bahia');
     expect(state.leaderNumber).toBe('13');
     expect([...state.focus]).toEqual(['BA']);
-    expect(state.abroadInFocus).toBe(false);
   });
 
-  it('focuses only on the abroad tile for abroad votes', () => {
-    const abroad = shareContentFrom(data, { kind: 'abroad' }, finalists, 'x');
-    expect(abroad.title).toBe('Exterior');
-    expect(abroad.focus.size).toBe(0);
-    expect(abroad.abroadInFocus).toBe(true);
-    // Abroad fixture: Flávio 20 x Lula 10 → 33 p.p. margin, widest blue step.
-    expect(abroad.abroadFill).toBe(SHARE_PALETTE.ramps.blue[4]);
+  it('reports the others and the final time in the first round', () => {
+    const country = {
+      ...tally({ kind: 'country' }, 450, 470, 100),
+      candidates: [
+        { number: '22', name: 'FLAVIO BOLSONARO', party: 'PL', votes: 470, share: 47 },
+        { number: '13', name: 'LULA', party: 'PT', votes: 450, share: 45 },
+        { number: '55', name: 'RONALDO CAIADO', party: 'PSD', votes: 80, share: 8 },
+      ],
+    };
+    const content = shareContentFrom(
+      resultsResponse({ round: 1, country }),
+      { kind: 'country' },
+      finalistsOf(country),
+      'x',
+    );
+    expect(content.kicker).toBe('1º TURNO 2026 · RESULTADO FINAL');
+    expect(content.othersVotes).toBe(80);
+    expect(content.notes[1]).toBe('Demais candidatos: 8,00%');
+    expect(content.source).toBe('Fonte: TSE · 25/10, 19:42');
   });
 });

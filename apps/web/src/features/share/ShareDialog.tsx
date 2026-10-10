@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { renderShareImage, type ShareFormat } from './render-share-image';
+import { loadShareFonts, renderShareImage, type ShareFormat } from './render-share-image';
 import type { ShareContent } from './share-content';
 import { canShareFile, canvasToFile, downloadFile, shareFile } from './share-file';
 import styles from './Share.module.css';
@@ -38,7 +38,8 @@ export default function ShareDialog({ content, onClose }: Props) {
     let previewUrl: string | undefined;
     const fileName = `apuracao-2026-${content.title.toLowerCase().replace(/\s+/g, '-')}.png`;
 
-    canvasToFile(renderShareImage(content, format), fileName)
+    loadShareFonts()
+      .then(() => canvasToFile(renderShareImage(content, format), fileName))
       .then((file) => {
         if (cancelled) return;
         previewUrl = URL.createObjectURL(file);
@@ -53,7 +54,10 @@ export default function ShareDialog({ content, onClose }: Props) {
     };
   }, [content, format]);
 
-  const text = `Apuração do 2º turno em ${content.title}: acompanhe ao vivo em ${content.siteUrl}`;
+  const text =
+    content.round === 1
+      ? `Resultado do 1º turno em ${content.title}: veja em ${content.siteUrl}`
+      : `Apuração do 2º turno em ${content.title}: acompanhe ao vivo em ${content.siteUrl}`;
 
   return (
     <dialog
