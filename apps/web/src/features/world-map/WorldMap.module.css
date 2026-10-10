@@ -1,38 +1,43 @@
-/* The world is wider than Brazil: it takes the whole card. */
+/* The world is wider than Brazil: it takes the whole card, continent chips on top. */
 .container {
   grid-area: map;
+  display: grid;
+  gap: 14px;
   width: 100%;
+  min-width: 0;
 }
 
 .map {
   display: block;
   width: 100%;
   height: auto;
-  overflow: visible;
+  /* Zoomed into a continent, the rest of the world must not spill over the card. */
+  overflow: hidden;
 }
 
 .land {
   fill: var(--map-empty);
   stroke: var(--map-stroke);
-  stroke-width: 0.6;
+  /* --scale is how much a continent is magnified: lines keep their width on screen. */
+  stroke-width: calc(0.6px / var(--scale, 1));
 }
 
 .brazil {
   fill: color-mix(in srgb, var(--map-empty), #0f1a14 12%);
   stroke: var(--map-stroke);
-  stroke-width: 0.6;
+  stroke-width: calc(0.6px / var(--scale, 1));
 }
 
 .brazilLabel,
 .cityLabel {
   /* viewBox units: the 1000-wide map shrinks to about a third on a phone. */
-  font-size: 32px;
+  font-size: calc(32px / var(--scale, 1));
   font-weight: 800;
   dominant-baseline: central;
   fill: #0f1a14;
   paint-order: stroke;
   stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 6px;
+  stroke-width: calc(6px / var(--scale, 1));
   stroke-linejoin: round;
   pointer-events: none;
   user-select: none;
@@ -44,11 +49,16 @@
 
 /* Colors come from the state styles (hue and margin); dots are a picture, not buttons. */
 .dot {
-  stroke-width: 1;
+  stroke-width: calc(1px / var(--scale, 1));
   cursor: default;
   transition:
     fill var(--duration) var(--ease-out),
-    r var(--duration) var(--ease-out);
+    opacity var(--duration) var(--ease-out);
+}
+
+/* Cities of other continents that fall inside a zoomed view stay in the background. */
+.dot[data-dimmed] {
+  opacity: 0.3;
 }
 
 .back {
@@ -80,7 +90,7 @@
 
   .brazilLabel,
   .cityLabel {
-    font-size: 19px;
-    stroke-width: 4px;
+    font-size: calc(19px / var(--scale, 1));
+    stroke-width: calc(4px / var(--scale, 1));
   }
 }
