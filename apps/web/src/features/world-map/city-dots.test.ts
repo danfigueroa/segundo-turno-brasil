@@ -23,6 +23,7 @@ describe('cityDots', () => {
     const miami = dots.find((d) => d.name === 'Miami');
     expect(lisbon?.x).toBeGreaterThan(miami?.x ?? Infinity);
     expect(lisbon?.y).toBeLessThan(miami?.y ?? -Infinity);
+    expect([lisbon?.continent, miami?.continent]).toEqual(['EU', 'AM']);
   });
 });
 
