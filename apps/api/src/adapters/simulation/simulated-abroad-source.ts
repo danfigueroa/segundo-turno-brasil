@@ -1,47 +1,54 @@
-import type { CountryResult } from '@stb/domain';
+import { aggregateCountries, type AbroadBreakdown, type AbroadCityResult } from '@stb/domain';
 import type { AbroadSource } from '../../ports/abroad-source';
 import { clamp, progressOf, tiltOf, type SimulationOptions } from './simulated-results-source';
 
 /**
- * Replays the final breakdown by country as a live count, like `SimulatedResultsSource`:
- * only the two front-runners, each country at its own pace, converging to the final result.
+ * Replays the final breakdown abroad as a live count, like `SimulatedResultsSource`: only
+ * the two front-runners, each city at its own pace, converging to the final result. The
+ * countries add up the simulated cities, so both levels always agree.
  */
 export class SimulatedAbroadSource implements AbroadSource {
-  private finalResults: Promise<readonly CountryResult[]> | undefined;
+  private finalResults: Promise<AbroadBreakdown> | undefined;
 
   constructor(
     private readonly inner: AbroadSource,
     private readonly options: SimulationOptions,
   ) {}
 
-  async fetchCountries(): Promise<CountryResult[]> {
-    this.finalResults ??= this.inner.fetchCountries();
+  async fetchAbroad(): Promise<AbroadBreakdown> {
+    this.finalResults ??= this.inner.fetchAbroad();
     const final = await this.finalResults;
 
     const now = (this.options.now ?? Date.now)();
     const elapsed = clamp((now - this.options.startedAt) / this.options.durationMs);
-    const totals = new Map<string, number>();
-    for (const country of final) {
-      for (const [number, votes] of Object.entries(country.votes)) {
-        totals.set(number, (totals.get(number) ?? 0) + votes);
-      }
-    }
-    const finalists = [...totals.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 2)
-      .map(([number]) => number);
+    const finalists = frontRunners(final.cities);
 
-    return final.map((country) => {
-      const progress = progressOf(country.name, elapsed);
-      const tilt = tiltOf(country.name) * (1 - progress);
+    const cities = final.cities.map((city): AbroadCityResult => {
+      const progress = progressOf(city.code, elapsed);
+      const tilt = tiltOf(city.code) * (1 - progress);
       const votes = Object.fromEntries(
         finalists.map((number, index) => {
           const bias = 1 + tilt * (index === 0 ? 1 : -1);
-          return [number, Math.round((country.votes[number] ?? 0) * progress * bias)];
+          return [number, Math.round((city.votes[number] ?? 0) * progress * bias)];
         }),
       );
-      const { total } = country.sections;
-      return { ...country, votes, sections: { total, counted: Math.round(total * progress) } };
+      const { total } = city.sections;
+      return { ...city, votes, sections: { total, counted: Math.round(total * progress) } };
     });
+    return { countries: aggregateCountries(cities), cities };
   }
+}
+
+/** Ballot numbers of the two most voted candidates abroad. */
+function frontRunners(cities: readonly AbroadCityResult[]): string[] {
+  const totals = new Map<string, number>();
+  for (const city of cities) {
+    for (const [number, votes] of Object.entries(city.votes)) {
+      totals.set(number, (totals.get(number) ?? 0) + votes);
+    }
+  }
+  return [...totals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([number]) => number);
 }

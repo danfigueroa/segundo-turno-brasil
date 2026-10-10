@@ -5,7 +5,7 @@ import { FINAL_CACHE, STALE_CACHE } from './results-handler';
 import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
 
 /**
- * Live breakdown by country: each refresh reads 186 TSE files, so the CDN keeps it for a
+ * Live breakdown by country and city: each refresh reads 186 TSE files, so the CDN keeps it for a
  * minute (the TSE itself updates about once a minute).
  */
 export const ABROAD_LIVE_CACHE =
@@ -15,7 +15,7 @@ interface RoundAbroad {
   execute(): Promise<AbroadSnapshot>;
 }
 
-/** `GET /api/abroad?round=1|2` (default 2): votes abroad by country. */
+/** `GET /api/abroad?round=1|2` (default 2): votes abroad by country and city. */
 export function createAbroadHandler(rounds: Readonly<Record<Round, RoundAbroad>>): Handler {
   return async (request) => {
     if (request.method !== 'GET' && request.method !== 'HEAD') {

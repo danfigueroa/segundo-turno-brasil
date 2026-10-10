@@ -1,4 +1,9 @@
-import type { CountryResult } from '@stb/domain';
+import {
+  aggregateCountries,
+  type AbroadBreakdown,
+  type AbroadCityResult,
+  type Tally,
+} from '@stb/domain';
 import type { AbroadSource } from '../../ports/abroad-source';
 import { ABROAD_CITIES, type AbroadCity } from './abroad-cities';
 import { toTally } from './mapper';
@@ -35,8 +40,8 @@ export interface TseAbroadSourceOptions {
 }
 
 /**
- * Builds the breakdown by country from the TSE files of each city abroad (186 in 2026).
- * Fails as a whole if any city fails, so a country is never shown with missing cities.
+ * Builds the breakdown by city and country from the TSE files of each city abroad (186 in
+ * 2026). Fails as a whole if any city fails, so a country is never shown with missing cities.
  */
 export class TseAbroadSource implements AbroadSource {
   private readonly cities: Readonly<Record<string, AbroadCity>>;
@@ -50,34 +55,28 @@ export class TseAbroadSource implements AbroadSource {
     this.concurrency = options.concurrency ?? 24;
   }
 
-  async fetchCountries(): Promise<CountryResult[]> {
+  async fetchAbroad(): Promise<AbroadBreakdown> {
     const entries = Object.entries(this.cities);
-    const tallies = await mapWithLimit(entries, this.concurrency, async ([code]) => {
+    const cities = await mapWithLimit(entries, this.concurrency, async ([code, city]) => {
       const scope = abroadCityScope(code);
       const parsed = tseResultFileSchema.safeParse(await this.load(scope));
       if (!parsed.success) throw new TseParseError(scope, parsed.error);
-      return toTally(parsed.data, { kind: 'abroad' });
+      return cityResult(code, city, toTally(parsed.data, { kind: 'abroad' }));
     });
-
-    const countries = new Map<string, CountryResult>();
-    entries.forEach(([, city], index) => {
-      const tally = tallies[index];
-      if (!tally) return;
-      const current = countries.get(city.country);
-      const votes: Record<string, number> = { ...current?.votes };
-      for (const candidate of tally.candidates) {
-        votes[candidate.number] = (votes[candidate.number] ?? 0) + candidate.votes;
-      }
-      countries.set(city.country, {
-        name: city.country,
-        continent: city.continent,
-        votes,
-        sections: {
-          total: (current?.sections.total ?? 0) + tally.sections.total,
-          counted: (current?.sections.counted ?? 0) + tally.sections.counted,
-        },
-      });
-    });
-    return [...countries.values()];
+    return { countries: aggregateCountries(cities), cities };
   }
+}
+
+function cityResult(code: string, city: AbroadCity, tally: Tally): AbroadCityResult {
+  return {
+    code,
+    name: city.city,
+    country: city.country,
+    continent: city.continent,
+    lat: city.lat,
+    lon: city.lon,
+    electorate: tally.electorate,
+    votes: Object.fromEntries(tally.candidates.map((c) => [c.number, c.votes])),
+    sections: tally.sections,
+  };
 }

@@ -1,6 +1,6 @@
-import type { CountryResult } from '@stb/domain';
+import type { AbroadBreakdown } from '@stb/domain';
 
-/** Port: votes abroad broken down by country (TSE, fixtures, simulation…). */
+/** Port: votes abroad broken down by country and city (TSE, fixtures, simulation…). */
 export interface AbroadSource {
-  fetchCountries(): Promise<readonly CountryResult[]>;
+  fetchAbroad(): Promise<AbroadBreakdown>;
 }
