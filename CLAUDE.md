@@ -177,6 +177,7 @@ pnpm format:check                  # Prettier (pnpm format para corrigir)
 pnpm typecheck                     # tsc em todos os pacotes
 pnpm test                          # Vitest em todos os pacotes
 pnpm build                         # build da web + .vercel/output
+pnpm smoke                         # executa as funções empacotadas (rodar após o build)
 pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
 pnpm --filter @stb/web photos:fetch  # baixa as fotos oficiais dos candidatos do 2º turno
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
@@ -219,4 +220,4 @@ Pendente:
 ### Qualidade
 
 - Toda lógica de domínio e todo adaptador têm testes (adaptador TSE testado com fixtures reais).
-- Lint, typecheck e testes devem passar antes de cada commit.
+- Lint, typecheck e testes devem passar antes de cada commit; ao mexer em dependências da API ou no build, rodar também `pnpm build && pnpm smoke`.
