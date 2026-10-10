@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatName, formatPercent, formatPoints, formatTime, formatVotes } from './format';
+import {
+  formatDate,
+  formatName,
+  formatPercent,
+  formatPoints,
+  formatTime,
+  formatVotes,
+} from './format';
 
 describe('format', () => {
   it('formats percentages in pt-BR', () => {
@@ -12,6 +19,10 @@ describe('format', () => {
 
   it('formats percentage points', () => {
     expect(formatPoints(2.5)).toBe('2,50 p.p.');
+  });
+
+  it('formats dates in Brasília', () => {
+    expect(formatDate('2026-10-05T02:00:00Z')).toBe('04/10');
   });
 
   it('formats times in Brasília', () => {

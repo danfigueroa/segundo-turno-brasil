@@ -24,6 +24,17 @@ export function formatPoints(value: number): string {
   return `${percent.format(value)} p.p.`;
 }
 
+const date = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  timeZone: 'America/Sao_Paulo',
+});
+
+/** ISO timestamp → Brasília date `"05/10"`. */
+export function formatDate(iso: string): string {
+  return date.format(new Date(iso));
+}
+
 /** ISO timestamp → Brasília time `"19:42"`. */
 export function formatTime(iso: string): string {
   return time.format(new Date(iso));
