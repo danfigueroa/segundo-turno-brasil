@@ -1,4 +1,3 @@
-import { animate, useReducedMotion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 
 interface Props {
@@ -7,28 +6,39 @@ interface Props {
   readonly className?: string | undefined;
 }
 
-/** Counts from the previous value to the new one, updating the DOM without re-rendering. */
+const DURATION_MS = 800;
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * Counts from the previous value to the new one, writing straight to the DOM on each
+ * animation frame (no React re-renders). A tiny tween instead of a motion library keeps
+ * the initial bundle small.
+ */
 export function AnimatedNumber({ value, format, className }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const previous = useRef(value);
-  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const from = previous.current;
     previous.current = value;
-    if (reduceMotion || from === value) {
-      if (ref.current) ref.current.textContent = format(value);
+    const node = ref.current;
+    if (!node) return;
+    if (from === value || prefersReducedMotion()) {
+      node.textContent = format(value);
       return;
     }
-    const controls = animate(from, value, {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (latest) => {
-        if (ref.current) ref.current.textContent = format(latest);
-      },
-    });
-    return () => controls.stop();
-  }, [value, format, reduceMotion]);
+
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / DURATION_MS, 1);
+      node.textContent = format(from + (value - from) * easeOutCubic(progress));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, format]);
 
   return (
     <span ref={ref} className={className}>
