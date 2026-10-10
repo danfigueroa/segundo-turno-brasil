@@ -1,6 +1,6 @@
 # 0016 — Zoom por continente no mapa-múndi
 
-- Status: aceita
+- Status: substituída pela ADR 0017
 - Data: 2026-10-10
 
 ## Contexto

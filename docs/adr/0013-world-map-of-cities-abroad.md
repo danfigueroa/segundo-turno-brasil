@@ -1,6 +1,6 @@
 # 0013 — Mapa-múndi das cidades no exterior
 
-- Status: aceita
+- Status: aceita; o mapa de pontos foi substituído pela ADR 0017
 - Data: 2026-10-10
 
 ## Contexto
