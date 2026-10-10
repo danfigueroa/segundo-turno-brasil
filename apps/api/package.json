@@ -7,7 +7,7 @@
     ".": "./src/main.ts"
   },
   "scripts": {
-    "dev": "tsx watch src/dev-server.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/dev-server.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
