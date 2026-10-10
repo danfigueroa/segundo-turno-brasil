@@ -15,20 +15,22 @@ GET /api/results  (Vercel Function, Node 22, um único arquivo ESM)
 resultados.tse.jus.br  (JSON público; CDN do TSE com max-age≈56s)
 ```
 
+O 1º turno (`?round=1`, eleição 6257) passa pelo mesmo caminho, mas como o resultado é final fica 1h em cache no CDN (e um dia como `stale`), então praticamente não gera invocações.
+
 Não há cron nem banco de dados: o tráfego dos usuários é o gatilho das atualizações e o CDN absorve a carga. Com `s-maxage=15`, a função roda no máximo algumas vezes por minuto por região do CDN, independentemente do número de usuários.
 
 ## Camadas (ports & adapters)
 
-| Camada      | Onde                                        | Responsabilidade                                                               |
-| ----------- | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| Domínio     | `packages/domain`                           | Tipos (`Tally`, `Scope`), UFs/regiões, ranking, liderança, agregação. Sem I/O. |
-| Contrato    | `packages/contracts`                        | Schema zod/mini da resposta pública; front e back usam o mesmo tipo.           |
-| Porta       | `apps/api/src/ports/results-source.ts`      | `ResultsSource.fetchSnapshot()`                                                |
-| Adaptadores | `apps/api/src/adapters`                     | `TseResultsSource` (+ loaders HTTP e fixture), `SimulatedResultsSource`        |
-| Caso de uso | `apps/api/src/use-cases/get-results.ts`     | Deduplica chamadas concorrentes e serve o último snapshot bom se o TSE falhar. |
-| HTTP        | `apps/api/src/http`                         | Handler Fetch API (`Request → Response`) + adaptador para Node.                |
-| Composição  | `apps/api/src/container.ts`                 | Escolhe a fonte pelo `DATA_SOURCE` e monta as rotas.                           |
-| Entradas    | `apps/api/src/dev-server.ts`, `src/vercel/` | Servidor local e função da Vercel, ambos sobre o mesmo handler.                |
+| Camada      | Onde                                        | Responsabilidade                                                                 |
+| ----------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| Domínio     | `packages/domain`                           | Tipos (`Tally`, `Scope`), UFs/regiões, ranking, liderança, agregação. Sem I/O.   |
+| Contrato    | `packages/contracts`                        | Schema zod/mini da resposta pública; front e back usam o mesmo tipo.             |
+| Porta       | `apps/api/src/ports/results-source.ts`      | `ResultsSource.fetchSnapshot()`                                                  |
+| Adaptadores | `apps/api/src/adapters`                     | `TseResultsSource` (+ loaders HTTP e fixture), `SimulatedResultsSource`          |
+| Caso de uso | `apps/api/src/use-cases/get-results.ts`     | Deduplica chamadas concorrentes e serve o último snapshot bom se o TSE falhar.   |
+| HTTP        | `apps/api/src/http`                         | Handler Fetch API (`Request → Response`) + adaptador para Node.                  |
+| Composição  | `apps/api/src/container.ts`                 | Uma fonte e um `GetResults` por turno, conforme o `DATA_SOURCE`; monta as rotas. |
+| Entradas    | `apps/api/src/dev-server.ts`, `src/vercel/` | Servidor local e função da Vercel, ambos sobre o mesmo handler.                  |
 
 O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é validado com zod antes de virar entidade de domínio.
 
