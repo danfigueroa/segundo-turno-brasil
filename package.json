@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "pnpm -r --parallel --filter @stb/api --filter @stb/web dev",
     "build": "pnpm --filter @stb/web build && node scripts/build-vercel-output.mjs",
+    "smoke": "node scripts/smoke-vercel-output.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
