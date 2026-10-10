@@ -39,7 +39,7 @@ describe('App', () => {
 
     const scoreboard = await screen.findByRole('region', { name: 'Brasil' });
     expect(within(scoreboard).getByText('Lula')).toBeInTheDocument();
-    expect(within(scoreboard).getByText('Flavio Bolsonaro')).toBeInTheDocument();
+    expect(within(scoreboard).getByText('Flávio Bolsonaro')).toBeInTheDocument();
     expect(within(scoreboard).getByText('50,82%')).toBeInTheDocument();
     expect(within(scoreboard).getByText('Lidera')).toBeInTheDocument();
   });

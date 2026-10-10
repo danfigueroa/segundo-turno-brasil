@@ -1,5 +1,5 @@
 import type { CandidateResult, Tally } from '@stb/domain';
-import { formatName } from './format';
+import { formatName, initialsOf } from './format';
 
 export type CandidateHue = 'red' | 'blue';
 
@@ -7,6 +7,10 @@ export interface Finalist {
   readonly number: string;
   /** Display name, title-cased. */
   readonly name: string;
+  /** First word of the name, for tight spots: `"Flávio"`. */
+  readonly shortName: string;
+  /** Avatar initials: `"FB"`. */
+  readonly initials: string;
   readonly party: string;
   /** Color identity. Follows the candidate, never their rank. */
   readonly hue: CandidateHue;
@@ -22,12 +26,17 @@ export function finalistsOf(country: Tally): Finalist[] {
   return country.candidates
     .slice(0, 2)
     .toSorted((a, b) => Number(a.number) - Number(b.number))
-    .map((c, index) => ({
-      number: c.number,
-      name: formatName(c.name),
-      party: c.party,
-      hue: HUES[index] ?? 'blue',
-    }));
+    .map((c, index) => {
+      const name = formatName(c.name);
+      return {
+        number: c.number,
+        name,
+        shortName: name.split(' ')[0] ?? name,
+        initials: initialsOf(name),
+        party: c.party,
+        hue: HUES[index] ?? 'blue',
+      };
+    });
 }
 
 export interface FinalistResult extends Finalist {

@@ -30,6 +30,17 @@ describe('finalistsOf', () => {
     ]);
   });
 
+  it('derives short names and initials for compact layouts', () => {
+    const [finalist] = finalistsOf({
+      ...tally({ '13': 2, '22': 1 }),
+      candidates: rankCandidates([
+        { number: '13', name: 'FLAVIO BOLSONARO', party: 'PL', votes: 2 },
+        { number: '22', name: 'LULA', party: 'PT', votes: 1 },
+      ]),
+    });
+    expect(finalist).toMatchObject({ shortName: 'Flávio', initials: 'FB' });
+  });
+
   it('does not swap colors when the leader changes', () => {
     const before = finalistsOf(tally({ '22': 60, '13': 40 }));
     const after = finalistsOf(tally({ '22': 40, '13': 60 }));
