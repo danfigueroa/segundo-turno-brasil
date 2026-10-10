@@ -38,6 +38,8 @@ function shareLabel(selection: Selection): string {
 
 // Below the scoreboard and the map: loaded after the first paint (ADR 0005).
 const Insights = lazy(() => import('./features/insights/Insights'));
+// Only drawn while abroad is selected, so its geometry stays out of the first load.
+const WorldMap = lazy(() => import('./features/world-map/WorldMap'));
 
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -136,7 +138,13 @@ export function App() {
               <ShareButton getContent={getShareContent} label={shareLabel(selection)} />
             </ResultCard>
           )}
-          <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
+          {selection.kind === 'abroad' ? (
+            <Suspense fallback={null}>
+              <WorldMap abroad={abroad.data} finalists={finalists} onSelect={select} />
+            </Suspense>
+          ) : (
+            <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
+          )}
         </div>
         {!waiting && runoff.data && (
           <Suspense fallback={null}>

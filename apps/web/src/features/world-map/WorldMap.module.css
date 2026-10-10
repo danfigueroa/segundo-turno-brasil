@@ -1,0 +1,86 @@
+/* The world is wider than Brazil: it takes the whole card. */
+.container {
+  grid-area: map;
+  width: 100%;
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.land {
+  fill: var(--map-empty);
+  stroke: var(--map-stroke);
+  stroke-width: 0.6;
+}
+
+.brazil {
+  fill: color-mix(in srgb, var(--map-empty), #0f1a14 12%);
+  stroke: var(--map-stroke);
+  stroke-width: 0.6;
+}
+
+.brazilLabel,
+.cityLabel {
+  /* viewBox units: the 1000-wide map shrinks to about a third on a phone. */
+  font-size: 32px;
+  font-weight: 800;
+  dominant-baseline: central;
+  fill: #0f1a14;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+  pointer-events: none;
+  user-select: none;
+}
+
+.brazilLabel {
+  text-anchor: middle;
+}
+
+/* Colors come from the state styles (hue and margin); dots are a picture, not buttons. */
+.dot {
+  stroke-width: 1;
+  cursor: default;
+  transition:
+    fill var(--duration) var(--ease-out),
+    r var(--duration) var(--ease-out);
+}
+
+.back {
+  grid-area: select;
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--control-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 960px) {
+  .container {
+    align-self: center;
+  }
+
+  .back {
+    justify-self: end;
+  }
+
+  .brazilLabel,
+  .cityLabel {
+    font-size: 19px;
+    stroke-width: 4px;
+  }
+}
