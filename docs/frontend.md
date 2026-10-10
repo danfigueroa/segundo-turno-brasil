@@ -35,6 +35,7 @@ Desenho de referência no Claude Design (ADR 0007). Tokens em `styles/tokens.css
 5. **Lista de estados** (`features/states-list`): cartões no celular, grade tipo tabela no desktop; no Brasil começa recolhida (8 no celular, 10 no desktop). Em região/estado mostra os estados da região. Escondida no Exterior.
 
 6. **Votação por país** (`features/countries`, só no Exterior): resumo ("Lula venceu em 64 países, Flávio em 36 e houve 1 empate…", abstenção), busca sem acento, filtro por continente e uma linha por país com os votos dos dois finalistas; 12 países no celular e 20 no desktop até "Ver todos". Dados de `GET /api/abroad`, buscados só com o Exterior aberto (`api/abroad.ts`, polling de 60 s no 2º turno).
+7. **Rodapé:** horário dos dados (fonte TSE) e "Desenvolvido por @danmfigueroa" (Instagram).
 
 **Percentual e total de votos aparecem sempre**, em qualquer abrangência. No 1º turno, o card lista também os demais candidatos (nome, partido, % e votos). Numa região, o card mostra o % e os votos de cada finalista na região e, abaixo, em quantos estados cada um venceu (ou lidera). No Exterior, o terceiro número-chave é "Países com votos".
 
