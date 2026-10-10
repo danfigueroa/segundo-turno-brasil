@@ -14,6 +14,13 @@ const FUNCTIONS = {
   'api/history': 'apps/api/src/vercel/history.ts',
 };
 
+/**
+ * Dependencies published as CommonJS (e.g. `undici`, pulled in by `@vercel/blob`) call
+ * `require()` for Node built-ins, which ES modules lack: give the bundle a real one.
+ */
+const REQUIRE_SHIM =
+  "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);";
+
 const SECURITY_HEADERS = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
@@ -32,6 +39,7 @@ for (const [route, entry] of Object.entries(FUNCTIONS)) {
     platform: 'node',
     target: 'node22',
     format: 'esm',
+    banner: { js: REQUIRE_SHIM },
     minify: true,
     sourcemap: 'linked',
     logLevel: 'warning',
