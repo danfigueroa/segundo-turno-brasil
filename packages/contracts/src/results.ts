@@ -23,7 +23,7 @@ export const candidateResultSchema = z.object({
 
 export const tallySchema = z.object({
   scope: scopeSchema,
-  candidates: z.array(candidateResultSchema),
+  candidates: z.array(candidateResultSchema).readonly(),
   sections: z.object({ total: count, counted: count }),
   electorate: count,
   turnout: count,
