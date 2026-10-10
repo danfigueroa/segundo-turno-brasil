@@ -1,4 +1,4 @@
-import type { AbroadResponse, ResultsResponse } from '@stb/contracts';
+import type { AbroadResponse, CitiesResponse, ResultsResponse } from '@stb/contracts';
 import {
   rankCandidates,
   STATE_CODES,
@@ -77,6 +77,32 @@ export function abroadResponse(overrides: Partial<AbroadResponse> = {}): AbroadR
       city('30406', 'MIAMI', 'Estados Unidos', 25.8, -80.2, { '13': 3, '22': 7 }),
       city('29955', 'LISBOA', 'Portugal', 38.7, -9.1, { '13': 6, '22': 3 }),
       city('29718', 'PORTO PRÍNCIPE', 'Haiti', 18.5, -72.3, { '13': 1, '22': 1 }),
+    ],
+    fetchedAt: '2026-10-25T22:42:10.000Z',
+    stale: false,
+    ...overrides,
+  };
+}
+
+/** Municipalities of Bahia: Lula ahead in Salvador and Feira de Santana, Flávio in Barreiras. */
+export function citiesResponse(overrides: Partial<CitiesResponse> = {}): CitiesResponse {
+  const municipality = (ibge: string, name: string, lula: number, flavio: number) => ({
+    ibge,
+    name,
+    electorate: (lula + flavio) * 2,
+    turnout: lula + flavio + 10,
+    votes: { '13': lula, '22': flavio },
+    ballots: { valid: lula + flavio, blank: 4, null: 6 },
+    sections: { total: 10, counted: 5 },
+    updatedAt: '2026-10-25T19:40:00-03:00',
+  });
+  return {
+    round: 2,
+    uf: 'BA',
+    cities: [
+      municipality('2927408', 'SALVADOR', 700, 300),
+      municipality('2910800', 'FEIRA DE SANTANA', 400, 350),
+      municipality('2903201', 'BARREIRAS', 100, 300),
     ],
     fetchedAt: '2026-10-25T22:42:10.000Z',
     stale: false,
