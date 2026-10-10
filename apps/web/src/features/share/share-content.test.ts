@@ -75,9 +75,9 @@ describe('shareContentFrom', () => {
     const { cities } = citiesResponse();
     const content = shareContentFrom(data, salvador, finalists, 'x', { cities, map });
     expect(content.title).toBe('Salvador');
-    expect(content.cityMap?.selected).toBe('M0,0L1,1Z');
+    expect(content.detailMap?.selected).toBe('M0,0L1,1Z');
     // Numeric keys come in IBGE order: a municipality without results is drawn empty.
-    expect(content.cityMap?.shapes.map((s) => s.fill)).toEqual([
+    expect(content.detailMap?.shapes.map((s) => s.fill)).toEqual([
       SHARE_PALETTE.mapEmpty,
       SHARE_PALETTE.ramps.blue[4],
       SHARE_PALETTE.ramps.red[4],
@@ -91,7 +91,7 @@ describe('shareContentFrom', () => {
   it('shares a city like its state until its details load', () => {
     const salvador = { kind: 'city', state: 'BA', ibge: '2927408' } as const;
     const content = shareContentFrom(data, salvador, finalists, 'x');
-    expect(content.cityMap).toBeUndefined();
+    expect(content.detailMap).toBeUndefined();
     expect([...content.focus]).toEqual(['BA']);
   });
 });

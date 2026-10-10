@@ -48,8 +48,11 @@ export interface ShareContent {
   readonly mapFills: Readonly<Record<StateCode, string>>;
   /** States outside the selection are drawn faded. */
   readonly focus: ReadonlySet<StateCode>;
-  /** A city is drawn on its state's municipal map instead of the map of Brazil. */
-  readonly cityMap: CityMap | undefined;
+  /**
+   * Drawn instead of the map of Brazil: a city on its state's municipal map, a country
+   * abroad on the map of its continent.
+   */
+  readonly detailMap: DetailMap | undefined;
   /**
    * How many states each finalist leads, within the region or the whole country; for a
    * city, how many of its state's municipalities.
@@ -58,11 +61,11 @@ export interface ShareContent {
   readonly siteUrl: string;
 }
 
-/** A state's municipalities colored by leader, with the selected one outlined. */
-export interface CityMap {
+/** Areas colored by leader (municipalities or countries), with the selected one outlined. */
+export interface DetailMap {
   readonly viewBox: string;
   readonly shapes: readonly { readonly d: string; readonly fill: string }[];
-  /** Path of the selected municipality. */
+  /** Path of the selected area. */
   readonly selected: string | undefined;
 }
 
@@ -144,11 +147,11 @@ export function shareContentFrom(
   const countScope =
     selection.kind === 'region' ? STATE_CODES.filter((code) => focus.has(code)) : STATE_CODES;
 
-  const cityMap =
+  const detailMap =
     selection.kind === 'city' && detail
-      ? cityMapOf(detail, selection.ibge, (votes) => fillOfLead(leadOfVotes(votes, finalists)))
+      ? municipalMapOf(detail, selection.ibge, (votes) => fillOfLead(leadOfVotes(votes, finalists)))
       : undefined;
-  const cityLeadCounts = cityMap && cities ? cityLeadCountsOf(cities, finalists) : undefined;
+  const cityLeadCounts = detailMap && cities ? cityLeadCountsOf(cities, finalists) : undefined;
 
   const { updatedAt } = tally;
   return {
@@ -169,17 +172,17 @@ export function shareContentFrom(
       : `Atualizado às ${formatTime(updatedAt)} · Fonte: TSE`,
     mapFills,
     focus,
-    cityMap,
+    detailMap,
     leadCounts: cityLeadCounts ?? leadCountsOf(data, finalists, countScope),
     siteUrl,
   };
 }
 
-function cityMapOf(
+function municipalMapOf(
   { cities, map }: StateDetail,
   selected: string,
   fillOf: (votes: MunicipalityResult['votes']) => string,
-): CityMap {
+): DetailMap {
   const byIbge = new Map(cities.map((c) => [c.ibge, c]));
   return {
     viewBox: map.viewBox,

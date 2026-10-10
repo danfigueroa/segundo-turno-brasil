@@ -2,7 +2,7 @@ import { STATE_CODES } from '@stb/domain';
 import { formatPercent, formatVotes } from '../../lib/format';
 import { BRAZIL_MAP } from '../map/brazil-map';
 import { SHARE_PALETTE as P } from './palette';
-import type { CityMap, ShareContent } from './share-content';
+import type { DetailMap, ShareContent } from './share-content';
 
 export type ShareFormat = 'story' | 'feed';
 
@@ -255,7 +255,7 @@ function placeMap(ctx: CanvasRenderingContext2D, viewBox: string, layout: Layout
 }
 
 /** A city: its state's municipalities, the city outlined. */
-function drawCityMap(ctx: CanvasRenderingContext2D, map: CityMap, layout: Layout) {
+function drawDetailMap(ctx: CanvasRenderingContext2D, map: DetailMap, layout: Layout) {
   ctx.save();
   const scale = placeMap(ctx, map.viewBox, layout);
   ctx.lineWidth = 1 / scale;
@@ -274,8 +274,8 @@ function drawCityMap(ctx: CanvasRenderingContext2D, map: CityMap, layout: Layout
 }
 
 function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
-  if (content.cityMap) {
-    drawCityMap(ctx, content.cityMap, layout);
+  if (content.detailMap) {
+    drawDetailMap(ctx, content.detailMap, layout);
     return;
   }
   ctx.save();
