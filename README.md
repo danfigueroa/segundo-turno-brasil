@@ -34,7 +34,7 @@ Todas as variáveis estão em [`apps/api/.env.example`](apps/api/.env.example).
 
 ### Histórico da apuração (Vercel Blob)
 
-A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arquivo do Vercel Blob. Em produção, crie um Blob store no painel da Vercel (Storage → Blob) e conecte-o ao projeto: isso define `BLOB_READ_WRITE_TOKEN`. Sem o token, ou fora de `DATA_SOURCE=tse`, o histórico fica em memória (suficiente para `pnpm dev`). Detalhes no [ADR 0011](docs/adr/0011-count-history-in-vercel-blob.md).
+A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arquivo do Vercel Blob. Em produção, crie um Blob store **privado** no painel da Vercel (Storage → Create Database → Blob), na mesma região das funções, e conecte-o ao projeto (Production e, se quiser, Preview). A conexão define `BLOB_STORE_ID` (OIDC) ou `BLOB_READ_WRITE_TOKEN`; o código aceita os dois. Faça um redeploy depois de conectar. Sem credenciais, ou fora de `DATA_SOURCE=tse`, o histórico fica em memória (suficiente para `pnpm dev`). Detalhes no [ADR 0011](docs/adr/0011-count-history-in-vercel-blob.md).
 
 ## Scripts
 

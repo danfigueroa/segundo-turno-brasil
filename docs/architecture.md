@@ -56,7 +56,7 @@ Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de p
 
 - `curl -I https://<preview>/api/results` → `x-vercel-cache` deve alternar entre `MISS`, `HIT` e `STALE`.
 - O payload deve sair comprimido (`content-encoding: br` ou `gzip`).
-- `BLOB_READ_WRITE_TOKEN` configurado (Storage → Blob → conectar ao projeto); com a apuração andando, `curl https://<preview>/api/history` deve trazer pontos.
+- Blob conectado ao projeto (`BLOB_STORE_ID` com OIDC ou `BLOB_READ_WRITE_TOKEN`); com a apuração andando, `curl https://<preview>/api/history` deve trazer pontos.
 
 ## Limites do plano Hobby
 
