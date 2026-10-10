@@ -16,15 +16,15 @@ Princípios:
 
 ## Stack
 
-| Camada       | Tecnologia                                                        |
-| ------------ | ----------------------------------------------------------------- |
-| Frontend     | React + Vite + TypeScript, TanStack Query, d3-geo, Framer Motion  |
-| Backend      | Vercel Functions em TypeScript (serverless)                       |
-| Contrato     | Schemas `zod` compartilhados entre back e front                   |
-| Hospedagem   | Vercel (plano Hobby, gratuito)                                    |
-| Monorepo     | pnpm workspaces                                                   |
-| Qualidade    | ESLint, Prettier, Vitest, Testing Library, Playwright (opcional)  |
-| CI           | GitHub Actions                                                    |
+| Camada     | Tecnologia                                                       |
+| ---------- | ---------------------------------------------------------------- |
+| Frontend   | React + Vite + TypeScript, TanStack Query, d3-geo, Framer Motion |
+| Backend    | Vercel Functions em TypeScript (serverless)                      |
+| Contrato   | Schemas `zod` compartilhados entre back e front                  |
+| Hospedagem | Vercel (plano Hobby, gratuito)                                   |
+| Monorepo   | pnpm workspaces                                                  |
+| Qualidade  | ESLint, Prettier, Vitest, Testing Library, Playwright (opcional) |
+| CI         | GitHub Actions                                                   |
 
 > Por que não Go? O backend é um proxy fino cacheado pelo CDN: roda poucas vezes por minuto, então a performance da linguagem não faz diferença. TypeScript é o runtime de primeira classe na Vercel e permite **um único contrato de tipos** entre back e front.
 
