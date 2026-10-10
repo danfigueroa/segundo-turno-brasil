@@ -8,29 +8,47 @@ const BIN_LABELS = [
   `${MARGIN_BINS.at(-1)}+`,
 ];
 
-/** Diverging legend: one arm per finalist, each step a margin bin in percentage points. */
-export function MapLegend({ finalists }: { readonly finalists: readonly Finalist[] }) {
+interface Props {
+  /** One row per finalist; empty before any vote is counted. */
+  readonly finalists: readonly Finalist[];
+  /** Whether some area has no votes yet (or a tie) and is drawn gray. */
+  readonly showEmpty: boolean;
+  readonly className?: string | undefined;
+}
+
+/** One row of five margin bins per finalist, in percentage points. */
+export function MapLegend({ finalists, showEmpty, className }: Props) {
   return (
-    <div className={styles.legend}>
-      <div className={styles.legendTitle}>Vantagem de quem lidera (pontos percentuais)</div>
-      <div className={styles.legendArms}>
-        {finalists.map((f, index) => (
-          <div key={f.number} className={styles.legendArm} data-hue={f.hue}>
-            <div className={styles.legendName}>{f.name}</div>
-            <div className={styles.legendSteps} data-reverse={index === 0 || undefined}>
-              {STEPS.map((step) => (
-                <div key={step} className={styles.legendCell}>
-                  <span className={styles.legendStep} data-intensity={step} />
-                  <span className={styles.legendBin}>{BIN_LABELS[step - 1]}</span>
-                </div>
+    <div className={`${styles.legendBox} ${className ?? ''}`}>
+      {finalists.length > 0 && (
+        <>
+          <div className={styles.legendTitle}>Vantagem de quem lidera (pontos percentuais)</div>
+          <div className={styles.legendGrid}>
+            {finalists.map((f) => (
+              <div key={f.number} className={styles.legendRow} data-hue={f.hue}>
+                <span className={styles.legendName}>{f.name}</span>
+                {STEPS.map((step) => (
+                  <span key={step} className={styles.legendStep} data-intensity={step} />
+                ))}
+              </div>
+            ))}
+            <div className={styles.legendRow} aria-hidden="true">
+              <span />
+              {BIN_LABELS.map((label) => (
+                <span key={label} className={styles.legendBin}>
+                  {label}
+                </span>
               ))}
             </div>
           </div>
-        ))}
-      </div>
-      <div className={styles.legendEmpty}>
-        <span className={styles.legendStep} data-intensity="0" /> Sem votos apurados ou empate
-      </div>
+        </>
+      )}
+      {showEmpty && (
+        <div className={styles.legendEmpty}>
+          <span className={styles.legendStep} data-intensity="0" />
+          {finalists.length > 0 ? 'Sem votos apurados ou empate' : 'Sem votos apurados'}
+        </div>
+      )}
     </div>
   );
 }

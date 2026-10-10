@@ -4,9 +4,11 @@ import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { ABROAD, type Selection } from '../../lib/selection';
-import { ABROAD_TILE, BRAZIL_MAP } from './brazil-map';
+import { BRAZIL_MAP } from './brazil-map';
+import { emphasisOf, type Area } from './emphasis';
 import styles from './BrazilMap.module.css';
 import { MapLegend } from './MapLegend';
+import { StateSelect } from './StateSelect';
 
 interface Props {
   readonly data: ResultsResponse;
@@ -14,9 +16,6 @@ interface Props {
   readonly selection: Selection;
   readonly onSelect: (selection: Selection) => void;
 }
-
-/** A clickable area of the map: a state or the abroad tile. */
-type Area = StateCode | 'abroad';
 
 interface Hover {
   readonly area: Area;
@@ -47,11 +46,9 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
       ? selection.kind === 'abroad'
       : selection.kind === 'state' && selection.code === area;
 
-  const isDimmed = (area: Area) => {
-    if (selection.kind === 'abroad') return area !== 'abroad';
-    if (selection.kind !== 'region') return false;
-    return area === 'abroad' || STATES[area].region !== selection.code;
-  };
+  const leads = [...STATE_CODES, 'abroad' as const].map((area) => describe(area).lead);
+  const anyLead = leads.some(Boolean);
+  const anyWithoutLead = leads.some((lead) => !lead);
 
   /** Positions the tooltip relative to the map container that holds `target`. */
   const hoverAt = (area: Area, target: Element, clientX: number, clientY: number) => {
@@ -59,34 +56,26 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     if (box) setHover({ area, x: clientX - box.left, y: clientY - box.top });
   };
 
-  /** Props shared by every interactive area: selection, keyboard, hover and focus. */
+  /** Selection, hover and focus props shared by states and the abroad button. */
   const interactive = (area: Area) => {
     const { lead, counted } = describe(area);
     const status = lead
       ? `${lead.leader.name} lidera com ${formatPercent(lead.leader.share)}`
       : 'sem votos apurados';
     return {
-      tabIndex: 0,
-      role: 'button',
       'aria-pressed': isSelected(area),
       'aria-label': `${areaName(area)}: ${status}, ${formatPercent(counted)} apurado`,
       'data-hue': lead?.hue ?? 'none',
       'data-intensity': lead?.intensity ?? 0,
       'data-selected': isSelected(area) || undefined,
-      'data-dimmed': isDimmed(area) || undefined,
+      'data-emphasis': emphasisOf(area, selection),
       onClick: () => onSelect(areaSelection(area)),
-      onKeyDown: (event: KeyboardEvent<SVGElement>) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onSelect(areaSelection(area));
-        }
-      },
-      onPointerMove: (event: PointerEvent<SVGElement>) => {
+      onPointerMove: (event: PointerEvent<Element>) => {
         if (event.pointerType === 'mouse') {
           hoverAt(area, event.currentTarget, event.clientX, event.clientY);
         }
       },
-      onFocus: (event: FocusEvent<SVGElement>) => {
+      onFocus: (event: FocusEvent<Element>) => {
         const box = event.currentTarget.getBoundingClientRect();
         hoverAt(area, event.currentTarget, box.left + box.width / 2, box.top + box.height / 2);
       },
@@ -94,13 +83,34 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     } as const;
   };
 
+  /** SVG paths are not buttons: give them the role and keyboard activation. */
+  const statePath = (code: StateCode) => ({
+    ...interactive(code),
+    tabIndex: 0,
+    role: 'button',
+    onKeyDown: (event: KeyboardEvent<SVGElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onSelect(areaSelection(code));
+      }
+    },
+  });
+
   const hovered = hover && describe(hover.area);
 
   return (
     <section className={`card ${styles.card}`} aria-labelledby="map-title">
-      <h2 id="map-title" className="visually-hidden">
-        Mapa da apuração por estado
-      </h2>
+      <div className={styles.head}>
+        <h2 id="map-title" className={styles.title}>
+          Quem lidera em cada estado
+        </h2>
+        <p className={styles.subtitle}>
+          {anyLead
+            ? 'Toque em um estado ou no Exterior para ver o resultado.'
+            : 'Os estados ganham cor conforme as urnas são apuradas.'}
+        </p>
+      </div>
+
       <div className={styles.container} onPointerLeave={() => setHover(undefined)}>
         <svg className={styles.map} viewBox={BRAZIL_MAP.viewBox} role="group" aria-label="Estados">
           {STATE_CODES.map((code) => (
@@ -108,7 +118,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
               key={code}
               d={BRAZIL_MAP.states[code].d}
               className={styles.state}
-              {...interactive(code)}
+              {...statePath(code)}
             />
           ))}
           {STATE_CODES.filter((code) => !UNLABELED.has(code)).map((code) => {
@@ -119,25 +129,14 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
               </text>
             );
           })}
-
-          <rect
-            x={ABROAD_TILE.x}
-            y={ABROAD_TILE.y}
-            width={ABROAD_TILE.width}
-            height={ABROAD_TILE.height}
-            rx={ABROAD_TILE.radius}
-            className={styles.state}
-            {...interactive('abroad')}
-          />
-          <text
-            x={ABROAD_TILE.x + ABROAD_TILE.width / 2}
-            y={ABROAD_TILE.y + ABROAD_TILE.height / 2}
-            className={styles.label}
-            aria-hidden="true"
-          >
-            Exterior
-          </text>
         </svg>
+        <button
+          type="button"
+          className={`${styles.state} ${styles.abroad}`}
+          {...interactive('abroad')}
+        >
+          Exterior
+        </button>
 
         {hover && hovered && (
           <div
@@ -157,7 +156,13 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           </div>
         )}
       </div>
-      <MapLegend finalists={finalists} />
+
+      <StateSelect className={styles.select} selection={selection} onSelect={onSelect} />
+      <MapLegend
+        className={styles.legend}
+        finalists={anyLead ? finalists : []}
+        showEmpty={anyWithoutLead}
+      />
     </section>
   );
 }
