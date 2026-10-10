@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
@@ -176,6 +176,52 @@ describe('App abroad votes', () => {
     expect(
       await screen.findByRole('img', { name: /^Américas: Lula lidera em 0 países, .* em 1 país/ }),
     ).toBeInTheDocument();
+  });
+
+  it('selects a country abroad from the list by country', async () => {
+    window.location.hash = '#/exterior';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const section = await screen.findByRole('region', { name: 'Votação por país' });
+    await userEvent.click(await within(section).findByRole('button', { name: /^Portugal/ }));
+    expect(window.location.hash).toBe('#/exterior/portugal');
+    expect(within(section).getByRole('button', { name: /^Portugal/ })).toHaveAttribute(
+      'aria-current',
+      'location',
+    );
+
+    const scoreboard = await screen.findByRole('region', { name: 'Portugal' });
+    // Lula 6 × 3 Flávio among Brazilians in Portugal.
+    expect(within(scoreboard).getByText('66,67%')).toBeInTheDocument();
+    const crumbs = within(scoreboard).getByRole('navigation', { name: 'Você está em' });
+    expect(
+      within(crumbs)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['Brasil', 'Exterior', 'Portugal']);
+    expect(within(scoreboard).getByText('Seções apuradas')).toBeInTheDocument();
+    expect(
+      within(scoreboard).getByRole('button', { name: 'Compartilhar Portugal' }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens a country abroad from a link, on the map of its continent', async () => {
+    window.location.hash = '#/exterior/estados-unidos';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    expect(await screen.findByRole('region', { name: 'Estados Unidos' })).toBeInTheDocument();
+    const continents = await screen.findByRole('group', { name: 'Continente do mapa' });
+    await waitFor(() =>
+      expect(within(continents).getByRole('button', { name: 'Américas' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'De onde vem a vantagem' }),
+    ).not.toBeInTheDocument();
   });
 });
 
