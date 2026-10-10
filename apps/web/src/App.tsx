@@ -3,6 +3,8 @@ import { useResults } from './api/use-results';
 import { BrazilMap } from './features/map/BrazilMap';
 import { Scoreboard } from './features/scoreboard/Scoreboard';
 import { ScopePicker } from './features/scope-picker/ScopePicker';
+import { ShareButton } from './features/share/ShareButton';
+import { shareContentFrom } from './features/share/share-content';
 import { StateSheet } from './features/state-sheet/StateSheet';
 import { StatesTable } from './features/states-table/StatesTable';
 import { LiveBadge } from './features/status/LiveBadge';
@@ -46,6 +48,8 @@ export function App() {
 
   const tally = resolveTally(data, selection);
   const title = selectionTitle(selection);
+  const stateOpen = selection.kind === 'state';
+  const getShareContent = () => shareContentFrom(data, selection, finalists, window.location.host);
 
   return (
     <>
@@ -55,6 +59,7 @@ export function App() {
       <main className={styles.layout}>
         <div className={styles.summary}>
           <Scoreboard title={title} tally={tally} finalists={finalists} />
+          <ShareButton getContent={getShareContent} variant="desktop" />
           <ScopePicker selection={selection} onSelect={select} />
           <UpdateStatus data={data} />
         </div>
@@ -64,12 +69,15 @@ export function App() {
         </div>
       </main>
       <Footer />
+      <ShareButton getContent={getShareContent} variant="floating" hidden={stateOpen} />
       <StateSheet
-        title={selection.kind === 'state' ? title : undefined}
-        tally={selection.kind === 'state' ? tally : undefined}
+        title={stateOpen ? title : undefined}
+        tally={stateOpen ? tally : undefined}
         finalists={finalists}
         onClose={() => select(COUNTRY)}
-      />
+      >
+        <ShareButton getContent={getShareContent} variant="inline" />
+      </StateSheet>
     </>
   );
 }
