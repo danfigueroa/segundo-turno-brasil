@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resultsResponse, tally } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
-import { headlineOf } from './headline';
+import { headlineOf, turnoutStats } from './headline';
 
 describe('headlineOf', () => {
   const data = resultsResponse();
@@ -95,6 +95,61 @@ describe('headlineOf', () => {
     expect(headline.bar.map((s) => s.weight)).toEqual([450, 80, 470]);
     expect(headline.others).toEqual([
       { number: '55', name: 'Ronaldo Caiado', party: 'PSD', share: 8, votes: 80 },
+    ]);
+  });
+
+  it('reports abstention instead of the other candidates in the runoff', () => {
+    expect(headlineOf(data, { kind: 'country' }, finalists).stats[1]).toEqual({
+      label: 'Abstenção',
+      value: '20,00%',
+      note: '200 eleitores',
+    });
+  });
+
+  it('adds valid votes, turnout and blank plus null votes in every scope', () => {
+    for (const selection of [
+      { kind: 'country' },
+      { kind: 'region', code: 'NE' },
+      { kind: 'state', code: 'SP' },
+      { kind: 'abroad' },
+    ] as const) {
+      expect(headlineOf(data, selection, finalists).turnoutStats.map((s) => s.label)).toEqual([
+        'Votos válidos',
+        'Comparecimento',
+        'Brancos e nulos',
+      ]);
+    }
+  });
+});
+
+describe('turnoutStats', () => {
+  it('measures valid, blank and null votes against the turnout', () => {
+    const base = tally({ kind: 'country' }, 450, 470);
+    expect(
+      turnoutStats({
+        ...base,
+        votes: { valid: 920, blank: 30, null: 50 },
+        turnout: 1000,
+        electorate: 1250,
+      }),
+    ).toEqual([
+      { label: 'Votos válidos', value: '920', note: '92,00% do comparecimento' },
+      { label: 'Comparecimento', value: '80,00%', note: '1.000 eleitores' },
+      { label: 'Brancos e nulos', value: '8,00%', note: '80 votos' },
+    ]);
+  });
+
+  it('shows dashes before anyone has voted', () => {
+    const empty = {
+      ...tally({ kind: 'country' }, 0, 0, 0),
+      electorate: 0,
+      turnout: 0,
+      votes: { valid: 0, blank: 0, null: 0 },
+    };
+    expect(turnoutStats(empty).map((s) => [s.value, s.note])).toEqual([
+      ['0', ''],
+      ['—', '0 eleitores'],
+      ['—', '0 votos'],
     ]);
   });
 });
