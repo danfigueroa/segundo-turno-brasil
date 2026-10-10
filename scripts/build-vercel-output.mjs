@@ -11,6 +11,7 @@ const OUTPUT = '.vercel/output';
 const FUNCTIONS = {
   'api/results': 'apps/api/src/vercel/results.ts',
   'api/abroad': 'apps/api/src/vercel/abroad.ts',
+  'api/history': 'apps/api/src/vercel/history.ts',
 };
 
 const SECURITY_HEADERS = {
