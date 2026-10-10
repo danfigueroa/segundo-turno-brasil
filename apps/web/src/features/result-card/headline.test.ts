@@ -18,6 +18,7 @@ describe('headlineOf', () => {
       ['Flávio', '50.82', true],
     ]);
     expect(headline.badge).toBe('Lidera');
+    expect(headline.others).toEqual([]);
     expect(headline.stats[0]).toEqual({
       label: 'Diferença',
       value: '1,64 p.p.',
@@ -92,5 +93,8 @@ describe('headlineOf', () => {
     expect(headline.badge).toBe('Mais votado');
     expect(headline.stats[1]).toEqual({ label: 'Demais candidatos', value: '8,00%', note: '' });
     expect(headline.bar.map((s) => s.weight)).toEqual([450, 80, 470]);
+    expect(headline.others).toEqual([
+      { number: '55', name: 'Ronaldo Caiado', party: 'PSD', share: 8, votes: 80 },
+    ]);
   });
 });

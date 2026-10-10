@@ -8,7 +8,7 @@ import {
 } from '@stb/domain';
 import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
-import { formatPercent, formatPoints, formatVotes } from '../../lib/format';
+import { formatName, formatPercent, formatPoints, formatVotes } from '../../lib/format';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import { stateLeads } from '../../lib/state-leads';
 
@@ -29,6 +29,16 @@ export interface BarSegment {
   readonly weight: number;
 }
 
+/** A candidate beyond the two finalists (first round only). */
+export interface OtherCandidate {
+  readonly number: string;
+  readonly name: string;
+  readonly party: string;
+  /** Percentage of valid votes, 0–100. */
+  readonly share: number;
+  readonly votes: number;
+}
+
 export interface Stat {
   readonly label: string;
   readonly value: string;
@@ -46,6 +56,8 @@ export interface Headline {
   readonly stats: readonly Stat[];
   /** Counted sections in the selection, 0–100. */
   readonly counted: number;
+  /** Everyone else on the ballot, most voted first; empty in the runoff. */
+  readonly others: readonly OtherCandidate[];
 }
 
 const ROUND_LABELS: Readonly<Record<Round, string>> = { 1: '1º turno', 2: '2º turno' };
@@ -105,7 +117,7 @@ function tallyHeadline(
   tally: Tally,
   final: boolean,
   countries: readonly CountryResult[] | undefined,
-): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats'> {
+): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats' | 'others'> {
   const { round } = data;
   const regionLeads =
     selection.kind === 'region'
@@ -131,6 +143,13 @@ function tallyHeadline(
         };
 
   return {
+    others: others.map((c) => ({
+      number: c.number,
+      name: formatName(c.name),
+      party: c.party,
+      share: c.share,
+      votes: c.votes,
+    })),
     columns: results.map(({ votes, share, ...finalist }) => ({
       finalist,
       value: share,

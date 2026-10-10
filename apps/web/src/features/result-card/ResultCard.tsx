@@ -3,7 +3,7 @@ import type { CountryResult } from '@stb/domain';
 import type { ReactNode, Ref } from 'react';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
 import type { Finalist } from '../../lib/finalists';
-import { formatPercent } from '../../lib/format';
+import { formatPercent, formatVotes } from '../../lib/format';
 import { breadcrumbsOf, isSameSelection, type Selection } from '../../lib/selection';
 import { headlineOf, type HeadlineColumn } from './headline';
 import styles from './ResultCard.module.css';
@@ -107,6 +107,23 @@ export function ResultCard({
           </div>
         ))}
       </dl>
+
+      {headline.others.length > 0 && (
+        <div className={styles.others}>
+          <h2 className={styles.othersTitle}>Demais candidatos</h2>
+          <ol className={styles.othersList}>
+            {headline.others.map((c) => (
+              <li key={c.number} className={styles.other}>
+                <span className={styles.otherName}>
+                  {c.name} <span className={styles.otherParty}>{c.party}</span>
+                </span>
+                <span className={styles.otherShare}>{formatPercent(c.share)}</span>
+                <span className={styles.otherVotes}>{formatVotes(c.votes)} votos</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {children}
     </section>

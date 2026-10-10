@@ -276,6 +276,68 @@
   color: var(--text-secondary);
 }
 
+.others {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+.othersTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.othersList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.other {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name share'
+    'name votes';
+  column-gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.other:last-child {
+  border-bottom: 0;
+}
+
+.otherName {
+  grid-area: name;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.otherParty {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.otherShare {
+  grid-area: share;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.otherVotes {
+  grid-area: votes;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
 @media (min-width: 960px) {
   .card {
     gap: 22px;
@@ -381,5 +443,19 @@
 
   .statValue {
     font-size: 22px;
+  }
+
+  .other {
+    grid-template-columns: minmax(0, 1fr) 90px 130px;
+    grid-template-areas: 'name share votes';
+  }
+
+  .otherName,
+  .otherShare {
+    font-size: 15px;
+  }
+
+  .otherVotes {
+    font-size: 13px;
   }
 }
