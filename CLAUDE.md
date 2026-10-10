@@ -50,7 +50,7 @@ resultados.tse.jus.br (JSON público do TSE)
 - **Endpoint:** `GET /api/abroad?round=1|2` — votos no exterior **por país e por cidade** (com coordenadas), somando os 186 arquivos de cidade do TSE com a tabela cidade → país em `adapters/tse/abroad-cities.ts` (ADR 0008 e 0013). Cache de 60s no 2º turno; buscado só com o Exterior aberto.
 - **Endpoint:** `GET /api/cities?uf=xx&round=1|2` — votos de **cada município** de uma UF (ADR 0014): um arquivo do TSE por município, com busca incremental pelo arquivo de andamento da UF (`<uf>-e<eleição>-ab.json`). Cache de 60s no 2º turno, `maxDuration` de 60s; buscado só com um estado ou uma cidade aberta.
 - **Endpoint:** `GET /api/history?scope=br|zz|<uf>|regiao-<código>` — curva da apuração do 2º turno (um ponto por avanço do total nacional), gravada por `RecordHistory` num JSON do **Vercel Blob** (ADR 0011; credenciais por OIDC ou token; em memória fora de `DATA_SOURCE=tse` ou sem credenciais). Cache de 60s; o front acrescenta os pontos do polling.
-- **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
+- **Prévia de links (ADR 0018):** meta tags Open Graph/Twitter no `index.html` com `public/og.png` (1200×630, estática, gerada por `og:build`); `%SITE_URL%` vira o domínio de produção no build (`VERCEL_PROJECT_PRODUCTION_URL`).
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003). As funções rodam em `gru1` (São Paulo), perto do TSE (ADR 0015).
 
@@ -158,7 +158,7 @@ O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração 
   - Feed: 1080×1350 (4:5) como opção.
 - **Geração no cliente** com Canvas 2D em módulo carregado sob demanda: não consome funções/banda da Vercel, é instantânea e usa exatamente os dados exibidos na tela.
 - **Envio:** Web Share API com arquivo (`navigator.share({ files })`), que abre a folha de compartilhamento nativa do iOS/Android com Instagram Stories, WhatsApp etc. Fallback: **baixar a imagem** (desktop ou navegador sem suporte). Não existe API web oficial para postar direto nos Stories — não tentar deep links proprietários.
-- **Link preview (Open Graph) — pendente:** imagem 1200×630 gerada no servidor (ex.: `@vercel/og`), cacheada pelo CDN como os demais endpoints, para que links compartilhados no WhatsApp/X/Facebook mostrem o placar atual.
+- **Link preview (Open Graph, ADR 0018):** título, descrição e imagem estática `public/og.png` (1200×630, identidade do site, sem placar), com URLs absolutas do domínio de produção. Placar ao vivo na prévia (`GET /api/og`) fica para depois: as redes guardam a prévia por horas.
 - Visual das imagens segue a identidade do site e é legível em tela pequena (números grandes, alto contraste).
 
 ## Atualização dos dados e limites do Vercel Hobby
@@ -187,6 +187,7 @@ pnpm --filter @stb/web map:world   # regera os mapas por continente do Exterior 
 pnpm --filter @stb/web map:cities  # regera as malhas municipais (--download baixa de novo do IBGE)
 pnpm --filter @stb/api geocode:abroad  # coordenadas das cidades do exterior (OpenStreetMap; revisar à mão)
 pnpm --filter @stb/web photos:fetch  # baixa as fotos oficiais dos candidatos do 2º turno
+pnpm --filter @stb/web og:build      # regera a imagem de prévia de links (public/og.png; precisa de Chromium)
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
 pnpm --filter @stb/api fixtures:cities 6257 test/fixtures/ele2026-6257 ac ap rr  # baixa os municípios dessas UFs
 ```
@@ -200,7 +201,7 @@ Pendente:
 - Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
 - Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país e a votação por cidade para o Claude Design.
 
-- `GET /api/og` (prévia de links com o placar atual).
+- `GET /api/og` (prévia de links com o placar atual), se valer a pena apesar do cache das redes (ADR 0018).
 - Pinch-zoom/pan do mapa no mobile.
 - Testes e2e (Playwright) em viewports de celular e auditoria Lighthouse.
 - Primeiro deploy de Preview: conferir `x-vercel-cache` e compressão (checklist em `docs/architecture.md`).
