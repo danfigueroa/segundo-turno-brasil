@@ -1,6 +1,6 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { countedPercentage, STATE_CODES, STATES, type StateCode, type Tally } from '@stb/domain';
-import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
@@ -18,12 +18,6 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
 }
 
-interface Hover {
-  readonly area: Area;
-  readonly x: number;
-  readonly y: number;
-}
-
 /** Labels for states too small to fit their code inside are skipped. */
 const UNLABELED = new Set<StateCode>(['DF', 'SE', 'AL', 'PB', 'PE', 'RN', 'ES', 'RJ']);
 
@@ -33,7 +27,6 @@ const areaSelection = (area: Area): Selection =>
 
 /** Choropleth: each state takes the leader's hue, darker the wider the margin. */
 export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
-  const [hover, setHover] = useState<Hover>();
   const wide = useMediaQuery('(min-width: 960px)');
 
   const tallyOf = (area: Area): Tally => (area === 'abroad' ? data.abroad : data.states[area]);
@@ -52,13 +45,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
   const anyLead = leads.some(Boolean);
   const anyWithoutLead = leads.some((lead) => !lead);
 
-  /** Positions the tooltip relative to the map container that holds `target`. */
-  const hoverAt = (area: Area, target: Element, clientX: number, clientY: number) => {
-    const box = target.closest(`.${styles.container}`)?.getBoundingClientRect();
-    if (box) setHover({ area, x: clientX - box.left, y: clientY - box.top });
-  };
-
-  /** Selection, hover and focus props shared by states and the abroad button. */
+  /** Selection props shared by states and the abroad button. */
   const interactive = (area: Area) => {
     const { lead, counted } = describe(area);
     const status = lead
@@ -72,16 +59,6 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
       'data-selected': isSelected(area) || undefined,
       'data-emphasis': emphasisOf(area, selection),
       onClick: () => onSelect(areaSelection(area)),
-      onPointerMove: (event: PointerEvent<Element>) => {
-        if (event.pointerType === 'mouse') {
-          hoverAt(area, event.currentTarget, event.clientX, event.clientY);
-        }
-      },
-      onFocus: (event: FocusEvent<Element>) => {
-        const box = event.currentTarget.getBoundingClientRect();
-        hoverAt(area, event.currentTarget, box.left + box.width / 2, box.top + box.height / 2);
-      },
-      onBlur: () => setHover(undefined),
     } as const;
   };
 
@@ -98,8 +75,6 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     },
   });
 
-  const hovered = hover && describe(hover.area);
-
   return (
     <section className={`card ${styles.card}`} aria-labelledby="map-title">
       <div className={styles.head}>
@@ -115,7 +90,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
         </p>
       </div>
 
-      <div className={styles.container} onPointerLeave={() => setHover(undefined)}>
+      <div className={styles.container}>
         <svg className={styles.map} viewBox={BRAZIL_MAP.viewBox} role="group" aria-label="Estados">
           {STATE_CODES.map((code) => (
             <path
@@ -141,24 +116,6 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
         >
           Exterior
         </button>
-
-        {hover && hovered && (
-          <div
-            className={styles.tooltip}
-            style={{ left: hover.x, top: hover.y }}
-            role="presentation"
-            aria-hidden="true"
-          >
-            <div className={styles.tooltipTitle}>{areaName(hover.area)}</div>
-            {hovered.results.map((r) => (
-              <div key={r.number} className={styles.tooltipRow} data-hue={r.hue}>
-                <strong>{formatPercent(r.share)}</strong>
-                <span>{r.name}</span>
-              </div>
-            ))}
-            <div className={styles.tooltipMeta}>{formatPercent(hovered.counted)} apurado</div>
-          </div>
-        )}
       </div>
 
       <StateSelect

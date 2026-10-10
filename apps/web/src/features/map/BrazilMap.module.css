@@ -156,51 +156,6 @@
   outline-offset: 2px;
 }
 
-.tooltip {
-  position: absolute;
-  z-index: 2;
-  min-width: 180px;
-  transform: translate(-50%, calc(-100% - 14px));
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--surface-raised);
-  border: 1px solid var(--hairline);
-  box-shadow: var(--shadow);
-  pointer-events: none;
-  font-size: 0.85rem;
-}
-
-.tooltipTitle {
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.tooltipRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.tooltipRow::before {
-  content: '';
-  width: 12px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--hue);
-}
-
-.tooltipRow[data-hue='red'] {
-  --hue: var(--cand-red);
-}
-.tooltipRow[data-hue='blue'] {
-  --hue: var(--cand-blue);
-}
-
-.tooltipRow span,
-.tooltipMeta {
-  color: var(--text-secondary);
-}
-
 .select {
   grid-area: select;
 }
