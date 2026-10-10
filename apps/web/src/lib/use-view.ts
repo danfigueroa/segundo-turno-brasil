@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { parseHash, toHash, type Selection } from './selection';
+import { parseHash, toHash, type View } from './view';
 
 function subscribe(onChange: () => void) {
   window.addEventListener('hashchange', onChange);
@@ -8,10 +8,10 @@ function subscribe(onChange: () => void) {
 
 const getHash = () => window.location.hash;
 
-/** Current selection, kept in the URL hash so links and the back button work. */
-export function useSelection(): [Selection, (next: Selection) => void] {
+/** Current view (round + scope), kept in the URL hash so links and the back button work. */
+export function useView(): [View, (next: View) => void] {
   const hash = useSyncExternalStore(subscribe, getHash, () => '');
-  const select = useCallback((next: Selection) => {
+  const navigate = useCallback((next: View) => {
     const target = toHash(next);
     if (target === window.location.hash) return;
     if (target === '') {
@@ -21,5 +21,5 @@ export function useSelection(): [Selection, (next: Selection) => void] {
       window.location.hash = target;
     }
   }, []);
-  return [parseHash(hash), select];
+  return [parseHash(hash), navigate];
 }
