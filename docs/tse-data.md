@@ -50,6 +50,19 @@ ex.: /oficial/ele2026/6257/dados/zz/zz29254-c0001-e006257-u.json   (Abidjã)
 
 A lista de cidades está em `{base}/{ciclo}/{eleição}/config/mun-e{eleição}-cm.json` (abrangência `zz`), **sem o país**. O país, o continente e as coordenadas de cada cidade estão em `apps/api/src/adapters/tse/abroad-cities.ts` (ADR 0008 e 0013). As coordenadas vêm do OpenStreetMap: `pnpm --filter @stb/api geocode:abroad` gera um JSON para revisar e copiar para a tabela. O formato do arquivo é o mesmo dos estados.
 
+## Municípios
+
+Cada município também tem seu arquivo de resultado, no mesmo formato dos estados (ADR 0014):
+
+```
+{base}/{ciclo}/{eleição}/dados/{uf}/{uf}{município}-c0001-e{eleição com 6 dígitos}-u.json
+ex.: /oficial/ele2026/6257/dados/ac/ac01392-c0001-e006257-u.json   (Rio Branco)
+```
+
+- `config/mun-e{eleição}-cm.json`: as 5.757 abrangências (municípios das 27 UFs e as cidades do exterior), cada uma com o código do TSE (`cd`), o **código do IBGE** (`cdi`, chave das malhas) e o nome (`nm`).
+- `dados/{uf}/{uf}-e{eleição}-ab.json`: andamento de cada município da UF (`cdabr`, `dt`/`ht`, `s.st`, eleitorado e comparecimento), **sem votos por candidato**. Serve para saber quais municípios mudaram. Antes da apuração do 2º turno, o de RR ainda não existia (404). Sem ele, a API baixa todos os municípios.
+- O `dt`/`ht` do arquivo de resultado é o de geração e não bate com o do andamento. Por isso, a versão de cada município é a do arquivo de andamento.
+
 ## Fixtures
 
 | Pasta                                     | Conteúdo                                                 |
@@ -57,10 +70,11 @@ A lista de cidades está em `{base}/{ciclo}/{eleição}/config/mun-e{eleição}-
 | `apps/api/test/fixtures/ele2026-6257`     | 1º turno 2026, 100% apurado (base de testes e simulação) |
 | `apps/api/test/fixtures/ele2026-6258-pre` | 2º turno 2026 antes da votação (votos zerados)           |
 
-As pastas também têm os 186 arquivos de cidades do exterior (`zz{cidade}.json`), só com os campos que lemos. Para baixá-los de novo:
+As pastas também têm os 186 arquivos de cidades do exterior (`zz{cidade}.json`) e os municípios de AC, AP e RR (`cm.json`, `{uf}-ab.json`, `{uf}{município}.json`), só com os campos que lemos. Para baixá-los de novo:
 
 ```bash
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257
+pnpm --filter @stb/api fixtures:cities 6257 test/fixtures/ele2026-6257 ac ap rr
 ```
 
-Invariantes testadas com dados reais: soma das 27 UFs + exterior = total nacional; soma dos países = total do exterior.
+Invariantes testadas com dados reais: soma das 27 UFs + exterior = total nacional; soma dos países (e das cidades) = total do exterior; soma dos municípios do Acre = total do Acre.

@@ -38,21 +38,23 @@ A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arqu
 
 ## Scripts
 
-| Comando                            | O que faz                                                    |
-| ---------------------------------- | ------------------------------------------------------------ |
-| `pnpm dev`                         | API (tsx watch) + web (Vite) em paralelo                     |
-| `pnpm test`                        | Vitest em todos os pacotes                                   |
-| `pnpm lint`                        | ESLint                                                       |
-| `pnpm format:check`                | Prettier                                                     |
-| `pnpm typecheck`                   | `tsc` em todos os pacotes                                    |
-| `pnpm build`                       | Build da web + `.vercel/output` (Build Output API da Vercel) |
-| `pnpm --filter @stb/web map:build` | Regera o mapa pré-projetado a partir do IBGE                 |
+| Comando                             | O que faz                                                    |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `pnpm dev`                          | API (tsx watch) + web (Vite) em paralelo                     |
+| `pnpm test`                         | Vitest em todos os pacotes                                   |
+| `pnpm lint`                         | ESLint                                                       |
+| `pnpm format:check`                 | Prettier                                                     |
+| `pnpm typecheck`                    | `tsc` em todos os pacotes                                    |
+| `pnpm build`                        | Build da web + `.vercel/output` (Build Output API da Vercel) |
+| `pnpm --filter @stb/web map:build`  | Regera o mapa pré-projetado a partir do IBGE                 |
+| `pnpm --filter @stb/web map:world`  | Regera o mapa-múndi do Exterior                              |
+| `pnpm --filter @stb/web map:cities` | Regera as malhas municipais (`--download` baixa do IBGE)     |
 
 ## Estrutura
 
 ```
 apps/api           API (Vercel Functions): TSE → domínio → JSON cacheado no CDN
-apps/web           React + Vite: placar, mapa, tabela, compartilhamento
+apps/web           React + Vite: placar, mapas (Brasil, municípios, mundo), listas, compartilhamento
 packages/domain    Regras puras: UFs, regiões, agregação, liderança
 packages/contracts Contrato da API (zod/mini), usado pelo back e pelo front
 docs/              Arquitetura, API, dados do TSE, frontend e ADRs

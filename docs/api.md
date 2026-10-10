@@ -81,6 +81,39 @@ Votos no exterior **por país e por cidade** (ADR 0008 e 0013). O TSE só public
 | 503    | TSE fora e nenhum dado em memória | `no-store` + `retry-after: 60`                                              |
 | 400    | `round` diferente de 1 ou 2       | `no-store`                                                                  |
 
+## `GET /api/cities?uf=xx&round=1|2`
+
+Votos de **cada município de um estado** (ADR 0014). `uf` é a sigla da UF (sem diferenciar maiúsculas) e é obrigatória; `round` é opcional e vale 2 por padrão. O front só busca com um estado ou uma cidade aberta. Schema: [`packages/contracts/src/cities.ts`](../packages/contracts/src/cities.ts).
+
+```jsonc
+{
+  "round": 1,
+  "uf": "AC",
+  "cities": [
+    {
+      "ibge": "1200401", // código do IBGE (chave do mapa municipal)
+      "name": "RIO BRANCO", // como o TSE publica
+      "electorate": 270154,
+      "turnout": 215564,
+      "votes": { "13": 56423, "22": 131895, "55": 5143 }, // por número de urna; sem os zerados
+      "ballots": { "valid": 206854, "blank": 2722, "null": 5988 },
+      "sections": { "total": 723, "counted": 723 },
+      "updatedAt": "2026-10-05T12:51:05-03:00",
+    },
+  ],
+  "fetchedAt": "2026-10-05T15:00:00.000Z",
+  "stale": false,
+}
+```
+
+| Status | Quando                                  | `cache-control`                                                             |
+| ------ | --------------------------------------- | --------------------------------------------------------------------------- |
+| 200    | 2º turno, dados frescos                 | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600`        |
+| 200    | 1º turno (resultado final)              | `public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400` |
+| 200    | `stale: true`                           | `public, s-maxage=5`                                                        |
+| 503    | TSE fora e nenhum dado em memória       | `no-store` + `retry-after: 60`                                              |
+| 400    | `uf` ausente ou inválida, `round` ≠ 1/2 | `no-store`                                                                  |
+
 ## `GET /api/history?scope=…`
 
 Como a apuração do **2º turno** evoluiu numa abrangência: um ponto por atualização do total nacional (ADR 0011). Schema: [`packages/contracts/src/history.ts`](../packages/contracts/src/history.ts).
