@@ -1,9 +1,9 @@
 /*
- * Design tokens. Brand: flag green and yellow on an off-white ground, ink-green text.
+ * Design tokens, taken verbatim from the Claude Design file (ADR 0007). Light theme only,
+ * as designed. Brand: flag green and yellow on an off-white ground, ink-green text.
  * Candidate hues follow the candidate, never the rank. The diverging map ramp has five
  * margin bins per candidate; each step also differs in lightness, so the map still reads
- * without hue. Dark mode uses its own steps, not an automatic inversion: its ramp runs
- * from near-surface (narrow margin) to bright (wide margin).
+ * without hue.
  */
 :root {
   color-scheme: light;
@@ -69,100 +69,4 @@
   --shadow: 0 8px 24px rgba(15, 26, 20, 0.08);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration: 800ms;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --page: #0e1511;
-    --surface: #17201b;
-    --surface-raised: #2e3b33;
-    --surface-sunken: #232d27;
-    --surface-selected: #222d26;
-    --text-primary: #eef2ec;
-    --text-secondary: #a9b4ac;
-    --text-muted: #7d887f;
-    --hairline: #2a352e;
-    --divider: #232d27;
-    --control-border: #3a463e;
-    --track: #2a352e;
-    --focus: #eef2ec;
-    --brand-text: #5cc98a;
-    --brand-soft: #133524;
-    --warning-bg: #3a3005;
-    --warning-border: #5e4e10;
-    --warning-text: #f5d664;
-    --live-bg: #3d1714;
-    --live-text: #ff8a7d;
-    --cand-red: #ef5a4c;
-    --cand-blue: #4b83e8;
-    --cand-red-text: #ff8a7d;
-    --cand-blue-text: #8db2f5;
-    --others: #4a544d;
-    --undecided: #313b34;
-    --red-1: #4a2320;
-    --red-2: #7a302a;
-    --red-3: #b23a2f;
-    --red-4: #e25a4c;
-    --red-5: #f79286;
-    --blue-1: #1e2f4d;
-    --blue-2: #24467f;
-    --blue-3: #2f63be;
-    --blue-4: #4b83e8;
-    --blue-5: #8db2f5;
-    --ramp-text-light-steps: #eef2ec;
-    --ramp-text-dark-steps: #0f1a14;
-    --map-empty: #313b34;
-    --map-stroke: #17201b;
-    --map-selected: #eef2ec;
-    --shadow-control: 0 1px 3px rgba(0, 0, 0, 0.5);
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  }
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --page: #0e1511;
-  --surface: #17201b;
-  --surface-raised: #2e3b33;
-  --surface-sunken: #232d27;
-  --surface-selected: #222d26;
-  --text-primary: #eef2ec;
-  --text-secondary: #a9b4ac;
-  --text-muted: #7d887f;
-  --hairline: #2a352e;
-  --divider: #232d27;
-  --control-border: #3a463e;
-  --track: #2a352e;
-  --focus: #eef2ec;
-  --brand-text: #5cc98a;
-  --brand-soft: #133524;
-  --warning-bg: #3a3005;
-  --warning-border: #5e4e10;
-  --warning-text: #f5d664;
-  --live-bg: #3d1714;
-  --live-text: #ff8a7d;
-  --cand-red: #ef5a4c;
-  --cand-blue: #4b83e8;
-  --cand-red-text: #ff8a7d;
-  --cand-blue-text: #8db2f5;
-  --others: #4a544d;
-  --undecided: #313b34;
-  --red-1: #4a2320;
-  --red-2: #7a302a;
-  --red-3: #b23a2f;
-  --red-4: #e25a4c;
-  --red-5: #f79286;
-  --blue-1: #1e2f4d;
-  --blue-2: #24467f;
-  --blue-3: #2f63be;
-  --blue-4: #4b83e8;
-  --blue-5: #8db2f5;
-  --ramp-text-light-steps: #eef2ec;
-  --ramp-text-dark-steps: #0f1a14;
-  --map-empty: #313b34;
-  --map-stroke: #17201b;
-  --map-selected: #eef2ec;
-  --shadow-control: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
