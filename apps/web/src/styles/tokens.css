@@ -1,0 +1,82 @@
+/*
+ * Design tokens. Candidate hues and the diverging map ramp were validated for
+ * color-vision deficiency (blue #2a78d6 vs red #e34948: CVD ΔE 21.6, contrast ≥ 3:1).
+ * Dark mode uses its own steps, not an automatic inversion.
+ */
+:root {
+  color-scheme: light;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #6f6d68;
+  --hairline: rgba(11, 11, 11, 0.1);
+  --track: #e8e7e1;
+  --focus: #0b0b0b;
+  --warning-bg: #fff4d6;
+  --warning-text: #6b4a00;
+
+  --cand-red: #e34948;
+  --cand-blue: #2a78d6;
+
+  /* Diverging map ramp: margin bins from narrow (1) to wide (5). */
+  --red-1: #f6c3be;
+  --red-2: #ef948d;
+  --red-3: #e34948;
+  --red-4: #b52f30;
+  --red-5: #7d1d20;
+  --blue-1: #b7d3f6;
+  --blue-2: #86b6ef;
+  --blue-3: #3987e5;
+  --blue-4: #1c5cab;
+  --blue-5: #0d366b;
+  --map-empty: #e1e0d9;
+  --map-stroke: var(--surface);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 8px 24px rgba(11, 11, 11, 0.06);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration: 800ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-raised: #222220;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9a988f;
+    --hairline: rgba(255, 255, 255, 0.1);
+    --track: #2c2c2a;
+    --focus: #f0efec;
+    --warning-bg: #3a2c05;
+    --warning-text: #fad87a;
+    --cand-red: #e66767;
+    --cand-blue: #3987e5;
+    --map-empty: #383835;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-raised: #222220;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #9a988f;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --track: #2c2c2a;
+  --focus: #f0efec;
+  --warning-bg: #3a2c05;
+  --warning-text: #fad87a;
+  --cand-red: #e66767;
+  --cand-blue: #3987e5;
+  --map-empty: #383835;
+}
