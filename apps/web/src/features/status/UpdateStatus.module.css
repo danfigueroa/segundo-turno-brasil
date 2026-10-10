@@ -28,3 +28,16 @@
   background: var(--surface);
   border: 1px solid var(--hairline);
 }
+
+.link {
+  display: block;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

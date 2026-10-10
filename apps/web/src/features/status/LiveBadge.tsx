@@ -1,14 +1,25 @@
-import type { Tally } from '@stb/domain';
+import type { Round, Tally } from '@stb/domain';
 import styles from './LiveBadge.module.css';
 
-/** "Ao vivo" while counting, "Final" when every section is counted. */
-export function LiveBadge({ country }: { readonly country: Tally }) {
+interface Props {
+  readonly round: Round;
+  readonly country: Tally;
+}
+
+function badgeText(round: Round, total: number, counted: number): string {
+  if (round === 1) return 'Resultado final';
+  if (counted === 0) return 'Aguardando apuração';
+  return total > 0 && counted === total ? 'Apuração encerrada' : 'Ao vivo';
+}
+
+/** Pulses "Ao vivo" only while the runoff is actually being counted. */
+export function LiveBadge({ round, country }: Props) {
   const { total, counted } = country.sections;
-  const done = total > 0 && counted === total;
+  const text = badgeText(round, total, counted);
   return (
-    <span className={styles.badge} data-done={done || undefined}>
+    <span className={styles.badge} data-done={text !== 'Ao vivo' || undefined}>
       <span className={styles.dot} aria-hidden="true" />
-      {done ? 'Apuração encerrada' : 'Ao vivo'}
+      {text}
     </span>
   );
 }
