@@ -50,6 +50,8 @@ O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é val
 - `functions/api/results.func/`, `functions/api/abroad.func/` e `functions/api/history.func/` — funções empacotadas pelo esbuild (`index.mjs`, Node 22).
 - `config.json` — cabeçalhos de segurança, fallback SPA para `index.html` e 404 para `/api/*` desconhecido.
 
+Dependências CommonJS (o `undici`, que vem com o `@vercel/blob`) chamam `require()`, que não existe em módulos ES: o build injeta um `require` com `createRequire` no topo de cada função. `pnpm smoke` (também no CI) executa cada função empacotada contra uma requisição real, em processos separados, e falha se alguma cair; os testes unitários rodam o TypeScript e não pegam problemas que só existem no pacote.
+
 Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de pacotes do workspace (ver [ADR 0003](adr/0003-build-output-api.md)). Para conferir localmente, rode `pnpm build` e importe `index.mjs` num servidor `node:http`.
 
 ### Checklist pós-deploy (Preview)
