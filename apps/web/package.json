@@ -17,6 +17,7 @@
     "@stb/contracts": "workspace:*",
     "@stb/domain": "workspace:*",
     "@tanstack/react-query": "^5.104.1",
+    "@vercel/analytics": "^2.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
