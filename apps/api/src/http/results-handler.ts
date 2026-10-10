@@ -1,6 +1,9 @@
 import type { ResultsResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
 import type { ResultsSnapshot } from '../use-cases/get-results';
+import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
+
+export type { Handler } from './round';
 
 /** Fresh live data: CDN serves it for 15s, then revalidates in the background. */
 export const FRESH_CACHE = 'public, s-maxage=15, stale-while-revalidate=30, stale-if-error=600';
@@ -10,24 +13,9 @@ export const FINAL_CACHE =
 /** Stale data (TSE unreachable): short CDN cache so recovery shows up quickly. */
 export const STALE_CACHE = 'public, s-maxage=5';
 
-export type Handler = (request: Request) => Promise<Response>;
-
 interface RoundResults {
   execute(): Promise<ResultsSnapshot>;
 }
-
-/** Rounds whose results are final and no longer change. */
-const FINAL_ROUNDS: ReadonlySet<Round> = new Set([1]);
-
-function parseRound(request: Request): Round | undefined {
-  const value = new URL(request.url).searchParams.get('round') ?? '2';
-  if (value === '1') return 1;
-  if (value === '2') return 2;
-  return undefined;
-}
-
-const noStore = (status: number, error: string, headers: Record<string, string> = {}) =>
-  Response.json({ error }, { status, headers: { 'cache-control': 'no-store', ...headers } });
 
 /** `GET /api/results?round=1|2` (default 2): the latest snapshot of every scope. */
 export function createResultsHandler(rounds: Readonly<Record<Round, RoundResults>>): Handler {
