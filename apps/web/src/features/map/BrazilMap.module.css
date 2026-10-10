@@ -281,6 +281,8 @@
   .card {
     grid-template-areas: 'head select' 'map map' 'legend legend';
     grid-template-columns: 1fr minmax(220px, auto);
+    /* When the result card beside it is taller, the map takes the extra height. */
+    grid-template-rows: auto 1fr auto;
     align-items: end;
     gap: 16px;
     padding: 28px;
@@ -303,6 +305,10 @@
 
   .label {
     display: inline;
+  }
+
+  .container {
+    align-self: center;
   }
 
   .abroad {
