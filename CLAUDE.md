@@ -18,7 +18,7 @@ Princípios:
 
 | Camada     | Tecnologia                                                           |
 | ---------- | -------------------------------------------------------------------- |
-| Frontend   | React + Vite + TypeScript, TanStack Query, Motion (`m`/`LazyMotion`) |
+| Frontend   | React + Vite + TypeScript, TanStack Query, Schibsted Grotesk         |
 | Backend    | Vercel Functions em TypeScript (Node 22), empacotadas com esbuild    |
 | Contrato   | `zod/mini` compartilhado entre back e front (`zod` no adaptador TSE) |
 | Hospedagem | Vercel (plano Hobby, gratuito)                                       |
@@ -59,7 +59,7 @@ apps/
       api/                # cliente /api/results + polling (TanStack Query)
       lib/                # format, seleção (hash da URL), finalistas e faixas de margem
       components/         # peças genéricas (AnimatedNumber, ProgressBar)
-      features/           # scoreboard, map, scope-picker, states-table, status, state-sheet, share
+      features/           # result-card, map, scope-chips, states-list, countdown, status, share
       layout/
   api/
     src/
@@ -108,18 +108,20 @@ Regras:
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
 - **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
 - Navegação: **Brasil / Região / Estado / Exterior**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (bloco no mapa, chip, tabela, compartilhamento).
-- Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; `motion` só para entrada/saída (bottom sheet).
+- **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
+- Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
+- Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
 - Barra de progresso de **% de seções apuradas** sempre visível.
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
-- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, tabela por estado, `prefers-reduced-motion` respeitado, tema claro/escuro.
-- **Orçamento:** JS inicial ≈ 138 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
+- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado, tema claro/escuro.
+- **Orçamento:** JS inicial ≈ 115 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 
 ## Mobile first (requisito crítico)
 
 A maior parte do público acessa pelo **celular** — a experiência mobile **não pode** ser inferior à desktop.
 
 - Projetar e implementar **primeiro para 360px** de largura e só depois expandir para tablet/desktop.
-- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e abre os detalhes em um **bottom sheet**. (Pendente: pinch-zoom/pan no mapa sem quebrar a rolagem da página.)
+- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e rola até o card de resultado dela. (Pendente: pinch-zoom/pan no mapa sem quebrar a rolagem da página.)
 - Alvos de toque com no mínimo **44×44px**; textos legíveis sem zoom (≥ 16px no corpo).
 - Respeitar `safe-area-inset-*` (notch / barra de gestos) e funcionar em retrato e paisagem.
 - Desempenho em rede móvel: meta **Lighthouse mobile ≥ 90**, LCP < 2,5s em 4G, JS inicial enxuto, código não essencial carregado sob demanda.
@@ -129,7 +131,7 @@ A maior parte do público acessa pelo **celular** — a experiência mobile **n�
 
 O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração em tempo real** nos **Stories do Instagram** (e demais redes/WhatsApp).
 
-- Botão **"Compartilhar"** sempre acessível (fixo no mobile) gera uma imagem com os dados **do momento**:
+- Botão **"Compartilhar"** no card de resultado ("Compartilhar Bahia") gera uma imagem com os dados **do momento**:
   - candidatos, percentuais e votos;
   - % de urnas apuradas;
   - abrangência atual (Brasil, região ou UF) com o mapa colorido;
@@ -168,10 +170,11 @@ pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
 
 ## Status e próximos passos
 
-Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (placar, mapa, regiões, tabela, bottom sheet, tema escuro), compartilhamento Stories/Feed, build da Vercel e CI.
+Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (redesenho verde e amarelo: card de resultado, mapa, regiões, lista de estados, contagem regressiva, tema escuro), compartilhamento Stories/Feed, build da Vercel e CI.
 
 Pendente:
 
+- "Votação por país" no Exterior (do desenho): exige nova fonte de dados — o TSE publica o exterior em 186 arquivos por cidade, sem país (ADR 0007).
 - `GET /api/og` (prévia de links com o placar atual).
 - Pinch-zoom/pan do mapa no mobile.
 - Testes e2e (Playwright) em viewports de celular e auditoria Lighthouse.
