@@ -3,7 +3,7 @@
 Acompanhe **ao vivo** a apuração do 2º turno da eleição presidencial de **25/10/2026**: placar nacional, por região e por estado, num mapa do Brasil interativo e animado, com imagens prontas para compartilhar nos Stories.
 
 - Mapa coroplético: cada estado na cor de quem lidera, mais intenso quanto maior a vantagem.
-- Navegação Brasil / Região / Estado, com link compartilhável (`/#/sp`, `/#/regiao/ne`).
+- Navegação Brasil / Região / Estado / Exterior, com link compartilhável (`/#/sp`, `/#/regiao/ne`, `/#/exterior`).
 - Mobile first: bottom sheet ao tocar num estado, alvos de toque de 44px, tema claro/escuro.
 - Compartilhamento: imagem 1080×1920 (Stories) ou 1080×1350 (Feed) gerada no aparelho, enviada pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou baixada.
 - Dados oficiais do TSE, atualizados a cada ~20s, com fallback quando o TSE oscila.
