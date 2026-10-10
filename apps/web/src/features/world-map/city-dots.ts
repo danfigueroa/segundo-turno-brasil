@@ -1,4 +1,4 @@
-import type { AbroadCityResult } from '@stb/domain';
+import type { AbroadCityResult, ContinentCode } from '@stb/domain';
 import { leadOfVotes, type Finalist, type StateLead } from '../../lib/finalists';
 import { formatName } from '../../lib/format';
 import { project, type Projection } from './project';
@@ -7,6 +7,7 @@ export interface CityDot {
   readonly code: string;
   /** Display name, e.g. "Nova York". */
   readonly name: string;
+  readonly continent: ContinentCode;
   readonly x: number;
   readonly y: number;
   readonly r: number;
@@ -34,6 +35,7 @@ export function cityDots(
       return {
         code: city.code,
         name: formatName(city.name),
+        continent: city.continent,
         x,
         y,
         r: Math.max(MIN_RADIUS, MAX_RADIUS * Math.sqrt(city.electorate / largest)),
