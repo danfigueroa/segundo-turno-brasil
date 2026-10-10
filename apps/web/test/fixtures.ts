@@ -29,6 +29,7 @@ export function resultsResponse(overrides: Partial<ResultsResponse> = {}): Resul
     ]),
   ) as Record<StateCode, Tally>;
   return {
+    round: 2,
     country: tally({ kind: 'country' }, 12_000, 12_400),
     states,
     abroad: tally({ kind: 'abroad' }, 10, 20),

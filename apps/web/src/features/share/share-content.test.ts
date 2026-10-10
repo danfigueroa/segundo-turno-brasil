@@ -11,6 +11,7 @@ describe('shareContentFrom', () => {
   it('summarizes the national result', () => {
     const content = shareContentFrom(data, { kind: 'country' }, finalists, 'example.com');
     expect(content.title).toBe('Brasil');
+    expect(content.round).toBe(2);
     expect(content.leaderNumber).toBe('22');
     expect(content.counted).toBe(50);
     expect(content.focus.size).toBe(27);
