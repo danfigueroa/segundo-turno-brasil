@@ -1,7 +1,9 @@
 import { REGION_CODES, STATE_CODES, type Tally } from '@stb/domain';
-import { z } from 'zod';
+// zod/mini is tree-shakeable: this module also ships to the browser, where classic zod
+// would add ~90 KB (gzip) to the bundle.
+import * as z from 'zod/mini';
 
-const count = z.number().int().nonnegative();
+const count = z.int().check(z.nonnegative());
 const timestamp = z.iso.datetime({ offset: true });
 
 export const stateCodeSchema = z.enum(STATE_CODES);
@@ -14,22 +16,22 @@ export const scopeSchema = z.discriminatedUnion('kind', [
 ]);
 
 export const candidateResultSchema = z.object({
-  number: z.string().min(1),
-  name: z.string().min(1),
+  number: z.string().check(z.minLength(1)),
+  name: z.string().check(z.minLength(1)),
   party: z.string(),
   votes: count,
-  share: z.number().min(0).max(100),
+  share: z.number().check(z.gte(0), z.lte(100)),
 });
 
 export const tallySchema = z.object({
   scope: scopeSchema,
-  candidates: z.array(candidateResultSchema).readonly(),
+  candidates: z.readonly(z.array(candidateResultSchema)),
   sections: z.object({ total: count, counted: count }),
   electorate: count,
   turnout: count,
   votes: z.object({ valid: count, blank: count, null: count }),
   updatedAt: timestamp,
-}) satisfies z.ZodType<Tally>;
+}) satisfies z.ZodMiniType<Tally>;
 
 /** Response of `GET /api/results`: a consistent snapshot of every scope. */
 export const resultsResponseSchema = z.object({
