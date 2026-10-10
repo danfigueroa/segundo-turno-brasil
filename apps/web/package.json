@@ -16,7 +16,6 @@
     "@stb/contracts": "workspace:*",
     "@stb/domain": "workspace:*",
     "@tanstack/react-query": "^5.104.1",
-    "motion": "^14.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
