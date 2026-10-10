@@ -22,6 +22,13 @@ const FUNCTIONS = {
 const MAX_DURATION = { 'api/cities': 60 };
 
 /**
+ * Region the functions run in: São Paulo, next to the TSE servers. The CDN serves
+ * users from its nearest edge regardless; this only shortens the hops to the TSE
+ * (hundreds of files on a cold `/api/cities`). Hobby allows a single region.
+ */
+const REGIONS = ['gru1'];
+
+/**
  * Dependencies published as CommonJS (e.g. `undici`, pulled in by `@vercel/blob`) call
  * `require()` for Node built-ins, which ES modules lack: give the bundle a real one.
  */
@@ -56,6 +63,7 @@ for (const [route, entry] of Object.entries(FUNCTIONS)) {
     handler: 'index.mjs',
     launcherType: 'Nodejs',
     shouldAddHelpers: false,
+    regions: REGIONS,
     ...(MAX_DURATION[route] && { maxDuration: MAX_DURATION[route] }),
   });
 }
