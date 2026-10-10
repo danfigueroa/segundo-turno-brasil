@@ -1,0 +1,40 @@
+{
+  "name": "@stb/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "map:build": "tsx scripts/build-map.ts"
+  },
+  "dependencies": {
+    "@stb/contracts": "workspace:*",
+    "@stb/domain": "workspace:*",
+    "@tanstack/react-query": "^5.104.1",
+    "motion": "^14.1.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/d3-geo": "^3.1.1",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/topojson-client": "^3.1.5",
+    "@types/topojson-specification": "^1.0.5",
+    "@vitejs/plugin-react": "^6.1.2",
+    "d3-geo": "^3.1.1",
+    "jsdom": "^30.1.2",
+    "topojson-client": "^3.1.0",
+    "tsx": "^4.23.15",
+    "vite": "^8.3.4"
+  }
+}
