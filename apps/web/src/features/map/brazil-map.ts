@@ -15,6 +15,7 @@ export const BRAZIL_MAP = data as {
 
 /**
  * Votes cast abroad have no territory: they are drawn as a tile in the Atlantic,
- * south-east of the coast (viewBox coordinates).
+ * south-east of the coast (viewBox coordinates). Sized to stay a ≥ 44px touch target
+ * on a 360px-wide phone.
  */
-export const ABROAD_TILE = { x: 820, y: 860, width: 160, height: 84, radius: 16 } as const;
+export const ABROAD_TILE = { x: 760, y: 815, width: 220, height: 145, radius: 20 } as const;
