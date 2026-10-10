@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
@@ -143,16 +143,17 @@ describe('App abroad votes', () => {
     expect(await screen.findByRole('heading', { name: 'Votação por país' })).toBeInTheDocument();
   });
 
-  it('swaps the map of Brazil for a world map of the cities abroad', async () => {
+  it('swaps the map of Brazil for a map of the countries of a continent', async () => {
     window.location.hash = '#/exterior';
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
     expect(
-      await screen.findByRole('heading', { name: 'Quem lidera em cada cidade' }),
+      await screen.findByRole('heading', { name: 'Quem lidera em cada país' }),
     ).toBeInTheDocument();
+    // Europe, with the most voters abroad, opens first.
     expect(
-      await screen.findByRole('img', { name: /Lula lidera em 1 cidade, .* lidera em 2 cidades/ }),
+      await screen.findByRole('img', { name: /^Europa: Lula lidera em 1 país, .* em 0 países/ }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Estados' })).not.toBeInTheDocument();
 
@@ -161,26 +162,20 @@ describe('App abroad votes', () => {
     expect(await screen.findByRole('group', { name: 'Estados' })).toBeInTheDocument();
   });
 
-  it('zooms the world map into a continent', async () => {
+  it('switches the map to another continent', async () => {
     window.location.hash = '#/exterior';
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
-    const zoom = await screen.findByRole('group', { name: 'Aproximar o mapa' });
-    const world = screen.getByRole('group', { name: 'Mundo' });
-    const viewBox = world.getAttribute('viewBox');
-    expect(within(zoom).getByRole('button', { name: 'Mundo' })).toHaveAttribute(
+    const continents = await screen.findByRole('group', { name: 'Continente do mapa' });
+    expect(within(continents).getByRole('button', { name: 'Europa' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-
-    await userEvent.click(within(zoom).getByRole('button', { name: 'Europa' }));
-    const europe = screen.getByRole('group', { name: 'Europa' });
-    await waitFor(() => expect(europe.getAttribute('viewBox')).not.toBe(viewBox));
-    expect(within(zoom).getByRole('button', { name: 'Europa' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await userEvent.click(within(continents).getByRole('button', { name: 'Américas' }));
+    expect(
+      await screen.findByRole('img', { name: /^Américas: Lula lidera em 0 países, .* em 1 país/ }),
+    ).toBeInTheDocument();
   });
 });
 
