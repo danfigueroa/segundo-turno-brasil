@@ -1,5 +1,5 @@
 import { REGION_NAMES, STATES, type Round } from '@stb/domain';
-import { useMemo, useRef } from 'react';
+import { lazy, Suspense, useMemo, useRef } from 'react';
 import { useAbroad } from './api/abroad';
 import { useResults } from './api/use-results';
 import { RunoffCountdown } from './features/countdown/RunoffCountdown';
@@ -36,6 +36,9 @@ function shareLabel(selection: Selection): string {
   }
 }
 
+// Below the scoreboard and the map: loaded after the first paint (ADR 0005).
+const Insights = lazy(() => import('./features/insights/Insights'));
+
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export function App() {
@@ -44,7 +47,11 @@ export function App() {
   const runoff = useResults(2);
   const waitingForDefault = view.round === undefined && runoff.isPending;
   const round = resolveRound(view.round, runoff.data);
-  const firstRound = useResults(1, { enabled: round === 1 && !waitingForDefault });
+  const runoffStarted = (runoff.data?.country.sections.counted ?? 0) > 0;
+  // The first round is also compared with the runoff once its count starts.
+  const firstRound = useResults(1, {
+    enabled: !waitingForDefault && (round === 1 || runoffStarted),
+  });
   const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
   // The breakdown by country is heavier and only needed while abroad is on screen.
   const abroad = useAbroad(round, {
@@ -131,6 +138,18 @@ export function App() {
           )}
           <BrazilMap data={data} finalists={finalists} selection={selection} onSelect={select} />
         </div>
+        {!waiting && runoff.data && (
+          <Suspense fallback={null}>
+            <Insights
+              round={round}
+              runoff={runoff.data}
+              firstRound={firstRound.data}
+              selection={selection}
+              finalists={finalists}
+              onSelect={select}
+            />
+          </Suspense>
+        )}
         {!waiting && selection.kind !== 'abroad' && (
           <StatesList data={data} finalists={finalists} selection={selection} onSelect={select} />
         )}
