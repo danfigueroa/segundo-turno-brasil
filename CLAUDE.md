@@ -16,15 +16,15 @@ Princípios:
 
 ## Stack
 
-| Camada     | Tecnologia                                                       |
-| ---------- | ---------------------------------------------------------------- |
-| Frontend   | React + Vite + TypeScript, TanStack Query, d3-geo, Framer Motion |
-| Backend    | Vercel Functions em TypeScript (serverless)                      |
-| Contrato   | Schemas `zod` compartilhados entre back e front                  |
-| Hospedagem | Vercel (plano Hobby, gratuito)                                   |
-| Monorepo   | pnpm workspaces                                                  |
-| Qualidade  | ESLint, Prettier, Vitest, Testing Library, Playwright (opcional) |
-| CI         | GitHub Actions                                                   |
+| Camada     | Tecnologia                                                           |
+| ---------- | -------------------------------------------------------------------- |
+| Frontend   | React + Vite + TypeScript, TanStack Query, Motion (`m`/`LazyMotion`) |
+| Backend    | Vercel Functions em TypeScript (Node 22), empacotadas com esbuild    |
+| Contrato   | `zod/mini` compartilhado entre back e front (`zod` no adaptador TSE) |
+| Hospedagem | Vercel (plano Hobby, gratuito)                                       |
+| Monorepo   | pnpm workspaces                                                      |
+| Qualidade  | ESLint, Prettier, Vitest, Testing Library                            |
+| CI         | GitHub Actions                                                       |
 
 > Por que não Go? O backend é um proxy fino cacheado pelo CDN: roda poucas vezes por minuto, então a performance da linguagem não faz diferença. TypeScript é o runtime de primeira classe na Vercel e permite **um único contrato de tipos** entre back e front.
 
@@ -37,40 +37,48 @@ Navegador (React SPA)
 CDN Vercel ── cache hit (< 15s) ──> resposta imediata
    │  cache expirado
    ▼
-/api/* (Vercel Functions, TypeScript)
+GET /api/results (Vercel Function, TypeScript)
    │  Cache-Control: public, s-maxage=15, stale-while-revalidate=30, stale-if-error=600
    ▼
 resultados.tse.jus.br (JSON público do TSE)
 ```
 
 - **Sem cron e sem banco de dados.** O CDN absorve o tráfego; a função só executa quando o cache expira. O próprio acesso dos usuários dispara a atualização.
-- **Endpoints planejados:**
-  - `GET /api/results/br` — resultado nacional
-  - `GET /api/results/states` — as 27 UFs agregadas (alimenta o mapa)
-  - `GET /api/results/states/:uf` — detalhe de uma UF
-  - `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews
-  - Regiões (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) são derivadas das UFs no domínio.
-- **Falha do TSE:** `stale-if-error` mantém a última cópia; a UI exibe "Última atualização às HH:MM".
+- **Endpoint:** `GET /api/results` — Brasil, exterior e as 27 UFs num único snapshot consistente (ver `docs/api.md` e ADR 0002). Regiões são agregadas no cliente com `aggregateRegion`.
+- **Planejado:** `GET /api/og` — imagem Open Graph (1200×630) com o placar atual, para link previews.
+- **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
+- **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003).
 
 ### Arquitetura limpa (ports & adapters)
 
 ```
 apps/
-  web/                 # React SPA — consome apenas packages/contracts
-  api/                 # Vercel Functions
+  web/                    # React SPA — consome apenas packages/contracts e domain
+    scripts/build-map.ts  # pré-projeta a malha do IBGE em caminhos SVG
     src/
-      handlers/        # HTTP fino: parse da requisição, chama caso de uso, aplica headers de cache
-      use-cases/       # GetNationalResults, GetStatesResults, GetStateResults
-      ports/           # ResultsSource (interface)
+      api/                # cliente /api/results + polling (TanStack Query)
+      lib/                # format, seleção (hash da URL), finalistas e faixas de margem
+      components/         # peças genéricas (AnimatedNumber, ProgressBar)
+      features/           # scoreboard, map, scope-picker, states-table, status, state-sheet, share
+      layout/
+  api/
+    src/
+      ports/              # ResultsSource (interface)
       adapters/
-        tse/           # TseResultsSource: HTTP + validação zod do JSON do TSE + mapeamento p/ domínio
-        fixture/       # FixtureResultsSource: dados de 2022 para dev/testes
-    test/fixtures/     # JSON reais do TSE (2022, 2º turno)
+        tse/              # schema zod do arquivo do TSE, mapper, TseResultsSource, loaders HTTP/fixture
+        simulation/       # SimulatedResultsSource: replay "ao vivo" para desenvolvimento
+      use-cases/          # GetResults (deduplicação + fallback stale)
+      http/               # handler Fetch API + adaptador Node
+      vercel/             # entradas das funções da Vercel
+      config.ts           # variáveis de ambiente (zod)
+      container.ts        # composition root
+      dev-server.ts       # servidor local (porta 3001)
+    test/fixtures/        # JSON reais do TSE (2026)
 packages/
-  domain/              # entidades e regras puras (sem I/O)
-  contracts/           # schemas zod da API pública + tipos inferidos
-docs/
-  adr/                 # Architecture Decision Records
+  domain/                 # entidades e regras puras (sem I/O)
+  contracts/              # schema da API pública + tipos inferidos
+scripts/                  # build da saída da Vercel
+docs/                     # arquitetura, api, dados do TSE, frontend, adr/
 ```
 
 Regras:
@@ -85,29 +93,32 @@ Regras:
 
 - Base: `https://resultados.tse.jus.br/oficial/`
 - Configuração das eleições: `comum/config/ele-c.json` (lista códigos de eleição).
-- Arquivos simplificados por abrangência (`br`, `sp`, `rj`, …).
-- O **código da eleição de 2026 (2º turno) ainda precisa ser confirmado** no `ele-c.json` quando o TSE publicar. Tudo é configurável por variáveis de ambiente:
-  - `TSE_BASE_URL`
-  - `TSE_ELECTION_CODE`
-  - `DATA_SOURCE` = `tse` | `fixture`
-- Desenvolvimento e testes usam dados reais de **2022, 2º turno (eleição 545)** salvos em `apps/api/test/fixtures/`.
+- Arquivo por abrangência: `{base}/ele2026/{eleição}/dados/{abr}/{abr}-c0001-e{eleição:06}-u.json` (`br`, `zz` = exterior, UFs em minúsculas). Detalhes em `docs/tse-data.md`.
+- Códigos confirmados: **6258 = 2º turno presidencial de 2026** (padrão), 6257 = 1º turno.
+- Variáveis de ambiente (`apps/api/.env.example`):
+  - `DATA_SOURCE` = `tse` | `fixture` | `simulation`
+  - `TSE_BASE_URL`, `TSE_ELECTION_CODE`, `TSE_TIMEOUT_MS`
+  - `FIXTURES_DIR`, `SIMULATION_DURATION_MINUTES`
+- Fixtures reais em `apps/api/test/fixtures/`: `ele2026-6257` (1º turno, final) e `ele2026-6258-pre` (2º turno zerado).
 - **Nunca** chamar o TSE diretamente do navegador.
 
 ## Frontend
 
-- Mapa SVG gerado a partir de **TopoJSON simplificado** das UFs (projeção com d3-geo, arquivo < ~100 KB, servido estático).
-- **Representação visual:** cada UF é pintada na cor do candidato que lidera, com **intensidade proporcional à margem** (escala divergente entre as duas cores). Painel lateral com números absolutos e percentuais.
-- Navegação: **Brasil / Região / Estado**, com transições animadas (Framer Motion): cores interpoladas, contadores e barras animados.
-- Barra de progresso de **% de urnas apuradas** sempre visível.
-- Polling via TanStack Query (~20s), pausado quando a aba está oculta.
-- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, `prefers-reduced-motion` respeitado, tema claro/escuro.
+- Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
+- **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
+- Navegação: **Brasil / Região / Estado**, persistida no hash da URL (`#/sp`, `#/regiao/ne`).
+- Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; `motion` só para entrada/saída (bottom sheet).
+- Barra de progresso de **% de seções apuradas** sempre visível.
+- Polling via TanStack Query (20s), pausado quando a aba está oculta.
+- Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, tabela por estado, `prefers-reduced-motion` respeitado, tema claro/escuro.
+- **Orçamento:** JS inicial ≈ 138 KB gzip. Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 
 ## Mobile first (requisito crítico)
 
 A maior parte do público acessa pelo **celular** — a experiência mobile **não pode** ser inferior à desktop.
 
 - Projetar e implementar **primeiro para 360px** de largura e só depois expandir para tablet/desktop.
-- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e abre os detalhes em um **bottom sheet**; o mapa permite pinch-zoom/pan sem quebrar a rolagem da página.
+- Interações por **toque**: nada depende de hover. Tocar numa UF seleciona e abre os detalhes em um **bottom sheet**. (Pendente: pinch-zoom/pan no mapa sem quebrar a rolagem da página.)
 - Alvos de toque com no mínimo **44×44px**; textos legíveis sem zoom (≥ 16px no corpo).
 - Respeitar `safe-area-inset-*` (notch / barra de gestos) e funcionar em retrato e paisagem.
 - Desempenho em rede móvel: meta **Lighthouse mobile ≥ 90**, LCP < 2,5s em 4G, JS inicial enxuto, código não essencial carregado sob demanda.
@@ -128,7 +139,7 @@ O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração 
   - Feed: 1080×1350 (4:5) como opção.
 - **Geração no cliente** com Canvas 2D em módulo carregado sob demanda: não consome funções/banda da Vercel, é instantânea e usa exatamente os dados exibidos na tela.
 - **Envio:** Web Share API com arquivo (`navigator.share({ files })`), que abre a folha de compartilhamento nativa do iOS/Android com Instagram Stories, WhatsApp etc. Fallback: **baixar a imagem** (desktop ou navegador sem suporte). Não existe API web oficial para postar direto nos Stories — não tentar deep links proprietários.
-- **Link preview (Open Graph):** imagem 1200×630 gerada no servidor com `@vercel/og`, cacheada pelo CDN como os demais endpoints, para que links compartilhados no WhatsApp/X/Facebook mostrem o placar atual.
+- **Link preview (Open Graph) — pendente:** imagem 1200×630 gerada no servidor (ex.: `@vercel/og`), cacheada pelo CDN como os demais endpoints, para que links compartilhados no WhatsApp/X/Facebook mostrem o placar atual.
 - Visual das imagens segue a identidade do site e é legível em tela pequena (números grandes, alto contraste).
 
 ## Atualização dos dados e limites do Vercel Hobby
@@ -143,13 +154,27 @@ O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração 
 > Atualizar esta seção sempre que scripts forem criados ou alterados.
 
 ```bash
-pnpm install      # instala dependências
-pnpm dev          # sobe web + api localmente
-pnpm lint         # ESLint
-pnpm typecheck    # tsc --noEmit em todos os pacotes
-pnpm test         # Vitest
-pnpm build        # build de produção
+pnpm install                       # instala dependências
+cp apps/api/.env.example apps/api/.env
+pnpm dev                           # API (:3001) + web (:5173, proxy /api)
+pnpm lint                          # ESLint
+pnpm format:check                  # Prettier (pnpm format para corrigir)
+pnpm typecheck                     # tsc em todos os pacotes
+pnpm test                          # Vitest em todos os pacotes
+pnpm build                         # build da web + .vercel/output
+pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
 ```
+
+## Status e próximos passos
+
+Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallback stale), web (placar, mapa, regiões, tabela, bottom sheet, tema escuro), compartilhamento Stories/Feed, build da Vercel e CI.
+
+Pendente:
+
+- `GET /api/og` (prévia de links com o placar atual).
+- Pinch-zoom/pan do mapa no mobile.
+- Testes e2e (Playwright) em viewports de celular e auditoria Lighthouse.
+- Primeiro deploy de Preview: conferir `x-vercel-cache` e compressão (checklist em `docs/architecture.md`).
 
 ## Regras de trabalho (OBRIGATÓRIAS)
 
