@@ -1,5 +1,6 @@
 import type { ResultsResponse } from '@stb/contracts';
 import {
+  countedElectorateOf,
   countedPercentage,
   statesInRegion,
   type CountryResult,
@@ -112,7 +113,9 @@ function percentOf(part: number, whole: number): string {
 
 /** Second row of key figures: who voted and how, in every scope and round. */
 export function turnoutStats(tally: Tally): Stat[] {
-  const { electorate, turnout, votes } = tally;
+  // Measured against the sections counted so far, so it holds during the count.
+  const electorate = countedElectorateOf(tally);
+  const { turnout, votes } = tally;
   const blankAndNull = votes.blank + votes.null;
   return [
     {
@@ -177,13 +180,13 @@ function tallyHeadline(
   const [first, second] = results;
   const gap = first && second ? Math.abs(first.votes - second.votes) : 0;
 
-  const abstention = Math.max(tally.electorate - tally.turnout, 0);
+  const abstention = Math.max(countedElectorateOf(tally) - tally.turnout, 0);
   const secondStat: Stat =
     round === 1
       ? { label: 'Demais candidatos', value: formatPercent(othersShare), note: '' }
       : {
           label: 'Abstenção',
-          value: percentOf(abstention, tally.electorate),
+          value: percentOf(abstention, countedElectorateOf(tally)),
           note: `${formatVotes(abstention)} eleitores`,
         };
 
