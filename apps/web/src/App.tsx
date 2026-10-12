@@ -18,6 +18,7 @@ import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
+import { LoadingScreen } from './layout/LoadingScreen';
 import { finalistsOf } from './lib/finalists';
 import {
   countryOf,
@@ -119,16 +120,7 @@ export function App() {
     );
   };
 
-  if (waitingForDefault || isPending) {
-    return (
-      <>
-        <Header />
-        <main className={styles.message} aria-busy="true">
-          Carregando resultados…
-        </main>
-      </>
-    );
-  }
+  if (waitingForDefault || isPending) return <LoadingScreen />;
 
   if (isError && !data) {
     return (
