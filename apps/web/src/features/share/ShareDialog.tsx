@@ -10,6 +10,7 @@ import {
   type TextShareOutcome,
 } from './share-file';
 import { shareTextOf } from './share-text';
+import { recordShareVideo, videoMimeType } from './share-video';
 import styles from './Share.module.css';
 
 interface Props {
@@ -37,6 +38,10 @@ export default function ShareDialog({ content, onClose }: Props) {
   const [prepared, setPrepared] = useState<Prepared>();
   const [error, setError] = useState(false);
   const [textOutcome, setTextOutcome] = useState<TextShareOutcome>();
+  // Recorded on request (it takes a few seconds), then shared with a second tap: Safari
+  // only opens the share sheet right after a tap.
+  const [mimeType] = useState(videoMimeType);
+  const [video, setVideo] = useState<File | 'recording' | 'failed'>();
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -60,8 +65,18 @@ export default function ShareDialog({ content, onClose }: Props) {
       cancelled = true;
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPrepared(undefined);
+      setVideo(undefined);
     };
   }, [content, format]);
+
+  const recordVideo = () => {
+    if (!mimeType) return;
+    setVideo('recording');
+    loadShareFonts()
+      .then(() => recordShareVideo(content, format, mimeType))
+      .then(setVideo)
+      .catch(() => setVideo('failed'));
+  };
 
   const text =
     content.round === 1
@@ -123,6 +138,7 @@ export default function ShareDialog({ content, onClose }: Props) {
         >
           Baixar imagem
         </button>
+        {mimeType && <VideoActions video={video} text={text} onRecord={recordVideo} />}
         <button
           type="button"
           className={styles.secondary}
@@ -141,5 +157,47 @@ export default function ShareDialog({ content, onClose }: Props) {
         </p>
       </div>
     </dialog>
+  );
+}
+
+interface VideoActionsProps {
+  readonly video: File | 'recording' | 'failed' | undefined;
+  readonly text: string;
+  readonly onRecord: () => void;
+}
+
+/** "Gerar vídeo animado", then share or download the recorded video. */
+function VideoActions({ video, text, onRecord }: VideoActionsProps) {
+  if (video instanceof File) {
+    return (
+      <>
+        {canShareFile(video) && (
+          <button
+            type="button"
+            className={styles.primary}
+            onClick={() => void shareFile(video, text)}
+          >
+            Compartilhar vídeo
+          </button>
+        )}
+        <button type="button" className={styles.secondary} onClick={() => downloadFile(video)}>
+          Baixar vídeo
+        </button>
+      </>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className={styles.secondary}
+      disabled={video === 'recording'}
+      onClick={onRecord}
+    >
+      {video === 'recording'
+        ? 'Gravando vídeo…'
+        : video === 'failed'
+          ? 'Tentar gerar o vídeo de novo'
+          : 'Gerar vídeo animado'}
+    </button>
   );
 }
