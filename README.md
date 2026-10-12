@@ -2,6 +2,8 @@
 
 Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~30 segundos.
 
+**No ar em [eleicao.danielfigueroa.dev](https://eleicao.danielfigueroa.dev).**
+
 ![Apuração ao vivo do 2º turno: placar nacional e mapa do Brasil com cada estado na cor de quem lidera](docs/images/ao-vivo.png)
 
 <sub>2º turno em modo de simulação (`DATA_SOURCE=simulation`), com 74% das seções apuradas. As demais imagens usam o resultado oficial do 1º turno.</sub>
@@ -133,7 +135,7 @@ docs/              Arquitetura, API, dados do TSE, frontend e ADRs
 
 ## Deploy
 
-Projeto Vercel (plano Hobby) apontando para a raiz do repositório. O `vercel.json` roda `pnpm build`, que gera `.vercel/output` — a Vercel publica esse diretório como está. Detalhes em [docs/architecture.md](docs/architecture.md).
+Projeto Vercel (plano Hobby) apontando para a raiz do repositório. O `vercel.json` roda `pnpm build`, que gera `.vercel/output` — a Vercel publica esse diretório como está. O domínio de produção é `eleicao.danielfigueroa.dev`, um `CNAME` na Hostinger para a Vercel ([ADR 0027](docs/adr/0027-production-domain.md)). Detalhes em [docs/architecture.md](docs/architecture.md).
 
 ## Documentação
 
