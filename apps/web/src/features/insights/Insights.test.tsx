@@ -116,6 +116,17 @@ describe('Insights', () => {
     ).toBeInTheDocument();
   });
 
+  it('compares with the 2022 runoff by ballot number', async () => {
+    const onSelect = vi.fn();
+    renderInsights({ onSelect });
+    const card = screen.getByRole('region', { name: 'Comparação com 2022' });
+    expect(
+      within(card).getByText(/Em 2022, com 50,00% das seções apuradas, Lula tinha/),
+    ).toBeInTheDocument();
+    await userEvent.click(within(card).getByRole('button', { name: /^MG/ }));
+    expect(onSelect).toHaveBeenCalledWith({ kind: 'state', code: 'MG' });
+  });
+
   it('compares with the first round and lists flipped states', () => {
     renderInsights();
     const card = screen.getByRole('region', { name: 'Do 1º para o 2º turno' });
