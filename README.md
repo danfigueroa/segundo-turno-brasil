@@ -1,6 +1,6 @@
 # Segundo Turno Brasil
 
-Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~20 segundos.
+Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~30 segundos.
 
 ![Apuração ao vivo do 2º turno: placar nacional e mapa do Brasil com cada estado na cor de quem lidera](docs/images/ao-vivo.png)
 
@@ -66,7 +66,7 @@ O site foi feito primeiro para o celular: barra de abrangência fixa, alvos de t
 ## Como funciona
 
 ```
-Navegador (React)  ──polling ~20s──▶  CDN Vercel  ──cache expirado──▶  Função /api/* (TypeScript)  ──▶  TSE
+Navegador (React)  ──polling ~30s──▶  CDN Vercel  ──cache expirado──▶  Função /api/* (TypeScript)  ──▶  TSE
 ```
 
 - **API** (`apps/api`): funções da Vercel que leem os JSON públicos do TSE, validam com zod e respondem num contrato próprio. Não há banco de dados nem cron, e o cache do CDN define o ritmo das consultas. Rotas:
