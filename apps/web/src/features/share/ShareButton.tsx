@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import type { Selection } from '../../lib/selection';
 import type { ShareContent } from './share-content';
 import styles from './Share.module.css';
 
@@ -9,9 +10,10 @@ interface Props {
   /** Built lazily, when the user taps, from the data on screen at that moment. */
   readonly getContent: () => ShareContent;
   readonly label: string;
+  readonly selection: Selection;
 }
 
-export function ShareButton({ getContent, label }: Props) {
+export function ShareButton({ getContent, label, selection }: Props) {
   const [content, setContent] = useState<ShareContent>();
 
   return (
@@ -31,7 +33,11 @@ export function ShareButton({ getContent, label }: Props) {
       </button>
       {content && (
         <Suspense fallback={null}>
-          <ShareDialog content={content} onClose={() => setContent(undefined)} />
+          <ShareDialog
+            content={content}
+            selection={selection}
+            onClose={() => setContent(undefined)}
+          />
         </Suspense>
       )}
     </>

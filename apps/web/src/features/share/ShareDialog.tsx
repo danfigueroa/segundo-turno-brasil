@@ -9,12 +9,17 @@ import {
   shareText,
   type TextShareOutcome,
 } from './share-file';
+import { embedCode } from '../../lib/embed';
+import { useMediaQuery } from '../../lib/use-media-query';
+import type { Selection } from '../../lib/selection';
 import { shareTextOf } from './share-text';
 import { recordShareVideo, videoMimeType } from './share-video';
 import styles from './Share.module.css';
 
 interface Props {
   readonly content: ShareContent;
+  /** What is on screen, for the embed code. */
+  readonly selection: Selection;
   readonly onClose: () => void;
 }
 
@@ -32,12 +37,14 @@ const FORMATS: { value: ShareFormat; label: string }[] = [
  * Previews the share image and prepares the file up front, so the share button can call
  * `navigator.share` synchronously within the tap (a Safari requirement).
  */
-export default function ShareDialog({ content, onClose }: Props) {
+export default function ShareDialog({ content, selection, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [format, setFormat] = useState<ShareFormat>('story');
   const [prepared, setPrepared] = useState<Prepared>();
   const [error, setError] = useState(false);
-  const [textOutcome, setTextOutcome] = useState<TextShareOutcome>();
+  const [textOutcome, setTextOutcome] = useState<TextShareOutcome | 'embed-copied'>();
+  // Sites are built on computers: the embed code is only offered there.
+  const wide = useMediaQuery('(min-width: 960px)');
   // Recorded on request (it takes a few seconds), then shared with a second tap: Safari
   // only opens the share sheet right after a tap.
   const [mimeType] = useState(videoMimeType);
@@ -148,12 +155,28 @@ export default function ShareDialog({ content, onClose }: Props) {
         >
           Enviar como texto
         </button>
+        {wide && (
+          <button
+            type="button"
+            className={styles.secondary}
+            onClick={() =>
+              void navigator.clipboard
+                .writeText(embedCode(window.location.origin, selection))
+                .then(() => setTextOutcome('embed-copied'))
+                .catch(() => setTextOutcome('failed'))
+            }
+          >
+            Copiar código para incorporar no seu site
+          </button>
+        )}
         <p className={styles.status} role="status">
-          {textOutcome === 'copied'
-            ? 'Texto copiado. É só colar no WhatsApp.'
-            : textOutcome === 'failed'
-              ? 'Não foi possível copiar o texto.'
-              : ''}
+          {textOutcome === 'embed-copied'
+            ? 'Código copiado. Cole no HTML do seu site.'
+            : textOutcome === 'copied'
+              ? 'Texto copiado. É só colar no WhatsApp.'
+              : textOutcome === 'failed'
+                ? 'Não foi possível copiar o texto.'
+                : ''}
         </p>
       </div>
     </dialog>
