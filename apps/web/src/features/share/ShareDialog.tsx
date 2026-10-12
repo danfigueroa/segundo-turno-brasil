@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadShareFonts, renderShareImage, type ShareFormat } from './render-share-image';
 import type { ShareContent } from './share-content';
-import { canShareFile, canvasToFile, downloadFile, shareFile } from './share-file';
+import {
+  canShareFile,
+  canvasToFile,
+  downloadFile,
+  shareFile,
+  shareText,
+  type TextShareOutcome,
+} from './share-file';
+import { shareTextOf } from './share-text';
 import styles from './Share.module.css';
 
 interface Props {
@@ -28,6 +36,7 @@ export default function ShareDialog({ content, onClose }: Props) {
   const [format, setFormat] = useState<ShareFormat>('story');
   const [prepared, setPrepared] = useState<Prepared>();
   const [error, setError] = useState(false);
+  const [textOutcome, setTextOutcome] = useState<TextShareOutcome>();
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -114,6 +123,22 @@ export default function ShareDialog({ content, onClose }: Props) {
         >
           Baixar imagem
         </button>
+        <button
+          type="button"
+          className={styles.secondary}
+          onClick={() =>
+            void shareText(shareTextOf(content, window.location.href)).then(setTextOutcome)
+          }
+        >
+          Enviar como texto
+        </button>
+        <p className={styles.status} role="status">
+          {textOutcome === 'copied'
+            ? 'Texto copiado. É só colar no WhatsApp.'
+            : textOutcome === 'failed'
+              ? 'Não foi possível copiar o texto.'
+              : ''}
+        </p>
       </div>
     </dialog>
   );
