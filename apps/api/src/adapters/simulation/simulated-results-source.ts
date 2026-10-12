@@ -64,6 +64,7 @@ function replayTally(
     ...tally,
     candidates,
     sections: { total: tally.sections.total, counted: scale(tally.sections.total) },
+    countedElectorate: scale(tally.countedElectorate ?? tally.electorate),
     turnout: scale(tally.turnout),
     votes: {
       valid: candidates.reduce((sum, c) => sum + c.votes, 0),
