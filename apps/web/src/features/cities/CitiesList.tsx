@@ -1,6 +1,6 @@
 import { STATES, type StateCode } from '@stb/domain';
 import { useState } from 'react';
-import { cityRows, cityWins } from '../../lib/cities';
+import { cityRows, cityWins, sortCityRows, type CityOrder } from '../../lib/cities';
 import { matchesSearch } from '../../lib/countries';
 import type { Finalist } from '../../lib/finalists';
 import { formatVotes } from '../../lib/format';
@@ -21,15 +21,23 @@ interface Props {
 const votes = (n: number) => (n === 1 ? '1 voto' : `${formatVotes(n)} votos`);
 const citiesText = (n: number) => (n === 1 ? '1 cidade' : `${n} cidades`);
 
+const ORDERS: { value: CityOrder; label: string }[] = [
+  { value: 'electorate', label: 'Maior eleitorado' },
+  { value: 'margin', label: 'Maior vantagem' },
+  { value: 'pending', label: 'Mais urnas a apurar' },
+];
+
 /**
  * Every municipality of the selected state, like the list by country abroad: summary,
- * search and one row per city with the two finalists, biggest electorate first and
- * collapsed to 12 (phone) or 20 (desktop) rows. Each row selects its city.
+ * search, a ranking (biggest electorate, widest lead or most sections still to count) and
+ * one row per city with the two finalists, collapsed to 12 (phone) or 20 (desktop) rows.
+ * Each row selects its city.
  */
 export function CitiesList({ uf, selection, cities, failed, finalists, onSelect }: Props) {
   const wide = useMediaQuery('(min-width: 960px)');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [order, setOrder] = useState<CityOrder>('electorate');
 
   const rows = cities ? cityRows(cities, finalists) : [];
   const wins = cityWins(rows, finalists);
@@ -43,7 +51,8 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
       : 'Carregando a votação por cidade…';
 
   const searching = query.trim() !== '';
-  const filtered = searching ? rows.filter((row) => matchesSearch(row.name, query)) : rows;
+  const ranked = sortCityRows(rows, order);
+  const filtered = searching ? ranked.filter((row) => matchesSearch(row.name, query)) : ranked;
   const limit = wide ? 20 : 12;
   const shown = expanded || searching ? filtered : filtered.slice(0, limit);
   const selectedIbge = selection.kind === 'city' ? selection.ibge : undefined;
@@ -71,6 +80,23 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
+      </div>
+
+      <div className={listStyles.filters} role="group" aria-label="Ordenar cidades por">
+        {ORDERS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={listStyles.filter}
+            aria-pressed={order === option.value}
+            onClick={() => {
+              setOrder(option.value);
+              setExpanded(false);
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       <div className={listStyles.table}>
