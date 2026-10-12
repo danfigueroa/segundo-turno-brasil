@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { canShareFile, shareFile } from './share-file';
+import { canShareFile, shareFile, shareText } from './share-file';
 
 const file = new File(['png'], 'x.png', { type: 'image/png' });
 
@@ -38,5 +38,35 @@ describe('shareFile', () => {
       }),
     });
     await expect(shareFile(file, 'text')).rejects.toMatchObject({ name: 'NotAllowedError' });
+  });
+});
+
+describe('shareText', () => {
+  it('opens the share sheet when there is one', async () => {
+    const share = vi.fn(async () => undefined);
+    vi.stubGlobal('navigator', { share });
+    await expect(shareText('placar')).resolves.toBe('shared');
+    expect(share).toHaveBeenCalledWith({ text: 'placar' });
+  });
+
+  it('reports a dismissed share sheet', async () => {
+    vi.stubGlobal('navigator', {
+      share: vi.fn(async () => {
+        throw new DOMException('dismissed', 'AbortError');
+      }),
+    });
+    await expect(shareText('placar')).resolves.toBe('dismissed');
+  });
+
+  it('copies the text without a share sheet', async () => {
+    const writeText = vi.fn(async () => undefined);
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    await expect(shareText('placar')).resolves.toBe('copied');
+    expect(writeText).toHaveBeenCalledWith('placar');
+  });
+
+  it('reports when neither works', async () => {
+    vi.stubGlobal('navigator', {});
+    await expect(shareText('placar')).resolves.toBe('failed');
   });
 });
