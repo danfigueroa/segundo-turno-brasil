@@ -5,8 +5,6 @@ import { useAbroad } from './api/abroad';
 import { useCities } from './api/cities';
 import { useResults } from './api/use-results';
 import { RunoffCountdown } from './features/countdown/RunoffCountdown';
-import { CitiesList } from './features/cities/CitiesList';
-import { CountriesList } from './features/countries/CountriesList';
 import { BrazilMap } from './features/map/BrazilMap';
 import { ResultCard } from './features/result-card/ResultCard';
 import { RoundTabs } from './features/round-tabs/RoundTabs';
@@ -58,6 +56,15 @@ const Insights = lazy(() => import('./features/insights/Insights'));
 const WorldMap = lazy(() => import('./features/world-map/WorldMap'));
 // Only drawn while a state or city is selected, with its state's municipal map.
 const StateMap = lazy(() => import('./features/state-map/StateMap'));
+// The lists of a state's cities and of the countries abroad: only with that scope open.
+const CitiesList = lazy(() =>
+  import('./features/cities/CitiesList').then((module) => ({ default: module.CitiesList })),
+);
+const CountriesList = lazy(() =>
+  import('./features/countries/CountriesList').then((module) => ({
+    default: module.CountriesList,
+  })),
+);
 
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -223,27 +230,31 @@ export function App() {
             </Suspense>
           )}
         {!waiting && uf && (
-          <CitiesList
-            uf={uf}
-            selection={selection}
-            cities={cities.data?.cities}
-            failed={cities.isError}
-            finalists={finalists}
-            onSelect={select}
-          />
+          <Suspense fallback={null}>
+            <CitiesList
+              uf={uf}
+              selection={selection}
+              cities={cities.data?.cities}
+              failed={cities.isError}
+              finalists={finalists}
+              onSelect={select}
+            />
+          </Suspense>
         )}
         {!waiting && !uf && !isAbroad(selection) && (
           <StatesList data={data} finalists={finalists} selection={selection} onSelect={select} />
         )}
         {!waiting && isAbroad(selection) && (
-          <CountriesList
-            data={data}
-            abroad={abroad.data}
-            failed={abroad.isError}
-            finalists={finalists}
-            selection={selection}
-            onSelect={select}
-          />
+          <Suspense fallback={null}>
+            <CountriesList
+              data={data}
+              abroad={abroad.data}
+              failed={abroad.isError}
+              finalists={finalists}
+              selection={selection}
+              onSelect={select}
+            />
+          </Suspense>
         )}
       </main>
 
