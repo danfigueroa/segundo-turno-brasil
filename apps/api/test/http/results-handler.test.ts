@@ -48,6 +48,14 @@ describe('results handler', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
   });
 
+  it('answers 304 when the client already has the snapshot', async () => {
+    const handler = createResultsHandler({ 1: firstRound, 2: live });
+    const etag = (await handler(request())).headers.get('etag') ?? '';
+    const response = await handler(new Request(request(), { headers: { 'if-none-match': etag } }));
+    expect(response.status).toBe(304);
+    expect(response.headers.get('cache-control')).toBe(FRESH_CACHE);
+  });
+
   it('rejects other methods', async () => {
     const handler = createResultsHandler({ 1: firstRound, 2: live });
     const response = await handler(new Request(request(), { method: 'POST' }));
