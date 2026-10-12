@@ -1,11 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Analytics } from '@vercel/analytics/react';
-import { StrictMode } from 'react';
+import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './styles/global.css';
 
 const queryClient = new QueryClient();
+
+// Page views are not needed for the first paint: their script loads after it.
+const Analytics = lazy(() =>
+  import('@vercel/analytics/react').then((module) => ({ default: module.Analytics })),
+);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
@@ -16,6 +20,8 @@ createRoot(root).render(
       <App />
     </QueryClientProvider>
     {/* Cookieless page views; only reports once deployed on Vercel. */}
-    <Analytics />
+    <Suspense fallback={null}>
+      <Analytics />
+    </Suspense>
   </StrictMode>,
 );
