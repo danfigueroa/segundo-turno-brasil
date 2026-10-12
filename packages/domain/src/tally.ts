@@ -29,9 +29,23 @@ export interface Tally {
   readonly candidates: readonly CandidateResult[];
   readonly sections: { readonly total: number; readonly counted: number };
   readonly electorate: number;
-  /** Voters who showed up. */
+  /**
+   * Electorate of the sections counted so far (TSE `e.est`): what turnout and abstention
+   * are measured against while the count goes on. Absent from older snapshots and from
+   * municipalities and countries abroad; see {@link countedElectorateOf}.
+   */
+  readonly countedElectorate?: number | undefined;
+  /** Voters who showed up, in the sections counted so far. */
   readonly turnout: number;
   readonly votes: { readonly valid: number; readonly blank: number; readonly null: number };
   /** ISO 8601 timestamp of the official TSE totalization. */
   readonly updatedAt: string;
+}
+
+/**
+ * Electorate behind the counted sections, falling back to the whole electorate when the
+ * tally does not carry it (then turnout and abstention are only right once the count ends).
+ */
+export function countedElectorateOf(tally: Tally): number {
+  return tally.countedElectorate ?? tally.electorate;
 }

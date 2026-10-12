@@ -21,12 +21,15 @@ export function aggregate(scope: Scope, tallies: readonly Tally[]): Tally {
   }
 
   const sum = (pick: (t: Tally) => number) => tallies.reduce((acc, t) => acc + pick(t), 0);
+  // Only meaningful when every part carries it.
+  const withCounted = tallies.every((t) => t.countedElectorate !== undefined);
 
   return {
     scope,
     candidates: rankCandidates([...byCandidate.values()]),
     sections: { total: sum((t) => t.sections.total), counted: sum((t) => t.sections.counted) },
     electorate: sum((t) => t.electorate),
+    ...(withCounted && { countedElectorate: sum((t) => t.countedElectorate ?? 0) }),
     turnout: sum((t) => t.turnout),
     votes: {
       valid: sum((t) => t.votes.valid),
