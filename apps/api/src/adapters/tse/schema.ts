@@ -45,8 +45,8 @@ export const tseResultFileSchema = z.object({
   carg: z.array(officeSchema).min(1),
   /** Sections: total and totalized. */
   s: z.object({ ts: tseInt, st: tseInt }),
-  /** Electorate: total and turnout. */
-  e: z.object({ te: tseInt, c: tseInt }),
+  /** Electorate: total, of the counted sections (absent from trimmed fixtures) and turnout. */
+  e: z.object({ te: tseInt, est: tseInt.optional(), c: tseInt }),
   /** Votes: valid, blank and null. */
   v: z.object({ vv: tseInt, vb: tseInt, tvn: tseInt }),
 });

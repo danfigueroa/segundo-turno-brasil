@@ -34,6 +34,7 @@ export function toTally(file: TseResultFile, scope: Scope): Tally {
     candidates: rankCandidates(candidates),
     sections: { total: file.s.ts, counted: file.s.st },
     electorate: file.e.te,
+    ...(file.e.est !== undefined && { countedElectorate: file.e.est }),
     turnout: file.e.c,
     votes: { valid: file.v.vv, blank: file.v.vb, null: file.v.tvn },
     updatedAt: hasTotalization
