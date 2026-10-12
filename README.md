@@ -14,19 +14,19 @@ Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presid
 
 Percentual e total de votos de cada finalista aparecem sempre, em qualquer abrangência. Logo abaixo vêm a diferença em pontos percentuais e em votos, as seções apuradas, os votos válidos, o comparecimento e os brancos e nulos. No 1º turno, o card lista também os demais candidatos.
 
-O mapa pinta cada estado com a cor de quem lidera, mais forte quanto maior a vantagem (5 faixas, de menos de 2 a mais de 20 pontos). As cores seguem o candidato, foram escolhidas para quem tem daltonismo e sempre vêm acompanhadas de números e rótulos.
+O mapa pinta cada estado com a cor de quem lidera, mais forte quanto maior a vantagem (5 faixas, de menos de 2 a mais de 20 pontos). As cores seguem o candidato, foram escolhidas para quem tem daltonismo e sempre vêm acompanhadas de números e rótulos. Durante a apuração, o botão "Abstenção" troca o mapa para a abstenção em cada estado.
 
 ![Resultado final do 1º turno no Brasil: card com o placar e os números-chave, mapa dos estados e legenda das faixas de vantagem](docs/images/brasil-1turno.png)
 
 ### Descer até a sua cidade
 
-Tocar num estado abre o resultado dele, e o mapa passa a mostrar **os municípios do estado**. A lista "Votação por cidade" tem busca. Cada cidade tem seu próprio card (com as migalhas Brasil › Norte › Acre › Rio Branco) e um link próprio para compartilhar, como `/#/ac/1200401`.
+Tocar num estado abre o resultado dele, e o mapa passa a mostrar **os municípios do estado**. A lista "Votação por cidade" tem busca e ordena por eleitorado, por vantagem ou pelas urnas que faltam apurar. Cada cidade tem seu próprio card (com as migalhas Brasil › Norte › Acre › Rio Branco) e um link próprio para compartilhar, como `/#/ac/1200401`.
 
 ![Acre selecionado: mapa dos 22 municípios na cor de quem lidera em cada um e lista de cidades com busca](docs/images/estado-municipios.png)
 
 ### Acompanhar o voto no exterior
 
-Os votos de brasileiros no exterior já entram no total do Brasil e também podem ser vistos à parte. Há um **mapa por país, um continente por vez**, com cada país na cor de quem lidera. Também há uma lista por país com busca e filtro por continente.
+Os votos de brasileiros no exterior já entram no total do Brasil e também podem ser vistos à parte. Há um **mapa por país, um continente por vez**, com cada país na cor de quem lidera. Também há uma lista por país com busca e filtro por continente, e tocar num país abre o resultado completo dele.
 
 ![Exterior: mapa da Europa com cada país na cor de quem lidera, ao lado do card com o resultado no exterior](docs/images/exterior-mapa-paises.png)
 
@@ -38,15 +38,21 @@ Na noite do 2º turno, a seção de análise responde às perguntas mais comuns:
 - **Como a apuração evoluiu:** a curva de cada finalista, o ritmo em seções por minuto e a previsão de quando a apuração chega a 100%.
 - **De onde vem a vantagem:** o saldo de votos estado a estado.
 - **Do 1º para o 2º turno:** quanto cada finalista cresceu e onde o líder mudou.
+- **Comparação com 2022:** como estava a apuração de 2022 no mesmo ponto e quais estados mudaram de líder.
 
 ![Análise da apuração: chance de virada, curva da apuração com ritmo e previsão, saldo por estado e comparação com o 1º turno](docs/images/analise-apuracao.png)
 
 ### Usar no celular e compartilhar
 
-O site foi feito primeiro para o celular: barra de abrangência fixa, alvos de toque de pelo menos 44px, e tocar num estado ou numa cidade leva direto ao resultado. O botão **Compartilhar** gera, no próprio aparelho, uma imagem com o placar do momento:
+O site foi feito primeiro para o celular: barra de abrangência fixa, alvos de toque de pelo menos 44px, e tocar num estado ou numa cidade leva direto ao resultado. O botão **Compartilhar** gera tudo no próprio aparelho, com o placar do momento:
 
-- formatos Stories (1080×1920) ou Feed (1080×1350);
-- envio pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou download da imagem.
+- **imagem** nos formatos Stories (1080×1920) ou Feed (1080×1350), com o mapa colorido do lugar escolhido;
+- **vídeo animado** de cerca de 6 segundos, em que os números sobem do zero e o mapa ganha cor aos poucos;
+- **texto pronto para o WhatsApp**, com percentuais, votos, % apurado e o link do mesmo lugar;
+- **código para incorporar** o placar ao vivo em blogs e portais (no computador);
+- com o 2º turno decidido, a opção de compartilhar a vitória de quem venceu.
+
+Imagem e vídeo vão pela folha de compartilhamento nativa (Instagram, WhatsApp…) ou podem ser baixados.
 
 <table>
   <tr>
@@ -60,8 +66,11 @@ O site foi feito primeiro para o celular: barra de abrangência fixa, alvos de t
 
 - **Abas 2º turno e 1º turno:** até a apuração do 2º turno começar, o site abre no resultado final do 1º. Antes das 17h de 25/10, mostra uma contagem regressiva.
 - **Links compartilháveis:** o turno e a abrangência ficam na URL (`/#/sp`, `/#/regiao/ne`, `/#/exterior`, `/#/1turno/ba/2927408`).
+- **Meu lugar:** "Fixar como minha cidade" (ou meu estado, meu país) cria um atalho com ★ na barra de abrangência, guardado só no navegador.
+- **Placar no título da aba:** dá para acompanhar com o site aberto em segundo plano.
 - **Confiável na noite da eleição:**
-  - o CDN da Vercel absorve o tráfego, e a API só consulta o TSE quando o cache expira;
+  - o placar se atualiza sozinho a cada 30 segundos, e o navegador não baixa nada quando os dados não mudaram;
+  - o CDN absorve o tráfego, e a API só consulta o TSE quando o cache expira;
   - se o TSE oscilar, o site continua mostrando o último dado bom com o horário dele.
 - **Leve e acessível:** cerca de 116 KB de JS inicial (gzip). Os mapas carregam sob demanda, o mapa navega por teclado, há contraste AA e o site respeita `prefers-reduced-motion`.
 
