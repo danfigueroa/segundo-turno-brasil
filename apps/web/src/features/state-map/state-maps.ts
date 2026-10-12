@@ -16,3 +16,11 @@ export function loadStateMap(uf: StateCode): Promise<StateMapShape> {
   if (!load) return Promise.reject(new Error(`No municipal map for ${uf}`));
   return load();
 }
+
+/**
+ * Starts downloading a state's municipal map ahead of a likely selection (a finger down
+ * on the state), so the chunk is already on its way when the click lands.
+ */
+export function prefetchStateMap(uf: StateCode): void {
+  loadStateMap(uf).catch(() => undefined);
+}
