@@ -55,6 +55,14 @@ Dependências CommonJS (o `undici`, que vem com o `@vercel/blob`) chamam `requir
 
 Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de pacotes do workspace (ver [ADR 0003](adr/0003-build-output-api.md)). Para conferir localmente, rode `pnpm build` e importe `index.mjs` num servidor `node:http`.
 
+### Domínio
+
+Produção em **`eleicao.danielfigueroa.dev`** ([ADR 0027](adr/0027-production-domain.md)); `segundo-turno-brasil.vercel.app` continua respondendo.
+
+- DNS na Hostinger (`danielfigueroa.dev`, servidores `dns-parking.com`): `CNAME eleicao` → o destino indicado pela Vercel em Settings → Domains (`*.vercel-dns-017.com`), TTL 300s. Os registros `A @` e `CNAME www` são do site pessoal no GitHub Pages.
+- Certificado HTTPS emitido e renovado pela Vercel.
+- As meta tags de prévia são gravadas no build: depois de trocar o domínio de produção, é preciso um novo deploy.
+
 ### Checklist pós-deploy (Preview)
 
 - Painel do deploy → Functions: as funções devem aparecer na região `gru1`.
