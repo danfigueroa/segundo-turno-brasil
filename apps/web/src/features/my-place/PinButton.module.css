@@ -1,0 +1,21 @@
+.pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pin[aria-pressed='true'] {
+  border-color: var(--brand);
+  color: var(--brand-text);
+}
