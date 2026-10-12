@@ -147,6 +147,22 @@ describe('turnoutStats', () => {
     ]);
   });
 
+  it('measures turnout against the sections counted so far', () => {
+    const base = tally({ kind: 'country' }, 450, 470);
+    const halfCounted = { ...base, electorate: 2500, countedElectorate: 1250, turnout: 1000 };
+    expect(turnoutStats(halfCounted)[1]).toEqual({
+      label: 'Comparecimento',
+      value: '80,00%',
+      note: '1.000 eleitores',
+    });
+    const data = resultsResponse({ country: halfCounted });
+    expect(headlineOf(data, { kind: 'country' }, finalistsOf(halfCounted)).stats[1]).toEqual({
+      label: 'Abstenção',
+      value: '20,00%',
+      note: '250 eleitores',
+    });
+  });
+
   it('abbreviates large valid vote counts', () => {
     const base = tally({ kind: 'country' }, 450, 470);
     const country = {
