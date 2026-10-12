@@ -54,7 +54,7 @@ resultados.tse.jus.br (JSON público do TSE)
 - **ETag (ADR 0020):** toda resposta 200 tem ETag fraco (hash sem `fetchedAt`) e responde `304` ao `If-None-Match`, então o polling sem novidade não baixa o JSON (`http/json-response.ts`).
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003). As funções rodam em `gru1` (São Paulo), perto do TSE (ADR 0015).
-- **Domínio (ADR 0027):** produção em `eleicao.danielfigueroa.dev`, `CNAME` na Hostinger para a Vercel (TTL 300s); `segundo-turno-brasil.vercel.app` continua respondendo.
+- **Domínio (ADR 0027):** produção em `eleicao.danielfigueroa.dev`, um subdomínio apontado para a Vercel; `segundo-turno-brasil.vercel.app` continua respondendo. Não documentar detalhes de DNS, provedores nem credenciais: o repositório é público.
 
 ### Arquitetura limpa (ports & adapters)
 
