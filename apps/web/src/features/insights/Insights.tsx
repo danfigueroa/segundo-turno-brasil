@@ -3,6 +3,8 @@ import type { Round } from '@stb/domain';
 import { useEffect } from 'react';
 import type { Finalist } from '../../lib/finalists';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
+import { Compare2022Card } from './Compare2022Card';
+import { compare2022View } from './compare-2022';
 import { CountCurve } from './CountCurve';
 import { NetMarginCard } from './NetMarginCard';
 import { OutlookCard } from './OutlookCard';
@@ -23,7 +25,7 @@ interface Props {
 
 /**
  * Analysis below the scoreboard. Runoff: can it still turn around, how the count evolved,
- * where the lead comes from and what changed since the first round. First round: where
+ * where the lead comes from, what changed since the first round and since 2022. First round: where
  * the lead came from. Loaded on demand (ADR 0005).
  */
 export default function Insights({
@@ -53,6 +55,7 @@ export default function Insights({
     );
   }
 
+  const vs2022 = compare2022View(runoff, selection, finalists);
   return (
     <div className={shell.grid}>
       <OutlookCard tally={resolveTally(runoff, selection)} finalists={finalists} place={place} />
@@ -73,6 +76,7 @@ export default function Insights({
           onSelect={onSelect}
         />
       )}
+      {vs2022 && <Compare2022Card view={vs2022} place={place} onSelect={onSelect} />}
     </div>
   );
 }
