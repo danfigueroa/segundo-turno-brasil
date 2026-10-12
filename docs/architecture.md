@@ -60,6 +60,7 @@ Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de p
 - Painel do deploy → Functions: as funções devem aparecer na região `gru1`.
 - `curl -I https://<preview>/api/results` → `x-vercel-cache` deve alternar entre `MISS`, `HIT` e `STALE`.
 - O payload deve sair comprimido (`content-encoding: br` ou `gzip`).
+- `curl -I -H 'if-none-match: <etag da resposta anterior>' https://<preview>/api/results` → `304` enquanto os dados não mudarem (ADR 0020).
 - `curl -I "https://<preview>/api/cities?uf=mg&round=1"` → 200, comprimido e com `x-vercel-cache`.
 - Blob conectado ao projeto (`BLOB_STORE_ID` com OIDC ou `BLOB_READ_WRITE_TOKEN`); com a apuração andando, `curl https://<preview>/api/history` deve trazer pontos.
 

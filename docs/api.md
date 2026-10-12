@@ -1,5 +1,7 @@
 # API
 
+Toda resposta 200 traz um `etag` fraco (hash dos dados, sem `fetchedAt`). Com `If-None-Match` igual, a API e o CDN respondem `304` sem corpo e com os mesmos cabeçalhos de cache: quem faz polling só baixa o JSON quando os dados mudam (ADR 0020).
+
 ## `GET /api/results?round=1|2`
 
 Snapshot consistente de todas as abrangências de um turno. `round` é opcional (padrão `2`, o 2º turno ao vivo); `round=1` traz o resultado final do 1º turno (eleição 6257). Schema: [`packages/contracts/src/results.ts`](../packages/contracts/src/results.ts).
