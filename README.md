@@ -107,18 +107,19 @@ A curva e o ritmo da apuração do 2º turno (`GET /api/history`) ficam num arqu
 
 ## Scripts
 
-| Comando                             | O que faz                                                    |
-| ----------------------------------- | ------------------------------------------------------------ |
-| `pnpm dev`                          | API (tsx watch) + web (Vite) em paralelo                     |
-| `pnpm test`                         | Vitest em todos os pacotes                                   |
-| `pnpm lint`                         | ESLint                                                       |
-| `pnpm format:check`                 | Prettier                                                     |
-| `pnpm typecheck`                    | `tsc` em todos os pacotes                                    |
-| `pnpm build`                        | Build da web + `.vercel/output` (Build Output API da Vercel) |
-| `pnpm --filter @stb/web map:build`  | Regera o mapa pré-projetado a partir do IBGE                 |
-| `pnpm --filter @stb/web map:world`  | Regera os mapas por continente do Exterior                   |
-| `pnpm --filter @stb/web map:cities` | Regera as malhas municipais (`--download` baixa do IBGE)     |
-| `pnpm --filter @stb/web og:build`   | Regera a imagem de prévia de links (`public/og.png`)         |
+| Comando                             | O que faz                                                            |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `pnpm dev`                          | API (tsx watch) + web (Vite) em paralelo                             |
+| `pnpm test`                         | Vitest em todos os pacotes                                           |
+| `pnpm lint`                         | ESLint                                                               |
+| `pnpm format:check`                 | Prettier                                                             |
+| `pnpm typecheck`                    | `tsc` em todos os pacotes                                            |
+| `pnpm build`                        | Build da web + `.vercel/output` (Build Output API da Vercel)         |
+| `pnpm --filter @stb/web map:build`  | Regera o mapa pré-projetado a partir do IBGE                         |
+| `pnpm --filter @stb/web map:world`  | Regera os mapas por continente do Exterior                           |
+| `pnpm --filter @stb/web map:cities` | Regera as malhas municipais (`--download` baixa do IBGE)             |
+| `pnpm --filter @stb/web og:build`   | Regera a imagem de prévia de links (`public/og.png`)                 |
+| `pnpm --filter @stb/web data:2022`  | Regera o 2º turno de 2022 usado na comparação (dados abertos do TSE) |
 
 ## Estrutura
 
