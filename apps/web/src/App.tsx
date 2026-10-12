@@ -14,6 +14,7 @@ import { shareContentFrom } from './features/share/share-content';
 import { loadStateMap } from './features/state-map/state-maps';
 import { loadContinentMap } from './features/world-map/continent-maps';
 import { StatesList } from './features/states-list/StatesList';
+import { PinButton } from './features/my-place/PinButton';
 import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
@@ -21,6 +22,7 @@ import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
 import { documentTitle, SITE_TITLE } from './lib/document-title';
 import { finalistsOf, type Finalist } from './lib/finalists';
+import { isPinnable, useMyPlace } from './lib/my-place';
 import {
   countryOf,
   isAbroad,
@@ -112,6 +114,7 @@ export function App() {
     staleTime: Infinity,
   });
   const resultRef = useRef<HTMLElement>(null);
+  const [myPlace, setMyPlace] = useMyPlace();
   // Wide screens put the round tabs in the header; phones give them a row of their own.
   const wide = useMediaQuery('(min-width: 960px)');
 
@@ -175,7 +178,7 @@ export function App() {
           <RoundTabs round={round} onChange={changeRound} />
         </div>
       )}
-      {!waiting && <ScopeChips selection={selection} onSelect={select} />}
+      {!waiting && <ScopeChips selection={selection} onSelect={select} myPlace={myPlace} />}
 
       <main className={styles.main}>
         <StaleWarning data={data} />
@@ -203,6 +206,18 @@ export function App() {
                   winnerOf(data, finalists),
                 )}
               />
+              {/* A city or a country is named only once its breakdown is loaded. */}
+              {isPinnable(selection) &&
+                (selection.kind === 'state' ||
+                  (selection.kind === 'city' && cities.data) ||
+                  (selection.kind === 'abroadCountry' && abroad.data)) && (
+                  <PinButton
+                    selection={selection}
+                    label={selectionTitle(selection, cities.data?.cities, abroad.data?.countries)}
+                    place={myPlace}
+                    onChange={setMyPlace}
+                  />
+                )}
             </ResultCard>
           )}
           {isAbroad(selection) ? (
