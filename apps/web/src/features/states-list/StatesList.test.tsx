@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { resultsResponse } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
+import { prefetchStateMap } from '../state-map/state-maps';
 import { StatesList } from './StatesList';
+
+vi.mock('../state-map/state-maps', () => ({ prefetchStateMap: vi.fn() }));
 
 const data = resultsResponse();
 const finalists = finalistsOf(data.country);
@@ -45,5 +48,21 @@ describe('StatesList', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /Minas Gerais/ }));
     expect(onSelect).toHaveBeenCalledWith({ kind: 'state', code: 'MG' });
+  });
+
+  it('starts downloading the municipal map when a finger touches a state', async () => {
+    render(
+      <StatesList
+        data={data}
+        finalists={finalists}
+        selection={{ kind: 'country' }}
+        onSelect={vi.fn()}
+      />,
+    );
+    await userEvent.pointer({
+      keys: '[TouchA]',
+      target: screen.getByRole('button', { name: /Bahia/ }),
+    });
+    expect(prefetchStateMap).toHaveBeenCalledWith('BA');
   });
 });
