@@ -1,13 +1,14 @@
 import { selectionPath, type Selection } from './selection';
+import { SITE_URL } from './site';
 
 /** True on the embeddable view, `/?embed#/ba`: just the result card, for other sites. */
 export function isEmbed(search: string = window.location.search): boolean {
   return new URLSearchParams(search).has('embed');
 }
 
-/** Link to the full site at the same scope and round hash. */
+/** Link to the full site, on the production domain, at the same scope and round hash. */
 export function fullSiteUrl(hash: string = window.location.hash): string {
-  return `/${hash}`;
+  return `${SITE_URL}/${hash}`;
 }
 
 /** The `<iframe>` a blog or portal pastes to show the live result of a scope. */

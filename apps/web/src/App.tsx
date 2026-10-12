@@ -34,6 +34,7 @@ import {
   type Municipalities,
   type Selection,
 } from './lib/selection';
+import { SITE_HOST } from './lib/site';
 import { useMediaQuery } from './lib/use-media-query';
 import { useView } from './lib/use-view';
 import { resolveRound } from './lib/view';
@@ -184,7 +185,7 @@ export function App() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Acompanhe ao vivo em {window.location.host}
+              Acompanhe ao vivo em {SITE_HOST}
             </a>
           </ResultCard>
         )}
@@ -195,7 +196,7 @@ export function App() {
     cities.data && stateMap.data ? { cities: cities.data.cities, map: stateMap.data } : undefined;
   const abroadDetail = abroad.data && { countries: abroad.data.countries, map: continentMap.data };
   const getShareContent = () =>
-    shareContentFrom(data, selection, finalists, window.location.host, detail, abroadDetail);
+    shareContentFrom(data, selection, finalists, SITE_HOST, detail, abroadDetail);
 
   return (
     <>

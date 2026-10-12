@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { embedCode, fullSiteUrl, isEmbed } from './embed';
+import { SITE_URL } from './site';
 
 describe('embed', () => {
   it('is on with the embed query parameter', () => {
@@ -8,9 +9,9 @@ describe('embed', () => {
     expect(isEmbed('')).toBe(false);
   });
 
-  it('links back to the full site at the same scope', () => {
-    expect(fullSiteUrl('#/2turno/ba')).toBe('/#/2turno/ba');
-    expect(fullSiteUrl('')).toBe('/');
+  it('links back to the production site at the same scope', () => {
+    expect(fullSiteUrl('#/2turno/ba')).toBe(`${SITE_URL}/#/2turno/ba`);
+    expect(fullSiteUrl('')).toBe(`${SITE_URL}/`);
   });
 
   it('writes the iframe of a scope', () => {

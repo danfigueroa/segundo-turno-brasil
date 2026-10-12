@@ -114,7 +114,7 @@ describe('App', () => {
     expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
     expect(within(scoreboard).getByRole('link', { name: /Acompanhe ao vivo em/ })).toHaveAttribute(
       'href',
-      '/#/ba',
+      'https://eleicao.danielfigueroa.dev/#/ba',
     );
     expect(screen.queryByRole('heading', { name: 'Quem lidera em cada estado' })).toBeNull();
     expect(screen.queryByRole('group', { name: 'Ver resultado de' })).toBeNull();

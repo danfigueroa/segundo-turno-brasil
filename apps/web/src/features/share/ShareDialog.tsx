@@ -9,7 +9,8 @@ import {
   shareText,
   type TextShareOutcome,
 } from './share-file';
-import { embedCode } from '../../lib/embed';
+import { embedCode, fullSiteUrl } from '../../lib/embed';
+import { SITE_URL } from '../../lib/site';
 import { useMediaQuery } from '../../lib/use-media-query';
 import type { Selection } from '../../lib/selection';
 import { shareTextOf } from './share-text';
@@ -149,9 +150,7 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
         <button
           type="button"
           className={styles.secondary}
-          onClick={() =>
-            void shareText(shareTextOf(content, window.location.href)).then(setTextOutcome)
-          }
+          onClick={() => void shareText(shareTextOf(content, fullSiteUrl())).then(setTextOutcome)}
         >
           Enviar como texto
         </button>
@@ -161,7 +160,7 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
             className={styles.secondary}
             onClick={() =>
               void navigator.clipboard
-                .writeText(embedCode(window.location.origin, selection))
+                .writeText(embedCode(SITE_URL, selection))
                 .then(() => setTextOutcome('embed-copied'))
                 .catch(() => setTextOutcome('failed'))
             }
