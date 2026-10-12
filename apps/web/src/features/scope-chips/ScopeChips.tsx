@@ -1,10 +1,20 @@
 import { REGION_CODES, REGION_NAMES } from '@stb/domain';
-import { ABROAD, COUNTRY, isSameSelection, regionOf, type Selection } from '../../lib/selection';
+import type { MyPlace } from '../../lib/my-place';
+import {
+  ABROAD,
+  COUNTRY,
+  isSameSelection,
+  parseSelectionPath,
+  regionOf,
+  type Selection,
+} from '../../lib/selection';
 import styles from './ScopeChips.module.css';
 
 interface Props {
   readonly selection: Selection;
   readonly onSelect: (selection: Selection) => void;
+  /** The viewer's pinned place, offered first. */
+  readonly myPlace?: MyPlace | undefined;
 }
 
 const CHIPS: { label: string; target: Selection }[] = [
@@ -19,14 +29,27 @@ const CHIPS: { label: string; target: Selection }[] = [
 /**
  * Sticky bar with Brasil, the five regions and abroad. While a state is selected, its
  * region's chip stays marked as the parent of the selection; while a country abroad is,
- * the abroad chip does.
+ * the abroad chip does. A place the viewer pinned comes first, with a star.
  */
-export function ScopeChips({ selection, onSelect }: Props) {
+export function ScopeChips({ selection, onSelect, myPlace }: Props) {
   const parent = selection.kind === 'state' ? regionOf(selection) : undefined;
   const inAbroad = selection.kind === 'abroadCountry';
+  const pinned = myPlace && parseSelectionPath(myPlace.path);
   return (
     <div className={styles.bar}>
       <div className={styles.chips} role="group" aria-label="Ver resultado de">
+        {myPlace && pinned && (
+          <button
+            type="button"
+            className={styles.chip}
+            aria-pressed={isSameSelection(selection, pinned)}
+            data-state={isSameSelection(selection, pinned) ? 'exact' : undefined}
+            onClick={() => onSelect(pinned)}
+          >
+            <span aria-hidden="true">★ </span>
+            {myPlace.label}
+          </button>
+        )}
         {CHIPS.map(({ label, target }) => {
           const exact = isSameSelection(selection, target);
           const isParent =
