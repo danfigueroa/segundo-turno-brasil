@@ -19,15 +19,16 @@ Snapshot consistente de todas as abrangências de um turno. `round` é opcional 
 
 `Tally`:
 
-| Campo        | Tipo                                                             | Descrição                                          |
-| ------------ | ---------------------------------------------------------------- | -------------------------------------------------- |
-| `scope`      | `{kind:'country'\|'abroad'}` ou `{kind:'state'\|'region', code}` | Abrangência                                        |
-| `candidates` | `{number,name,party,votes,share}[]`                              | Ordenados por votos; `share` = % dos votos válidos |
-| `sections`   | `{total, counted}`                                               | Seções eleitorais totais e totalizadas             |
-| `electorate` | `number`                                                         | Eleitorado apto                                    |
-| `turnout`    | `number`                                                         | Comparecimento                                     |
-| `votes`      | `{valid, blank, null}`                                           | Válidos, brancos e nulos                           |
-| `updatedAt`  | ISO 8601 (`-03:00`)                                              | Horário da totalização no TSE                      |
+| Campo               | Tipo                                                             | Descrição                                                                                        |
+| ------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `scope`             | `{kind:'country'\|'abroad'}` ou `{kind:'state'\|'region', code}` | Abrangência                                                                                      |
+| `candidates`        | `{number,name,party,votes,share}[]`                              | Ordenados por votos; `share` = % dos votos válidos                                               |
+| `sections`          | `{total, counted}`                                               | Seções eleitorais totais e totalizadas                                                           |
+| `electorate`        | `number`                                                         | Eleitorado apto                                                                                  |
+| `countedElectorate` | `number` (opcional)                                              | Eleitorado das seções já apuradas (TSE `e.est`), base da abstenção durante a apuração (ADR 0022) |
+| `turnout`           | `number`                                                         | Comparecimento                                                                                   |
+| `votes`             | `{valid, blank, null}`                                           | Válidos, brancos e nulos                                                                         |
+| `updatedAt`         | ISO 8601 (`-03:00`)                                              | Horário da totalização no TSE                                                                    |
 
 Regiões não vêm na resposta: são agregadas no cliente com `aggregateRegion` (`packages/domain`).
 
