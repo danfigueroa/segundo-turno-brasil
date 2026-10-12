@@ -4,7 +4,7 @@
 
 ```
 Navegador (React SPA)
-   │  polling a cada 20s (pausa com a aba oculta)
+   │  polling a cada 30s (pausa com a aba oculta)
    ▼
 CDN da Vercel ── cópia < 15s ──> resposta imediata
    │  cópia expirada: entrega a cópia atual e revalida em background

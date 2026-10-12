@@ -12,7 +12,7 @@ React 19 + Vite, organizado por funcionalidade em `apps/web/src/features`.
 
 ## Dados e estado
 
-- `api/use-results.ts`: TanStack Query por turno; o 2º turno tem polling de 20s, pausado com a aba oculta, e `keepPreviousData` para não piscar.
+- `api/use-results.ts`: TanStack Query por turno; o 2º turno tem polling de 30s (ADR 0026), pausado com a aba oculta, e `keepPreviousData` para não piscar.
 - Resposta validada com o schema de `@stb/contracts` (zod/mini, ~9 KB gzip).
 - Turno e seleção (Brasil / região / UF / cidade / exterior / país) vivem no hash da URL (`lib/use-view.ts`: `#/sp`, `#/regiao/ne`, `#/exterior`, `#/sp/3550308`, `#/exterior/portugal`): links compartilháveis e botão voltar funcionam. A cidade é o código do IBGE dentro da UF (ADR 0014); um código que não começa pelo da UF cai no estado. O país é o nome sem acentos (`countrySlug`, ADR 0019); um slug malformado cai no Exterior.
 
