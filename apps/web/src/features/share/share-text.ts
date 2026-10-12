@@ -12,8 +12,9 @@ const formatCounted = (value: number) => (value >= 100 ? '100%' : formatPercent(
  * and votes, the count, the update time and a link back to the same scope.
  */
 export function shareTextOf(content: ShareContent, url: string): string {
-  const heading =
-    content.round === 1
+  const heading = content.winner
+    ? `✅ ${content.winner.name} vence a eleição presidencial`
+    : content.round === 1
       ? `🗳️ Resultado do 1º turno · ${content.title}`
       : `🗳️ Apuração do 2º turno · ${content.title}`;
   const results = content.results.map(
