@@ -16,8 +16,42 @@ function siteUrl(): Plugin {
   };
 }
 
+/** The Latin subset of the variable font, the only one pt-BR text needs. */
+const LATIN_FONT = /schibsted-grotesk-latin-wght-normal-[\w-]+\.woff2$/;
+
+/**
+ * Preloads the Latin font, which the browser would only discover after the CSS: text
+ * renders in the right font from the first paint, without a swap.
+ */
+function preloadFont(): Plugin {
+  return {
+    name: 'preload-font',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler: (_html, { bundle }) => {
+        const font = Object.keys(bundle ?? {}).find((file) => LATIN_FONT.test(file));
+        if (!font) throw new Error('Latin font not found in the bundle');
+        return [
+          {
+            tag: 'link',
+            attrs: {
+              rel: 'preload',
+              href: `/${font}`,
+              as: 'font',
+              type: 'font/woff2',
+              crossorigin: '',
+            },
+            injectTo: 'head',
+          },
+        ];
+      },
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), siteUrl()],
+  plugins: [react(), siteUrl(), preloadFont()],
   server: {
     proxy: { '/api': 'http://localhost:3001' },
   },
