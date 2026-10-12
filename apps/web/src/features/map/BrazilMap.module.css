@@ -26,6 +26,30 @@
   color: var(--text-secondary);
 }
 
+.modes {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mode {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--control-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mode[aria-pressed='true'] {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--page);
+}
+
 .container {
   grid-area: map;
   position: relative;
@@ -86,6 +110,22 @@
 }
 .state[data-hue='blue'][data-intensity='5'] {
   --tone: var(--blue-5);
+}
+
+.state[data-hue='abstention'][data-intensity='1'] {
+  --tone: var(--gray-1);
+}
+.state[data-hue='abstention'][data-intensity='2'] {
+  --tone: var(--gray-2);
+}
+.state[data-hue='abstention'][data-intensity='3'] {
+  --tone: var(--gray-3);
+}
+.state[data-hue='abstention'][data-intensity='4'] {
+  --tone: var(--gray-4);
+}
+.state[data-hue='abstention'][data-intensity='5'] {
+  --tone: var(--gray-5);
 }
 
 .state[data-intensity]:not([data-intensity='0']) {
@@ -255,6 +295,22 @@
 }
 .legendRow[data-hue='blue'] .legendStep[data-intensity='5'] {
   background: var(--blue-5);
+}
+
+.legendRow[data-hue='abstention'] .legendStep[data-intensity='1'] {
+  background: var(--gray-1);
+}
+.legendRow[data-hue='abstention'] .legendStep[data-intensity='2'] {
+  background: var(--gray-2);
+}
+.legendRow[data-hue='abstention'] .legendStep[data-intensity='3'] {
+  background: var(--gray-3);
+}
+.legendRow[data-hue='abstention'] .legendStep[data-intensity='4'] {
+  background: var(--gray-4);
+}
+.legendRow[data-hue='abstention'] .legendStep[data-intensity='5'] {
+  background: var(--gray-5);
 }
 
 .legendBin {

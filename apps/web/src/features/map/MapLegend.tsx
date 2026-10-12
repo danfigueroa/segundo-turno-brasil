@@ -1,12 +1,16 @@
+import { ABSTENTION_BINS } from '../../lib/abstention';
 import { MARGIN_BINS, type Finalist } from '../../lib/finalists';
 import styles from './BrazilMap.module.css';
 
 const STEPS = [1, 2, 3, 4, 5] as const;
-const BIN_LABELS = [
-  `<${MARGIN_BINS[0]}`,
-  ...MARGIN_BINS.slice(1).map((limit, i) => `${MARGIN_BINS[i]}–${limit}`),
-  `${MARGIN_BINS.at(-1)}+`,
+/** `<2`, `2–5`, …, `20+` from the bin limits. */
+const binLabels = (bins: readonly number[], unit = '') => [
+  `<${bins[0]}${unit}`,
+  ...bins.slice(1).map((limit, i) => `${bins[i]}–${limit}${unit}`),
+  `${bins.at(-1)}${unit}+`,
 ];
+const BIN_LABELS = binLabels(MARGIN_BINS);
+const ABSTENTION_LABELS = binLabels(ABSTENTION_BINS, '%');
 
 interface Props {
   /** One row per finalist; empty before any vote is counted. */
@@ -49,6 +53,31 @@ export function MapLegend({ finalists, showEmpty, className }: Props) {
           {finalists.length > 0 ? 'Sem votos apurados ou empate' : 'Sem votos apurados'}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Five abstention bins on the neutral ramp, for the abstention map. */
+export function AbstentionLegend({ className }: { readonly className?: string | undefined }) {
+  return (
+    <div className={`${styles.legendBox} ${className ?? ''}`}>
+      <div className={styles.legendTitle}>Abstenção nas seções apuradas</div>
+      <div className={styles.legendGrid}>
+        <div className={styles.legendRow} data-hue="abstention">
+          <span className={styles.legendName}>Abstenção</span>
+          {STEPS.map((step) => (
+            <span key={step} className={styles.legendStep} data-intensity={step} />
+          ))}
+        </div>
+        <div className={styles.legendRow} aria-hidden="true">
+          <span />
+          {ABSTENTION_LABELS.map((label) => (
+            <span key={label} className={styles.legendBin}>
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

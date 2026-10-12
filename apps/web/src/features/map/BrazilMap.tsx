@@ -1,6 +1,7 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { countedPercentage, STATE_CODES, STATES, type StateCode, type Tally } from '@stb/domain';
-import type { KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
+import { abstentionOf, abstentionStep } from '../../lib/abstention';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
@@ -9,7 +10,7 @@ import { BRAZIL_MAP } from './brazil-map';
 import { prefetchStateMap } from '../state-map/state-maps';
 import { emphasisOf, type Area } from './emphasis';
 import styles from './BrazilMap.module.css';
-import { MapLegend } from './MapLegend';
+import { AbstentionLegend, MapLegend } from './MapLegend';
 import { StateSelect } from './StateSelect';
 
 interface Props {
@@ -26,9 +27,15 @@ const areaName = (area: Area) => (area === 'abroad' ? 'Exterior' : STATES[area].
 const areaSelection = (area: Area): Selection =>
   area === 'abroad' ? ABROAD : { kind: 'state', code: area };
 
-/** Choropleth: each state takes the leader's hue, darker the wider the margin. */
+type MapMode = 'lead' | 'abstention';
+
+/**
+ * Choropleth: each state takes the leader's hue, darker the wider the margin. Once the
+ * count starts, it can switch to abstention, on a neutral ramp.
+ */
 export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
   const wide = useMediaQuery('(min-width: 960px)');
+  const [chosenMode, setMode] = useState<MapMode>('lead');
 
   const tallyOf = (area: Area): Tally => (area === 'abroad' ? data.abroad : data.states[area]);
 
@@ -45,18 +52,38 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
   const leads = [...STATE_CODES, 'abroad' as const].map((area) => describe(area).lead);
   const anyLead = leads.some(Boolean);
   const anyWithoutLead = leads.some((lead) => !lead);
+  const mode: MapMode = anyLead ? chosenMode : 'lead';
+
+  /** Hue and step of an area in the abstention map, with what its label says. */
+  const abstentionLook = (area: Area) => {
+    const abstention = abstentionOf(tallyOf(area));
+    return abstention === undefined
+      ? { hue: 'none', intensity: 0, status: 'sem votos apurados' }
+      : {
+          hue: 'abstention',
+          intensity: abstentionStep(abstention),
+          status: `abstenção de ${formatPercent(abstention)}`,
+        };
+  };
 
   /** Selection props shared by states and the abroad button. */
   const interactive = (area: Area) => {
     const { lead, counted } = describe(area);
-    const status = lead
-      ? `${lead.leader.name} lidera com ${formatPercent(lead.leader.share)}`
-      : 'sem votos apurados';
+    const look =
+      mode === 'abstention'
+        ? abstentionLook(area)
+        : {
+            hue: lead?.hue ?? 'none',
+            intensity: lead?.intensity ?? 0,
+            status: lead
+              ? `${lead.leader.name} lidera com ${formatPercent(lead.leader.share)}`
+              : 'sem votos apurados',
+          };
     return {
       'aria-pressed': isSelected(area),
-      'aria-label': `${areaName(area)}: ${status}, ${formatPercent(counted)} apurado`,
-      'data-hue': lead?.hue ?? 'none',
-      'data-intensity': lead?.intensity ?? 0,
+      'aria-label': `${areaName(area)}: ${look.status}, ${formatPercent(counted)} apurado`,
+      'data-hue': look.hue,
+      'data-intensity': look.intensity,
       'data-selected': isSelected(area) || undefined,
       'data-emphasis': emphasisOf(area, selection),
       onClick: () => onSelect(areaSelection(area)),
@@ -81,7 +108,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     <section className={`card ${styles.card}`} aria-labelledby="map-title">
       <div className={styles.head}>
         <h2 id="map-title" className={styles.title}>
-          Quem lidera em cada estado
+          {mode === 'abstention' ? 'Abstenção em cada estado' : 'Quem lidera em cada estado'}
         </h2>
         <p className={styles.subtitle}>
           {!anyLead
@@ -90,6 +117,26 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
               ? 'Clique em um estado ou no Exterior.'
               : 'Toque em um estado ou no Exterior para ver o resultado.'}
         </p>
+        {anyLead && (
+          <div className={styles.modes} role="group" aria-label="Mostrar no mapa">
+            <button
+              type="button"
+              className={styles.mode}
+              aria-pressed={mode === 'lead'}
+              onClick={() => setMode('lead')}
+            >
+              Quem lidera
+            </button>
+            <button
+              type="button"
+              className={styles.mode}
+              aria-pressed={mode === 'abstention'}
+              onClick={() => setMode('abstention')}
+            >
+              Abstenção
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.container}>
@@ -126,11 +173,15 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
         selection={selection}
         onSelect={onSelect}
       />
-      <MapLegend
-        className={styles.legend}
-        finalists={anyLead ? finalists : []}
-        showEmpty={anyWithoutLead}
-      />
+      {mode === 'abstention' ? (
+        <AbstentionLegend className={styles.legend} />
+      ) : (
+        <MapLegend
+          className={styles.legend}
+          finalists={anyLead ? finalists : []}
+          showEmpty={anyWithoutLead}
+        />
+      )}
     </section>
   );
 }
