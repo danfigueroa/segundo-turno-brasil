@@ -35,7 +35,9 @@ export function outlook(tally: Tally): Outlook | undefined {
   const advantage = leader.votes - runnerUp.votes;
   const remaining =
     counted === 0 ? 0 : Math.round((tally.votes.valid * (total - counted)) / counted);
-  const uncounted = Math.max(0, tally.electorate - tally.turnout);
+  // Voters of the sections still to count; without that electorate, everyone who has not
+  // voted in the counted ones too (a looser bound).
+  const uncounted = Math.max(0, tally.electorate - (tally.countedElectorate ?? tally.turnout));
   const finished = counted >= total;
 
   return {
