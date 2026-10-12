@@ -96,7 +96,7 @@ describe('App', () => {
       'data-hue',
       'abstention',
     );
-    expect(screen.getByText('Abstenção nas seções apuradas')).toBeInTheDocument();
+    expect(screen.getByText('Abstenção nas seções apuradas (%)')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Quem lidera' }));
     expect(screen.getByRole('button', { name: /^Bahia: Lula lidera/ })).toHaveAttribute(
