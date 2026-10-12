@@ -59,8 +59,7 @@ Empacotar nós mesmos evita depender de como a Vercel compilaria TypeScript de p
 
 Produção em **`eleicao.danielfigueroa.dev`** ([ADR 0027](adr/0027-production-domain.md)); `segundo-turno-brasil.vercel.app` continua respondendo.
 
-- DNS na Hostinger (`danielfigueroa.dev`, servidores `dns-parking.com`): `CNAME eleicao` → o destino indicado pela Vercel em Settings → Domains (`*.vercel-dns-017.com`), TTL 300s. Os registros `A @` e `CNAME www` são do site pessoal no GitHub Pages.
-- Certificado HTTPS emitido e renovado pela Vercel.
+- Um registro de DNS do subdomínio aponta para a Vercel, que emite e renova o certificado HTTPS.
 - As meta tags de prévia são gravadas no build: depois de trocar o domínio de produção, é preciso um novo deploy.
 
 ### Checklist pós-deploy (Preview)
