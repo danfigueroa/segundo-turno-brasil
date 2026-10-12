@@ -1,7 +1,7 @@
 import type { MunicipalityResult } from '@stb/domain';
 import { describe, expect, it } from 'vitest';
 import { resultsResponse } from '../../test/fixtures';
-import { cityRows, cityWins } from './cities';
+import { cityRows, cityWins, sortCityRows } from './cities';
 import { finalistsOf } from './finalists';
 
 const finalists = finalistsOf(resultsResponse().country);
@@ -30,6 +30,8 @@ describe('cityRows', () => {
         votes: [60000, 140000],
         total: 200000,
         leader: '22',
+        margin: 40,
+        pending: 0,
       },
       {
         ibge: '1200104',
@@ -38,6 +40,8 @@ describe('cityRows', () => {
         votes: [0, 0],
         total: 0,
         leader: undefined,
+        margin: 0,
+        pending: 0,
       },
       {
         ibge: '1200013',
@@ -46,6 +50,8 @@ describe('cityRows', () => {
         votes: [3000, 5000],
         total: 8000,
         leader: '22',
+        margin: 25,
+        pending: 0,
       },
       {
         ibge: '1200054',
@@ -54,6 +60,8 @@ describe('cityRows', () => {
         votes: [2000, 2000],
         total: 4000,
         leader: undefined,
+        margin: 0,
+        pending: 0,
       },
     ]);
   });
@@ -62,5 +70,31 @@ describe('cityRows', () => {
 describe('cityWins', () => {
   it('counts where each finalist leads, ignoring ties and empty counts', () => {
     expect(cityWins(cityRows(cities, finalists), finalists)).toEqual({ '13': 0, '22': 2 });
+  });
+});
+
+describe('sortCityRows', () => {
+  const pending = (ibge: string, left: number) => {
+    const found = cities.find((c) => c.ibge === ibge);
+    if (!found) throw new Error(ibge);
+    return { ...found, sections: { total: 10, counted: 10 - left } };
+  };
+  const rows = cityRows(
+    [pending('1200401', 1), pending('1200104', 9), pending('1200013', 0), pending('1200054', 1)],
+    finalists,
+  );
+  const names = (order: Parameters<typeof sortCityRows>[1]) =>
+    sortCityRows(rows, order).map((row) => row.name);
+
+  it('ranks by electorate', () => {
+    expect(names('electorate')).toEqual(['Rio Branco', 'Brasiléia', 'Acrelândia', 'Assis Brasil']);
+  });
+
+  it('ranks by the widest lead, bigger cities first on a tie', () => {
+    expect(names('margin')).toEqual(['Rio Branco', 'Acrelândia', 'Brasiléia', 'Assis Brasil']);
+  });
+
+  it('ranks by the sections still to count, bigger cities first on a tie', () => {
+    expect(names('pending')).toEqual(['Brasiléia', 'Rio Branco', 'Assis Brasil', 'Acrelândia']);
   });
 });

@@ -287,6 +287,23 @@ describe('App cities', () => {
     expect(within(section).getAllByRole('listitem')).toHaveLength(1);
   });
 
+  it('ranks the municipalities by the widest lead', async () => {
+    window.location.hash = '#/ba';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const section = await screen.findByRole('region', { name: 'Votação por cidade' });
+    const names = () =>
+      within(section)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent?.match(/^[^\d]+/)?.[0]?.trim());
+    await within(section).findByRole('button', { name: /Salvador/ });
+    expect(names()).toEqual(['Salvador', 'Feira de Santana', 'Barreiras']);
+
+    await userEvent.click(within(section).getByRole('button', { name: 'Maior vantagem' }));
+    expect(names()).toEqual(['Barreiras', 'Salvador', 'Feira de Santana']);
+  });
+
   it('opens the result card of a city picked in the list', async () => {
     window.location.hash = '#/ba';
     mockFetch(() => Response.json(resultsResponse()));
