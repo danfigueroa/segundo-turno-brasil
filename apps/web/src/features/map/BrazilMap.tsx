@@ -6,6 +6,7 @@ import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
 import { ABROAD, type Selection } from '../../lib/selection';
 import { BRAZIL_MAP } from './brazil-map';
+import { prefetchStateMap } from '../state-map/state-maps';
 import { emphasisOf, type Area } from './emphasis';
 import styles from './BrazilMap.module.css';
 import { MapLegend } from './MapLegend';
@@ -67,6 +68,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     ...interactive(code),
     tabIndex: 0,
     role: 'button',
+    onPointerDown: () => prefetchStateMap(code),
     onKeyDown: (event: KeyboardEvent<SVGElement>) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();

@@ -5,6 +5,7 @@ import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatLead, formatPercent } from '../../lib/format';
 import { regionOf, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
+import { prefetchStateMap } from '../state-map/state-maps';
 import styles from './StatesList.module.css';
 
 interface Props {
@@ -110,6 +111,7 @@ function Row({ code, data, finalists, selected, decimals, onSelect }: RowProps) 
       type="button"
       className={styles.row}
       aria-current={selected || undefined}
+      onPointerDown={() => prefetchStateMap(code)}
       onClick={onSelect}
     >
       <span
