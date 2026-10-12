@@ -30,6 +30,8 @@ export const tallySchema = z.object({
   candidates: z.readonly(z.array(candidateResultSchema)),
   sections: z.object({ total: count, counted: count }),
   electorate: count,
+  // Optional: snapshots cached before it existed may still be served.
+  countedElectorate: z.optional(count),
   turnout: count,
   votes: z.object({ valid: count, blank: count, null: count }),
   updatedAt: timestamp,
