@@ -48,6 +48,15 @@ describe('App', () => {
     expect(within(scoreboard).getByText('Lidera')).toBeInTheDocument();
   });
 
+  it('puts the score of the scope on screen in the tab title', async () => {
+    window.location.hash = '#/ba';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    await screen.findByRole('region', { name: 'Bahia' });
+    expect(document.title).toBe('Bahia: Lula 70,00% × 30,00% Flávio · 50,00% apurado');
+  });
+
   it('switches the result to a state picked in the list', async () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
