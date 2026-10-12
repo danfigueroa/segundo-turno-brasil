@@ -10,7 +10,11 @@ const finalists = finalistsOf(data.country);
 
 describe('shareContentFrom', () => {
   it('summarizes the national result', () => {
-    const content = shareContentFrom(data, { kind: 'country' }, finalists, 'example.com');
+    // Half the voters still to count: the race is open.
+    const country = { ...data.country, electorate: 60_000, turnout: 48_000 };
+    const open = resultsResponse({ country });
+    const content = shareContentFrom(open, { kind: 'country' }, finalists, 'example.com');
+    expect(content.winner).toBeUndefined();
     expect(content.title).toBe('Brasil');
     expect(content.kicker).toBe('2º TURNO 2026 · APURAÇÃO AO VIVO');
     expect(content.leaderNumber).toBe('22');
@@ -138,5 +142,18 @@ describe('shareContentFrom', () => {
     expect(content.title).toBe('Portugal');
     expect(content.detailMap).toBeUndefined();
     expect(content.focus.size).toBe(27);
+  });
+
+  it('announces the winner of Brazil once the race is decided', () => {
+    const decided = resultsResponse({ country: tally({ kind: 'country' }, 550, 250, 80) });
+    const finalistsNow = finalistsOf(decided.country);
+    const content = shareContentFrom(decided, { kind: 'country' }, finalistsNow, 'x');
+    expect(content.winner?.shortName).toBe('Lula');
+    expect(content.kicker).toBe('2º TURNO 2026 · BRASIL');
+    expect(content.title).toBe('Lula vence');
+
+    const state = shareContentFrom(decided, { kind: 'state', code: 'BA' }, finalistsNow, 'x');
+    expect(state.winner).toBeUndefined();
+    expect(state.title).toBe('Bahia');
   });
 });

@@ -57,6 +57,16 @@ describe('App', () => {
     expect(document.title).toBe('Bahia: Lula 70,00% × 30,00% Flávio · 50,00% apurado');
   });
 
+  it('offers to share the victory once the race is decided', async () => {
+    mockFetch(() =>
+      Response.json(resultsResponse({ country: tally({ kind: 'country' }, 550, 250, 80) })),
+    );
+    renderApp();
+    expect(
+      await screen.findByRole('button', { name: 'Compartilhar a vitória de Lula' }),
+    ).toBeInTheDocument();
+  });
+
   it('switches the result to a state picked in the list', async () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();

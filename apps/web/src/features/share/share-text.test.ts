@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finalistsOf } from '../../lib/finalists';
-import { resultsResponse } from '../../../test/fixtures';
+import { resultsResponse, tally } from '../../../test/fixtures';
 import { shareContentFrom } from './share-content';
 import { shareTextOf } from './share-text';
 
@@ -31,5 +31,18 @@ describe('shareTextOf', () => {
     const text = shareTextOf(content, 'https://example.com/#/1turno');
     expect(text.startsWith('🗳️ Resultado do 1º turno · Brasil')).toBe(true);
     expect(text.endsWith('Veja: https://example.com/#/1turno')).toBe(true);
+  });
+
+  it('leads with the winner once the race is decided', () => {
+    const decided = resultsResponse({ country: tally({ kind: 'country' }, 550, 250, 80) });
+    const content = shareContentFrom(
+      decided,
+      { kind: 'country' },
+      finalistsOf(decided.country),
+      'x',
+    );
+    expect(shareTextOf(content, 'https://example.com/').split('\n')[0]).toBe(
+      '✅ Lula vence a eleição presidencial',
+    );
   });
 });
