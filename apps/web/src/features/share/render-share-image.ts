@@ -75,19 +75,58 @@ export function renderShareImage(content: ShareContent, format: ShareFormat): HT
   const canvas = document.createElement('canvas');
   canvas.width = layout.width;
   canvas.height = layout.height;
+  drawShareImage(canvas, content, format);
+  return canvas;
+}
+
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+
+/**
+ * The content as it is `progress` (0–1) into the share video's intro: shares, votes and
+ * the count rise from zero, as the numbers on the site do.
+ */
+export function contentAt(content: ShareContent, progress: number): ShareContent {
+  if (progress >= 1) return content;
+  const t = easeOutCubic(Math.max(0, progress));
+  return {
+    ...content,
+    results: content.results.map((r) => ({
+      ...r,
+      share: r.share * t,
+      votes: Math.round(r.votes * t),
+    })),
+    othersVotes: Math.round(content.othersVotes * t),
+    counted: content.counted * t,
+  };
+}
+
+/**
+ * Draws the share image on a canvas sized for the format. Below 1, `progress` draws a
+ * frame of the video intro: numbers counting up and the map and lead counts fading in.
+ */
+export function drawShareImage(
+  canvas: HTMLCanvasElement,
+  content: ShareContent,
+  format: ShareFormat,
+  progress = 1,
+): void {
+  const layout = LAYOUTS[format];
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D is not supported');
+  const frame = contentAt(content, progress);
+  const reveal = easeOutCubic(Math.min(1, Math.max(0, progress)));
 
   ctx.fillStyle = P.background;
   ctx.fillRect(0, 0, layout.width, layout.height);
 
-  drawBand(ctx, content, layout);
-  drawResultCard(ctx, content, layout);
-  drawMap(ctx, content, layout);
-  drawLeadCounts(ctx, content, layout);
-  drawFooter(ctx, content, layout);
+  drawBand(ctx, frame, layout);
+  drawResultCard(ctx, frame, layout);
+  drawMap(ctx, frame, layout, reveal);
+  ctx.globalAlpha = reveal;
+  drawLeadCounts(ctx, frame, layout);
+  ctx.globalAlpha = 1;
+  drawFooter(ctx, frame, layout);
   drawFlagStripe(ctx, layout.height - 18, layout.width, 18);
-  return canvas;
 }
 
 function font(weight: number, size: number) {
@@ -254,15 +293,38 @@ function placeMap(ctx: CanvasRenderingContext2D, viewBox: string, layout: Layout
   return scale;
 }
 
+/** Fills a shape with its color at `reveal` of the way from the empty map color. */
+function fillRevealed(
+  ctx: CanvasRenderingContext2D,
+  path: Path2D,
+  fill: string,
+  alpha: number,
+  reveal: number,
+) {
+  if (reveal < 1) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = P.mapEmpty;
+    ctx.fill(path);
+  }
+  ctx.globalAlpha = alpha * reveal;
+  ctx.fillStyle = fill;
+  ctx.fill(path);
+}
+
 /** A city: its state's municipalities, the city outlined. */
-function drawDetailMap(ctx: CanvasRenderingContext2D, map: DetailMap, layout: Layout) {
+function drawDetailMap(
+  ctx: CanvasRenderingContext2D,
+  map: DetailMap,
+  layout: Layout,
+  reveal: number,
+) {
   ctx.save();
   const scale = placeMap(ctx, map.viewBox, layout);
   ctx.lineWidth = 1 / scale;
   for (const shape of map.shapes) {
     const path = new Path2D(shape.d);
-    ctx.fillStyle = shape.fill;
-    ctx.fill(path);
+    fillRevealed(ctx, path, shape.fill, 1, reveal);
+    ctx.globalAlpha = 1;
     ctx.stroke(path);
   }
   if (map.selected) {
@@ -273,9 +335,15 @@ function drawDetailMap(ctx: CanvasRenderingContext2D, map: DetailMap, layout: La
   ctx.restore();
 }
 
-function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: Layout) {
+/** `reveal` (0–1) fades the colors in over the empty map. */
+function drawMap(
+  ctx: CanvasRenderingContext2D,
+  content: ShareContent,
+  layout: Layout,
+  reveal: number,
+) {
   if (content.detailMap) {
-    drawDetailMap(ctx, content.detailMap, layout);
+    drawDetailMap(ctx, content.detailMap, layout, reveal);
     return;
   }
   ctx.save();
@@ -284,9 +352,9 @@ function drawMap(ctx: CanvasRenderingContext2D, content: ShareContent, layout: L
 
   for (const code of STATE_CODES) {
     const path = new Path2D(BRAZIL_MAP.states[code].d);
-    ctx.globalAlpha = content.focus.has(code) ? 1 : 0.25;
-    ctx.fillStyle = content.mapFills[code];
-    ctx.fill(path);
+    const alpha = content.focus.has(code) ? 1 : 0.25;
+    fillRevealed(ctx, path, content.mapFills[code], alpha, reveal);
+    ctx.globalAlpha = alpha;
     ctx.stroke(path);
   }
 
