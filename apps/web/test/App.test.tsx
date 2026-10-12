@@ -84,6 +84,26 @@ describe('App', () => {
     expect(window.location.hash).toBe('#/ba');
   });
 
+  it('switches the map to abstention by state', async () => {
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Abstenção' }));
+    expect(screen.getByRole('heading', { name: 'Abstenção em cada estado' })).toBeInTheDocument();
+    // Fixture states: 800 of 1000 voters showed up.
+    expect(screen.getByRole('button', { name: /^Bahia: abstenção de 20,00%/ })).toHaveAttribute(
+      'data-hue',
+      'abstention',
+    );
+    expect(screen.getByText('Abstenção nas seções apuradas')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Quem lidera' }));
+    expect(screen.getByRole('button', { name: /^Bahia: Lula lidera/ })).toHaveAttribute(
+      'data-hue',
+      'red',
+    );
+  });
+
   it('switches the result to a state picked in the list', async () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
