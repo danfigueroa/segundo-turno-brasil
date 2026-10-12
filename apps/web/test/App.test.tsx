@@ -29,6 +29,7 @@ function mockFetch(results: () => Response, abroad = () => Response.json(abroadR
 }
 
 beforeEach(() => {
+  window.history.replaceState(null, '', '/');
   window.location.hash = '';
   localStorage.clear();
 });
@@ -102,6 +103,21 @@ describe('App', () => {
       'data-hue',
       'red',
     );
+  });
+
+  it('shows only the result card with a link to the site when embedded', async () => {
+    window.history.replaceState(null, '', '/?embed#/ba');
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const scoreboard = await screen.findByRole('region', { name: 'Bahia' });
+    expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
+    expect(within(scoreboard).getByRole('link', { name: /Acompanhe ao vivo em/ })).toHaveAttribute(
+      'href',
+      '/#/ba',
+    );
+    expect(screen.queryByRole('heading', { name: 'Quem lidera em cada estado' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Ver resultado de' })).toBeNull();
   });
 
   it('switches the result to a state picked in the list', async () => {
