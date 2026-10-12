@@ -34,6 +34,23 @@ describe('outlook', () => {
     expect(result?.decided).toBe(true);
   });
 
+  it('bounds what is left by the electorate of the sections still to count', () => {
+    // 200 voters in the pending sections cannot make up a lead of 300.
+    const result = outlook(
+      makeTally(
+        country,
+        { '13': 550, '22': 250 },
+        {
+          electorate: 2000,
+          countedElectorate: 1800,
+          turnout: 820,
+          sections: { total: 100, counted: 90 },
+        },
+      ),
+    );
+    expect(result?.decided).toBe(true);
+  });
+
   it('is decided once every section is counted', () => {
     const result = outlook(
       makeTally(country, { '13': 51, '22': 49 }, { sections: { total: 10, counted: 10 } }),

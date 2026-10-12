@@ -37,6 +37,8 @@ describe('toTally', () => {
   it('maps sections, electorate and vote kinds', () => {
     expect(tally.sections).toEqual({ total: 499_248, counted: 499_248 });
     expect(tally.electorate).toBe(158_745_502);
+    // Every section counted: all of the electorate is behind the counted sections.
+    expect(tally.countedElectorate).toBe(158_745_502);
     expect(tally.turnout).toBe(125_275_835);
     expect(tally.votes).toEqual({ valid: 119_300_788, blank: 2_300_798, null: 3_674_249 });
   });

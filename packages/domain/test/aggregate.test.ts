@@ -26,6 +26,16 @@ describe('aggregate', () => {
     expect(total.turnout).toBe(220);
   });
 
+  it('sums the electorate of the counted sections only when every part has it', () => {
+    const counted = (tally: typeof sp, countedElectorate: number) => ({
+      ...tally,
+      countedElectorate,
+    });
+    const total = aggregate({ kind: 'country' }, [counted(sp, 80), counted(rj, 120)]);
+    expect(total.countedElectorate).toBe(200);
+    expect(aggregate({ kind: 'country' }, [counted(sp, 80), rj]).countedElectorate).toBeUndefined();
+  });
+
   it('keeps the most recent update time', () => {
     expect(aggregate({ kind: 'country' }, [sp, rj]).updatedAt).toBe('2026-10-25T18:05:00-03:00');
   });
