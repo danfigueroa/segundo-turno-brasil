@@ -94,4 +94,11 @@ Um link do site colado no WhatsApp, Facebook, X ou LinkedIn mostra título, desc
 
 ## Orçamento de performance
 
-JS inicial ≈ 120 KB gzip, somando o `index` e os chunks que ele importa de início (React DOM ≈ 69 KB, mapa ≈ 14 KB, zod/mini ≈ 9 KB, Vercel Analytics ≈ 1,4 KB — ADR 0010), CSS ≈ 7 KB, fonte ≈ 47 KB (woff2, subconjunto latino). O diálogo de compartilhamento e a seção de análise (~5,5 KB) são chunks separados.
+JS inicial ≈ 113 KB gzip, somando o `index` e os chunks que ele importa de início (React DOM ≈ 62 KB, mapa ≈ 14 KB, TanStack Query ≈ 10 KB, zod/mini ≈ 8 KB), CSS ≈ 6 KB, fonte ≈ 47 KB (woff2, subconjunto latino). Ficam em chunks separados, carregados só quando aparecem: diálogo de compartilhamento, análise da apuração (~5,5 KB), listas "Votação por cidade" e "Votação por país", mapas municipais e por continente e o Vercel Analytics (ADR 0010), que carrega depois do primeiro paint.
+
+Para o primeiro paint (ADR 0021):
+
+- **Tela de carregamento pré-renderizada:** o build (`vite build --ssr src/shell.tsx` + `scripts/prerender-shell.ts`) escreve o cabeçalho e "Carregando resultados…" (`layout/LoadingScreen.tsx`) dentro do `#root` do `index.html`. O celular pinta a página antes de baixar o JS, e o React substitui esse conteúdo ao iniciar. As classes dos CSS Modules saem iguais nos dois builds.
+- **Fonte pré-carregada:** um plugin do Vite (`preloadFont`) põe `<link rel="preload">` para o woff2 latino, que o navegador só descobriria depois do CSS.
+- **Prefetch da malha municipal:** encostar o dedo numa UF (no mapa ou na lista) já baixa o chunk do mapa dela (`prefetchStateMap`), antes de o toque terminar.
+- **Polling sem re-render:** as respostas da API têm ETag (ADR 0020). Sem novidade, o navegador recebe 304, o structural sharing do TanStack mantém as mesmas referências e nada é renderizado de novo.
