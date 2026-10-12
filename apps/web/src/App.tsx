@@ -20,7 +20,7 @@ import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
 import { documentTitle, SITE_TITLE } from './lib/document-title';
-import { finalistsOf } from './lib/finalists';
+import { finalistsOf, type Finalist } from './lib/finalists';
 import {
   countryOf,
   isAbroad,
@@ -34,13 +34,19 @@ import {
 import { useMediaQuery } from './lib/use-media-query';
 import { useView } from './lib/use-view';
 import { resolveRound } from './lib/view';
+import { winnerOf } from './lib/winner';
 import styles from './App.module.css';
 
 /** What the share button names: "Compartilhar Bahia". */
-function shareLabel(selection: Selection, cities: Municipalities, countries: Countries): string {
+function shareLabel(
+  selection: Selection,
+  cities: Municipalities,
+  countries: Countries,
+  winner: Finalist | undefined,
+): string {
   switch (selection.kind) {
     case 'country':
-      return 'Compartilhar resultado';
+      return winner ? `Compartilhar a vitória de ${winner.shortName}` : 'Compartilhar resultado';
     case 'region':
       return `Compartilhar ${REGION_NAMES[selection.code]}`;
     case 'state':
@@ -190,7 +196,12 @@ export function App() {
             >
               <ShareButton
                 getContent={getShareContent}
-                label={shareLabel(selection, cities.data?.cities, abroad.data?.countries)}
+                label={shareLabel(
+                  selection,
+                  cities.data?.cities,
+                  abroad.data?.countries,
+                  winnerOf(data, finalists),
+                )}
               />
             </ResultCard>
           )}
