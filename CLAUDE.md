@@ -123,6 +123,8 @@ Regras:
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
 - **Análise da apuração (ADR 0012):** seção carregada sob demanda (`features/insights`) com "Ainda dá virada?", curva da apuração com ritmo e previsão, saldo de votos por estado e comparação com o 1º turno (no 1º turno, só o saldo). Criada a pedido seguindo a identidade do site; ainda falta levá-la ao Claude Design.
 - **Avatares:** foto oficial de urna do TSE, servida de `apps/web/public/candidates/{número}.jpeg` (`pnpm --filter @stb/web photos:fetch`), num anel da cor do candidato; iniciais como fallback (ADR 0009). Exceção pedida ao design, como a análise da apuração.
+- **Acompanhar e compartilhar (exceções pedidas ao design; falta levar ao Claude Design):** placar no título da aba (`lib/document-title.ts`); "Fixar como minha cidade/meu estado/meu país" no card, com atalho "★" na barra de abrangência (`lib/my-place.ts`, `localStorage`); mapa "Quem lidera / Abstenção" (`lib/abstention.ts`, ADR 0022); ordenação da "Votação por cidade" (eleitorado, vantagem, urnas a apurar); card "Comparação com 2022" na análise (ADR 0024); visão incorporável `/?embed#/ba` (ADR 0025); no diálogo de compartilhamento, vídeo animado (ADR 0023), texto para WhatsApp e código do iframe (desktop); com o 2º turno decidido, "Compartilhar a vitória de …" e imagem "Lula vence" (`lib/winner.ts`).
+- **Eleitorado das seções apuradas (ADR 0022):** `Tally.countedElectorate` (TSE `e.est`, opcional no contrato) é a base da abstenção e do comparecimento durante a apuração e do "Decidido" (`countedElectorateOf`).
 - **Rodapé:** linha de atualização (fonte TSE) e o crédito "Desenvolvido por @danmfigueroa", com link para https://www.instagram.com/danmfigueroa/.
 - 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
@@ -190,6 +192,7 @@ pnpm --filter @stb/web map:cities  # regera as malhas municipais (--download bai
 pnpm --filter @stb/api geocode:abroad  # coordenadas das cidades do exterior (OpenStreetMap; revisar à mão)
 pnpm --filter @stb/web photos:fetch  # baixa as fotos oficiais dos candidatos do 2º turno
 pnpm --filter @stb/web og:build      # regera a imagem de prévia de links (public/og.png; precisa de Chromium)
+pnpm --filter @stb/web data:2022     # regera o 2º turno de 2022 da comparação (dados abertos do TSE, ~3 MB baixados)
 pnpm --filter @stb/api fixtures:abroad 6257 test/fixtures/ele2026-6257  # baixa as cidades do exterior
 pnpm --filter @stb/api fixtures:cities 6257 test/fixtures/ele2026-6257 ac ap rr  # baixa os municípios dessas UFs
 ```
@@ -201,7 +204,8 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 Pendente:
 
 - Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
-- Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país e a votação por cidade para o Claude Design.
+- Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país, a votação por cidade e os recursos de acompanhamento e compartilhamento (título da aba, fixar lugar, mapa de abstenção, ordenação por cidade, comparação com 2022, vídeo, texto, embed, vitória) para o Claude Design.
+- Conferir no Preview: `304` com `If-None-Match`, `x-vercel-cache` e compressão (checklist em `docs/architecture.md`); vídeo MP4 dos Stories no iPhone e no Android.
 
 - `GET /api/og` (prévia de links com o placar atual), se valer a pena apesar do cache das redes (ADR 0018).
 - Pinch-zoom/pan do mapa no mobile.
