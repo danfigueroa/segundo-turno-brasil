@@ -1,6 +1,6 @@
 import { REGION_NAMES, STATES, type Round } from '@stb/domain';
 import { useQuery } from '@tanstack/react-query';
-import { lazy, Suspense, useMemo, useRef } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useAbroad } from './api/abroad';
 import { useCities } from './api/cities';
 import { useResults } from './api/use-results';
@@ -19,10 +19,12 @@ import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
+import { documentTitle, SITE_TITLE } from './lib/document-title';
 import { finalistsOf } from './lib/finalists';
 import {
   countryOf,
   isAbroad,
+  resolveTally,
   selectionTitle,
   stateOf,
   type Countries,
@@ -108,6 +110,17 @@ export function App() {
   const wide = useMediaQuery('(min-width: 960px)');
 
   const finalists = useMemo(() => (data ? finalistsOf(data.country) : []), [data]);
+  // The score of the scope on screen in the tab title, for a tab left in the background.
+  const tabTitle = data
+    ? documentTitle(
+        resolveTally(data, view.selection, cities.data?.cities, abroad.data?.countries),
+        finalists,
+        selectionTitle(view.selection, cities.data?.cities, abroad.data?.countries),
+      )
+    : SITE_TITLE;
+  useEffect(() => {
+    document.title = tabTitle;
+  }, [tabTitle]);
   const changeRound = (next: Round) => navigate({ round: next, selection: view.selection });
   /** Picking a scope anywhere brings its result into view (the map sits below it on phones). */
   const select = (selection: Selection) => {
