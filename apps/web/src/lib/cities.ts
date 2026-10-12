@@ -13,6 +13,10 @@ export interface CityRow {
   readonly total: number;
   /** Ballot number of the most voted finalist; `undefined` before any vote or on a tie. */
   readonly leader: string | undefined;
+  /** Leader's advantage over the other finalist, in points of their votes together. */
+  readonly margin: number;
+  /** Polling sections still to be counted. */
+  readonly pending: number;
 }
 
 /** Every municipality of a state, biggest electorate first. */
@@ -31,6 +35,8 @@ export function cityRows(
         votes,
         total: a + b,
         leader: a === b ? undefined : finalists[a > b ? 0 : 1]?.number,
+        margin: a + b === 0 ? 0 : (Math.abs(a - b) / (a + b)) * 100,
+        pending: Math.max(0, city.sections.total - city.sections.counted),
       };
     })
     .sort((x, y) => y.electorate - x.electorate || x.name.localeCompare(y.name, 'pt-BR'));
@@ -46,4 +52,24 @@ export function cityWins(
     if (row.leader) wins[row.leader] = (wins[row.leader] ?? 0) + 1;
   }
   return wins;
+}
+
+/** Ways to rank a state's municipalities. */
+export type CityOrder = 'electorate' | 'margin' | 'pending';
+
+const byName = (x: CityRow, y: CityRow) => x.name.localeCompare(y.name, 'pt-BR');
+
+/**
+ * Municipalities by biggest electorate, by widest lead (where a finalist is strongest)
+ * or by most sections still to count (where the count can still move the result).
+ */
+export function sortCityRows(rows: readonly CityRow[], order: CityOrder): CityRow[] {
+  switch (order) {
+    case 'electorate':
+      return rows.toSorted((x, y) => y.electorate - x.electorate || byName(x, y));
+    case 'margin':
+      return rows.toSorted((x, y) => y.margin - x.margin || y.electorate - x.electorate);
+    case 'pending':
+      return rows.toSorted((x, y) => y.pending - x.pending || y.electorate - x.electorate);
+  }
 }
