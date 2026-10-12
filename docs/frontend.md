@@ -95,11 +95,13 @@ O **título da aba** traz o placar da abrangência na tela ("Bahia: Lula 70,00% 
 7. **Incorporar** (só no desktop): copia o `<iframe>` da visão incorporável.
 8. Com o 2º turno decidido, a imagem do Brasil vira "Lula vence" (`2º TURNO 2026 · BRASIL`), e o texto começa com "✅ Lula vence a eleição presidencial".
 
+**Endereço de produção:** a imagem, o vídeo, o texto, o código de incorporação e o link da visão incorporável usam `SITE_URL` (`lib/site.ts`), fixado no build pelo `define` `__SITE_URL__` do `vite.config.ts` (o mesmo domínio das meta tags). Assim, compartilhar a partir de `segundo-turno-brasil.vercel.app`, de um Preview ou do `localhost` leva sempre a `eleicao.danielfigueroa.dev`.
+
 Não existe API web para postar direto nos Stories; a folha nativa do sistema oferece o Instagram.
 
 ### Prévia de links
 
-Um link do site colado no WhatsApp, Facebook, X ou LinkedIn mostra título, descrição e a imagem `public/og.png` (1200×630), pelas meta tags Open Graph e `twitter:card` do `index.html` (ADR 0018). As URLs absolutas usam `%SITE_URL%`, que o plugin `site-url` do `vite.config.ts` troca pelo domínio de produção (`VERCEL_PROJECT_PRODUCTION_URL`, ou `segundo-turno-brasil.vercel.app`). A imagem é estática, sem placar, e se regera com `pnpm --filter @stb/web og:build` (precisa de Chromium: `npx playwright install chromium-headless-shell` ou `CHROME_PATH`). As redes guardam a prévia: depois de trocar a imagem, use o [depurador de compartilhamento do Facebook](https://developers.facebook.com/tools/debug/) para renovar o cache.
+Um link do site colado no WhatsApp, Facebook, X ou LinkedIn mostra título, descrição e a imagem `public/og.png` (1200×630), pelas meta tags Open Graph e `twitter:card` do `index.html` (ADR 0018). As URLs absolutas usam `%SITE_URL%`, que o plugin `site-url` do `vite.config.ts` troca pelo domínio de produção (`VERCEL_PROJECT_PRODUCTION_URL`, ou `eleicao.danielfigueroa.dev` fora da Vercel). A imagem é estática, sem placar, e se regera com `pnpm --filter @stb/web og:build` (precisa de Chromium: `npx playwright install chromium-headless-shell` ou `CHROME_PATH`). As redes guardam a prévia: depois de trocar a imagem, use o [depurador de compartilhamento do Facebook](https://developers.facebook.com/tools/debug/) para renovar o cache.
 
 ## Orçamento de performance
 
