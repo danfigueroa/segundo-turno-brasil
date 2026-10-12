@@ -3,10 +3,10 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 /**
- * Link previews need absolute URLs: the production domain from Vercel (a custom domain
- * once there is one), or the default `.vercel.app` one elsewhere.
+ * The production address: Vercel's production domain (the custom one), or that domain when
+ * building elsewhere. Link previews, shared images and shared links all point here.
  */
-const SITE_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL ?? 'segundo-turno-brasil.vercel.app'}`;
+const SITE_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL ?? 'eleicao.danielfigueroa.dev'}`;
 
 /** Writes the site URL into `index.html` (`%SITE_URL%`), for the Open Graph tags. */
 function siteUrl(): Plugin {
@@ -52,6 +52,7 @@ function preloadFont(): Plugin {
 
 export default defineConfig({
   plugins: [react(), siteUrl(), preloadFont()],
+  define: { __SITE_URL__: JSON.stringify(SITE_URL) },
   server: {
     proxy: { '/api': 'http://localhost:3001' },
   },
