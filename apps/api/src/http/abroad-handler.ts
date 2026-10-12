@@ -2,6 +2,7 @@ import type { AbroadResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
 import type { AbroadSnapshot } from '../use-cases/get-abroad';
 import { FINAL_CACHE, STALE_CACHE } from './results-handler';
+import { jsonResponse } from './json-response';
 import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
 
 /**
@@ -33,7 +34,7 @@ export function createAbroadHandler(rounds: Readonly<Record<Round, RoundAbroad>>
         : FINAL_ROUNDS.has(round)
           ? FINAL_CACHE
           : ABROAD_LIVE_CACHE;
-      return Response.json(body, { headers: { 'cache-control': cache } });
+      return jsonResponse(request, body, { 'cache-control': cache });
     } catch {
       return noStore(503, 'Abroad results temporarily unavailable', { 'retry-after': '60' });
     }

@@ -1,6 +1,7 @@
 import type { ResultsResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
 import type { ResultsSnapshot } from '../use-cases/get-results';
+import { jsonResponse } from './json-response';
 import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
 
 export type { Handler } from './round';
@@ -35,7 +36,7 @@ export function createResultsHandler(rounds: Readonly<Record<Round, RoundResults
         : FINAL_ROUNDS.has(round)
           ? FINAL_CACHE
           : FRESH_CACHE;
-      return Response.json(body, { headers: { 'cache-control': cache } });
+      return jsonResponse(request, body, { 'cache-control': cache });
     } catch {
       return noStore(503, 'Results temporarily unavailable', { 'retry-after': '15' });
     }

@@ -2,6 +2,7 @@ import type { CitiesResponse } from '@stb/contracts';
 import { isStateCode, type Round, type StateCode } from '@stb/domain';
 import type { CitiesSnapshot } from '../use-cases/get-cities';
 import { FINAL_CACHE, STALE_CACHE } from './results-handler';
+import { jsonResponse } from './json-response';
 import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
 
 /** Live breakdown by municipality: refreshed at most once a minute, like the TSE itself. */
@@ -42,7 +43,7 @@ export function createCitiesHandler(rounds: Readonly<Record<Round, RoundCities>>
         : FINAL_ROUNDS.has(round)
           ? FINAL_CACHE
           : CITIES_LIVE_CACHE;
-      return Response.json(body, { headers: { 'cache-control': cache } });
+      return jsonResponse(request, body, { 'cache-control': cache });
     } catch {
       return noStore(503, 'City results temporarily unavailable', { 'retry-after': '60' });
     }

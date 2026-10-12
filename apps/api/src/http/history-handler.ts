@@ -10,6 +10,7 @@ import {
 } from '@stb/domain';
 import type { Latest } from '../use-cases/get-latest';
 import { STALE_CACHE } from './results-handler';
+import { jsonResponse } from './json-response';
 import { noStore, type Handler } from './round';
 
 /**
@@ -60,8 +61,8 @@ export function createHistoryHandler(history: History): Handler {
         fetchedAt,
         stale,
       };
-      return Response.json(body, {
-        headers: { 'cache-control': stale ? STALE_CACHE : HISTORY_CACHE },
+      return jsonResponse(request, body, {
+        'cache-control': stale ? STALE_CACHE : HISTORY_CACHE,
       });
     } catch {
       return noStore(503, 'History temporarily unavailable', { 'retry-after': '60' });
