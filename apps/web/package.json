@@ -13,7 +13,8 @@
     "map:world": "tsx scripts/build-world-map.ts",
     "map:cities": "tsx scripts/build-city-maps.ts",
     "photos:fetch": "tsx scripts/fetch-candidate-photos.ts",
-    "og:build": "tsx scripts/build-og-image.ts"
+    "og:build": "tsx scripts/build-og-image.ts",
+    "data:2022": "tsx scripts/build-2022.ts"
   },
   "dependencies": {
     "@fontsource-variable/schibsted-grotesk": "^5.3.0",
