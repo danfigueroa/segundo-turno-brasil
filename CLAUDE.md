@@ -51,6 +51,7 @@ resultados.tse.jus.br (JSON público do TSE)
 - **Endpoint:** `GET /api/cities?uf=xx&round=1|2` — votos de **cada município** de uma UF (ADR 0014): um arquivo do TSE por município, com busca incremental pelo arquivo de andamento da UF (`<uf>-e<eleição>-ab.json`). Cache de 60s no 2º turno, `maxDuration` de 60s; buscado só com um estado ou uma cidade aberta.
 - **Endpoint:** `GET /api/history?scope=br|zz|<uf>|regiao-<código>` — curva da apuração do 2º turno (um ponto por avanço do total nacional), gravada por `RecordHistory` num JSON do **Vercel Blob** (ADR 0011; credenciais por OIDC ou token; em memória fora de `DATA_SOURCE=tse` ou sem credenciais). Cache de 60s; o front acrescenta os pontos do polling.
 - **Prévia de links (ADR 0018):** meta tags Open Graph/Twitter no `index.html` com `public/og.png` (1200×630, estática, gerada por `og:build`); `%SITE_URL%` vira o domínio de produção no build (`VERCEL_PROJECT_PRODUCTION_URL`).
+- **ETag (ADR 0020):** toda resposta 200 tem ETag fraco (hash sem `fetchedAt`) e responde `304` ao `If-None-Match`, então o polling sem novidade não baixa o JSON (`http/json-response.ts`).
 - **Falha do TSE:** a função serve o último snapshot bom com `stale: true` (cache de 5s) e `stale-if-error` cobre falhas da função; a UI exibe o horário dos dados.
 - **Deploy:** `pnpm build` gera `.vercel/output` (Build Output API v3) via `scripts/build-vercel-output.mjs`. Nova função = registrar em `FUNCTIONS` nesse script (ADR 0003). As funções rodam em `gru1` (São Paulo), perto do TSE (ADR 0015).
 
@@ -131,6 +132,7 @@ Regras:
 - Polling via TanStack Query (20s), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
 - **Orçamento:** JS inicial ≈ 120 KB gzip, somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
+- **Primeiro paint (ADR 0021):** o build pré-renderiza a tela de carregamento (`layout/LoadingScreen.tsx`, via `src/shell.tsx` e `scripts/prerender-shell.ts`) no `index.html` e faz preload da fonte; listas por cidade e por país e o Vercel Analytics carregam sob demanda; tocar numa UF já baixa a malha municipal dela.
 
 ## Mobile first (requisito crítico)
 
