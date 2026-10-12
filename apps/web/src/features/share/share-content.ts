@@ -23,6 +23,7 @@ import { formatDate, formatPercent, formatPoints, formatTime } from '../../lib/f
 import { countryOf, resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import type { StateMapShape } from '../state-map/state-maps';
 import type { ContinentMapShape } from '../world-map/continent-maps';
+import { winnerOf } from '../../lib/winner';
 import { SHARE_PALETTE } from './palette';
 
 /** "Lula lidera em" / "12 estados". */
@@ -35,6 +36,11 @@ export interface LeadCount {
 /** Everything the share image shows, already resolved for the current selection. */
 export interface ShareContent {
   readonly round: Round;
+  /**
+   * The president-elect, when sharing Brazil once the race is decided: the image then
+   * reads "Lula vence" instead of "Brasil".
+   */
+  readonly winner: Finalist | undefined;
   /** "1º TURNO 2026 · RESULTADO FINAL". */
   readonly kicker: string;
   readonly title: string;
@@ -182,12 +188,16 @@ export function shareContentFrom(
   const countryLeadCounts =
     countries && country ? countryLeadCountsOf(countries, finalists) : undefined;
 
+  const winner = selection.kind === 'country' ? winnerOf(data, finalists) : undefined;
   const { updatedAt } = tally;
   return {
     round: data.round,
-    kicker:
-      `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`.toUpperCase(),
-    title: selectionTitle(selection, cities, countries),
+    winner,
+    kicker: (winner
+      ? `${data.round}º turno 2026 · Brasil`
+      : `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`
+    ).toUpperCase(),
+    title: winner ? `${winner.shortName} vence` : selectionTitle(selection, cities, countries),
     results,
     leaderNumber: lead?.leader.number,
     othersVotes: others.reduce((sum, c) => sum + c.votes, 0),
