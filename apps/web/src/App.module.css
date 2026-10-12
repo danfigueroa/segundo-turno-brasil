@@ -71,3 +71,25 @@
   background: var(--surface);
   cursor: pointer;
 }
+
+/* The embeddable view (`/?embed`): the result card alone, inside another site. */
+.embed {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px;
+}
+
+.embedLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin-top: auto;
+  padding: 0 20px;
+  border-radius: 14px;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}

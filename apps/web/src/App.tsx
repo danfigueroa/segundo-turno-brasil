@@ -21,6 +21,7 @@ import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
 import { documentTitle, SITE_TITLE } from './lib/document-title';
+import { fullSiteUrl, isEmbed } from './lib/embed';
 import { finalistsOf, type Finalist } from './lib/finalists';
 import { isPinnable, useMyPlace } from './lib/my-place';
 import {
@@ -161,6 +162,35 @@ export function App() {
   const { selection } = view;
   // Before the runoff count starts there is nothing to break down by scope.
   const waiting = data.round === 2 && data.country.sections.counted === 0;
+
+  // Embedded in another site: only the result (or the countdown) and a link to the site.
+  if (isEmbed()) {
+    return (
+      <main className={styles.embed}>
+        {waiting ? (
+          <RunoffCountdown finalists={finalists} onShowFirstRound={() => changeRound(1)} />
+        ) : (
+          <ResultCard
+            data={data}
+            selection={selection}
+            finalists={finalists}
+            onSelect={select}
+            countries={abroad.data?.countries}
+            cities={cities.data?.cities}
+          >
+            <a
+              className={styles.embedLink}
+              href={fullSiteUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Acompanhe ao vivo em {window.location.host}
+            </a>
+          </ResultCard>
+        )}
+      </main>
+    );
+  }
   const detail =
     cities.data && stateMap.data ? { cities: cities.data.cities, map: stateMap.data } : undefined;
   const abroadDetail = abroad.data && { countries: abroad.data.countries, map: continentMap.data };
@@ -199,6 +229,7 @@ export function App() {
             >
               <ShareButton
                 getContent={getShareContent}
+                selection={selection}
                 label={shareLabel(
                   selection,
                   cities.data?.cities,
