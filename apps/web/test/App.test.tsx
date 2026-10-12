@@ -30,6 +30,7 @@ function mockFetch(results: () => Response, abroad = () => Response.json(abroadR
 
 beforeEach(() => {
   window.location.hash = '';
+  localStorage.clear();
 });
 
 afterEach(() => {
@@ -67,11 +68,27 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
+  it("pins a state as the viewer's and offers it first in the chips", async () => {
+    window.location.hash = '#/ba';
+    mockFetch(() => Response.json(resultsResponse()));
+    renderApp();
+
+    const pin = await screen.findByRole('button', { name: 'Fixar como meu estado' });
+    await userEvent.click(pin);
+    expect(pin).toHaveAccessibleName('Fixado como meu estado');
+    expect(pin).toHaveAttribute('aria-pressed', 'true');
+
+    const chips = screen.getByRole('group', { name: 'Ver resultado de' });
+    await userEvent.click(within(chips).getByRole('button', { name: 'Brasil' }));
+    await userEvent.click(within(chips).getByRole('button', { name: 'Bahia' }));
+    expect(window.location.hash).toBe('#/ba');
+  });
+
   it('switches the result to a state picked in the list', async () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
-    const list = await screen.findByRole('list');
+    const list = await screen.findByRole('region', { name: 'Resultado por estado' });
     await userEvent.click(within(list).getByRole('button', { name: /Bahia/ }));
     const scoreboard = await screen.findByRole('region', { name: 'Bahia' });
     expect(within(scoreboard).getByText('70,00%')).toBeInTheDocument();
