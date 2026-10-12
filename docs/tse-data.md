@@ -33,6 +33,7 @@ Campos usados (todos os números chegam como **string**; `""` antes da apuraçã
 | `carg[cd=1].agr[].par[].cand[]` | Candidatos: `n` (número), `nmu` (nome de urna), `vap` (votos); partido em `par.sg` |
 | `s.ts` / `s.st`                 | Seções totais / totalizadas                                                        |
 | `e.te` / `e.c`                  | Eleitorado / comparecimento                                                        |
+| `e.est`                         | Eleitorado das seções totalizadas (`countedElectorate`; opcional, ADR 0022)        |
 | `v.vv` / `v.vb` / `v.tvn`       | Votos válidos / brancos / nulos                                                    |
 
 Horários são de Brasília (UTC−3, sem horário de verão desde 2019).
