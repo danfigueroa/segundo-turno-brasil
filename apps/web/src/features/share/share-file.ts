@@ -37,3 +37,26 @@ export function downloadFile(file: File): void {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export type TextShareOutcome = 'shared' | 'copied' | 'dismissed' | 'failed';
+
+/**
+ * Sends the text through the native share sheet (WhatsApp, Telegram…) or, without one,
+ * copies it to the clipboard to paste anywhere.
+ */
+export async function shareText(text: string): Promise<TextShareOutcome> {
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ text });
+      return 'shared';
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return 'dismissed';
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
+}
