@@ -2,8 +2,8 @@ import type { Round } from '@stb/domain';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { fetchResults } from './results';
 
-/** Longer than the CDN cache (s-maxage=15), so each poll can bring new data; 30s keeps edge requests low (ADR 0026). */
-export const POLL_INTERVAL_MS = 30_000;
+/** Longer than the CDN cache (s-maxage=15), so each poll can bring new data; 60s keeps edge requests low (ADR 0028). */
+export const POLL_INTERVAL_MS = 60_000;
 
 /**
  * Results of one round. The runoff is polled while the tab is visible; the first round
