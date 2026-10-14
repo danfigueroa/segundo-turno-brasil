@@ -1,6 +1,6 @@
 # Segundo Turno Brasil
 
-Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~30 segundos.
+Site para acompanhar **ao vivo** a apuração do **2º turno da eleição presidencial de 25/10/2026**. Ele mostra quem lidera no Brasil, em cada região, estado, cidade e país do exterior, com mapas interativos e imagens prontas para postar nos Stories. Os dados são os oficiais do TSE e se atualizam sozinhos a cada ~60 segundos.
 
 **No ar em [eleicao.danielfigueroa.dev](https://eleicao.danielfigueroa.dev).**
 
@@ -69,7 +69,7 @@ Imagem e vídeo vão pela folha de compartilhamento nativa (Instagram, WhatsApp�
 - **Meu lugar:** "Fixar como minha cidade" (ou meu estado, meu país) cria um atalho com ★ na barra de abrangência, guardado só no navegador.
 - **Placar no título da aba:** dá para acompanhar com o site aberto em segundo plano.
 - **Confiável na noite da eleição:**
-  - o placar se atualiza sozinho a cada 30 segundos, e o navegador não baixa nada quando os dados não mudaram;
+  - o placar se atualiza sozinho a cada 60 segundos, e o navegador não baixa nada quando os dados não mudaram;
   - o CDN absorve o tráfego, e a API só consulta o TSE quando o cache expira;
   - se o TSE oscilar, o site continua mostrando o último dado bom com o horário dele.
 - **Leve e acessível:** cerca de 116 KB de JS inicial (gzip). Os mapas carregam sob demanda, o mapa navega por teclado, há contraste AA e o site respeita `prefers-reduced-motion`.
@@ -77,7 +77,7 @@ Imagem e vídeo vão pela folha de compartilhamento nativa (Instagram, WhatsApp�
 ## Como funciona
 
 ```
-Navegador (React)  ──polling ~30s──▶  CDN Vercel  ──cache expirado──▶  Função /api/* (TypeScript)  ──▶  TSE
+Navegador (React)  ──polling ~60s──▶  CDN Vercel  ──cache expirado──▶  Função /api/* (TypeScript)  ──▶  TSE
 ```
 
 - **API** (`apps/api`): funções da Vercel que leem os JSON públicos do TSE, validam com zod e respondem num contrato próprio. Não há banco de dados nem cron, e o cache do CDN define o ritmo das consultas. Rotas:

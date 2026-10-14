@@ -34,7 +34,7 @@ Princípios:
 
 ```
 Navegador (React SPA)
-   │  polling ~30s
+   │  polling ~60s
    ▼
 CDN Vercel ── cache hit (< 15s) ──> resposta imediata
    │  cache expirado
@@ -132,7 +132,7 @@ Regras:
 - Números animados com tween em `requestAnimationFrame`; transições de cor/barras em CSS; sem biblioteca de animação.
 - **Números-chave em duas linhas:** Diferença · Demais candidatos (1º turno) ou Abstenção (2º) · Seções apuradas; e Votos válidos · Comparecimento · Brancos e nulos (inspirado no seuimposto.com, exceção pedida ao design; falta levar ao Claude Design).
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
-- Polling via TanStack Query (30s, ADR 0026), pausado quando a aba está oculta.
+- Polling via TanStack Query (60s, ADR 0028), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
 - **Orçamento:** JS inicial ≈ 120 KB gzip, somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 - **Primeiro paint (ADR 0021):** o build pré-renderiza a tela de carregamento (`layout/LoadingScreen.tsx`, via `src/shell.tsx` e `scripts/prerender-shell.ts`) no `index.html` e faz preload da fonte; listas por cidade e por país e o Vercel Analytics carregam sob demanda; tocar numa UF já baixa a malha municipal dela.
@@ -168,9 +168,9 @@ O usuário deve conseguir postar, em poucos toques, um **snapshot da apuração 
 
 ## Atualização dos dados e limites do Vercel Hobby
 
-- **Defasagem esperada:** ~15–50s em relação ao TSE (que já publica em lotes). Cron não é necessário (e no Hobby só roda 1x/dia).
+- **Defasagem esperada:** ~15–80s em relação ao TSE (que já publica em lotes). Cron não é necessário (e no Hobby só roda 1x/dia).
 - **Invocações de função:** limitadas pelo cache (algumas por minuto por endpoint), independentes do número de usuários.
-- **Risco principal — banda de 100 GB/mês:** manter payloads mínimos e comprimidos, assets estáticos leves, monitorar o uso no dia da eleição. Plano B: upgrade para Pro apenas no mês da eleição.
+- **Risco principal — ~1 milhão de requisições no CDN/mês:** toda consulta de cada navegador conta, inclusive o `304`; com polling de 60s, cerca de 5.500 pessoas por 3h esgotam a cota (ADR 0028). Depois vem a banda de 100 GB/mês: manter payloads mínimos e comprimidos e assets estáticos leves. Monitorar o uso no dia da eleição. Plano B: upgrade para Pro apenas no mês da eleição.
 - O plano Hobby exige **uso não comercial**.
 
 ## Comandos
