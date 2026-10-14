@@ -1,6 +1,6 @@
 # 0026 — Polling de 30s no 2º turno
 
-- Status: aceita
+- Status: substituída pela ADR 0028
 - Data: 2026-10-12
 
 ## Contexto
