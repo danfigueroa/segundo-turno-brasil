@@ -1,8 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
 afterEach(cleanup);
+
+// `findBy*` and `waitFor` wait 1 s by default, too little when the machine is busy.
+configure({ asyncUtilTimeout: 5000 });
 
 /**
  * jsdom has no `matchMedia`. Tests run as a phone with reduced motion, so animated

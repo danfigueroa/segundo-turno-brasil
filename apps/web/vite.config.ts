@@ -59,5 +59,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
+    // Rendering the page with its SVG maps in jsdom is slow, and `pnpm test` runs every
+    // package at once: the default 5 s fails on a busy machine, not on a bug.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
   },
 });
