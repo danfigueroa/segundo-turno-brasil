@@ -20,6 +20,7 @@ Princípios:
 | Camada     | Tecnologia                                                           |
 | ---------- | -------------------------------------------------------------------- |
 | Frontend   | React + Vite + TypeScript, TanStack Query, Schibsted Grotesk         |
+| Idiomas    | i18n próprio e tipado, 7 idiomas, um chunk por idioma (ADR 0030)     |
 | Métricas   | Vercel Web Analytics (`@vercel/analytics/react`, sem cookies)        |
 | Backend    | Vercel Functions em TypeScript (Node 22), empacotadas com esbuild    |
 | Contrato   | `zod/mini` compartilhado entre back e front (`zod` no adaptador TSE) |
@@ -64,9 +65,10 @@ apps/
     scripts/build-map.ts  # pré-projeta a malha do IBGE em caminhos SVG
     src/
       api/                # clientes /api/results, /api/abroad, /api/cities e /api/history + polling (TanStack Query)
-      lib/                # format, seleção (hash da URL), finalistas e faixas de margem
+      i18n/               # idiomas: mensagens tipadas (pt-BR é a fonte), formatos, contexto, escolha do idioma
+      lib/                # nomes de urna, seleção (hash da URL), finalistas e faixas de margem
       components/         # peças genéricas (AnimatedNumber, ProgressBar)
-      features/           # result-card, map, state-map, world-map, cities, scope-chips, states-list, countries, countdown, status, share
+      features/           # result-card, map, state-map, world-map, cities, scope-chips, states-list, countries, countdown, status, share, language
       layout/
   api/
     src/
@@ -95,7 +97,7 @@ Regras:
 - O front **nunca** conhece o formato do TSE; só o adaptador `tse` conhece.
 - Todo dado externo é validado com `zod` na borda (adaptador) antes de virar entidade de domínio.
 - TypeScript `strict`, sem `any`, sem `as` desnecessário; funções pequenas e puras sempre que possível.
-- Código, identificadores e commits em **inglês**; textos da UI em **pt-BR**.
+- Código, identificadores e commits em **inglês**; textos da UI em **pt-BR** em `apps/web/src/i18n/messages/pt-BR.ts`, com tradução nos outros seis idiomas (nada de texto solto em componente).
 
 ## Fonte de dados (TSE)
 
@@ -119,6 +121,7 @@ Regras:
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
 - **Abas de turno:** 2º turno (ao vivo) e 1º turno (final). Sem turno na URL, o site mostra o 1º turno até a apuração do 2º começar (`resolveRound`, ADR 0006).
 - Navegação: **Brasil / Região / Estado / Cidade / Exterior / País**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`, `#/sp/3550308` com o código do IBGE, `#/exterior/portugal` com o nome sem acentos). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento). Na tela, o Exterior se chama **"Outros países"** (`ABROAD_LABEL` em `lib/selection.ts`; pedido para deixar claro do que se trata, falta levar ao Claude Design); a URL continua `#/exterior`.
+- **Idiomas (ADR 0030):** português (padrão), inglês, espanhol, francês, italiano, alemão e japonês, escolhidos pela bandeira no cabeçalho (`features/language`, exceção pedida ao design; falta levar ao Claude Design). Escolha: `?lang=xx` > `localStorage` (`stb:locale`) > navegador > pt-BR. Componentes usam `useI18n()` (`m` textos, `f` formatos); funções puras recebem o `I18n`. Imagem, vídeo, texto, título da aba e embed saem no idioma da tela, e os links compartilhados levam `?lang`; prévia de links e tela pré-renderizada ficam em pt-BR. Estados, cidades, candidatos, partidos e slugs da URL não se traduzem; países do exterior via `Intl.DisplayNames`. `%` colado ao número em todos os idiomas; horário sempre de Brasília.
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
 - Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → análise da apuração → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
@@ -134,7 +137,7 @@ Regras:
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (60s, ADR 0028), pausado quando a aba está oculta.
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
-- **Orçamento:** JS inicial ≈ 120 KB gzip, somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
+- **Orçamento:** JS inicial ≈ 120 KB gzip (≈ 124 KB com os textos em pt-BR, ADR 0030), somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
 - **Primeiro paint (ADR 0021):** o build pré-renderiza a tela de carregamento (`layout/LoadingScreen.tsx`, via `src/shell.tsx` e `scripts/prerender-shell.ts`) no `index.html` e faz preload da fonte; listas por cidade e por país e o Vercel Analytics carregam sob demanda; tocar numa UF já baixa a malha municipal dela.
 
 ## Mobile first (requisito crítico)
@@ -208,6 +211,7 @@ Pendente:
 - Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país, a votação por cidade e os recursos de acompanhamento e compartilhamento (título da aba, fixar lugar, mapa de abstenção, ordenação por cidade, comparação com 2022, vídeo, texto, embed, vitória) e o nome "Outros países" no lugar de "Exterior" para o Claude Design.
 - Conferir no Preview: `304` com `If-None-Match`, `x-vercel-cache` e compressão (checklist em `docs/architecture.md`); vídeo MP4 dos Stories no iPhone e no Android.
 
+- Revisão das traduções por falantes nativos (em especial o japonês) e levar o seletor de idioma ao Claude Design.
 - `GET /api/og` (prévia de links com o placar atual), se valer a pena apesar do cache das redes (ADR 0018).
 - Pinch-zoom/pan do mapa no mobile.
 - Testes e2e (Playwright) em viewports de celular e auditoria Lighthouse.
