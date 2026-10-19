@@ -296,6 +296,10 @@ const messages: Messages = {
     makeVideo: 'Generar video animado',
     embedTitle: 'Escrutinio en vivo · Segundo Turno',
   },
+  language: {
+    label: 'Idioma',
+    current: (name: string) => `Idioma: ${name}`,
+  },
   units: { points: 'p.p.' },
 };
 

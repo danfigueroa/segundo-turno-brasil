@@ -285,6 +285,10 @@ const messages: Messages = {
     makeVideo: 'Make animated video',
     embedTitle: 'Live vote count · Segundo Turno',
   },
+  language: {
+    label: 'Language',
+    current: (name: string) => `Language: ${name}`,
+  },
   units: { points: 'pts' },
 };
 

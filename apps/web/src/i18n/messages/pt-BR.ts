@@ -350,6 +350,12 @@ export const ptBR = {
     /** Title of the embedded `<iframe>`. */
     embedTitle: 'Apuração ao vivo · Segundo Turno',
   },
+  /** The language picker. */
+  language: {
+    label: 'Idioma',
+    /** The picker button: "Idioma: Português". */
+    current: (name: string) => `Idioma: ${name}`,
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 

@@ -48,7 +48,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .footer {
@@ -112,6 +113,10 @@
 
   .subtitleWide {
     display: inline;
+  }
+
+  .headerActions {
+    gap: 12px;
   }
 
   .footer {

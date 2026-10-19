@@ -297,6 +297,10 @@ const messages: Messages = {
     makeVideo: 'Crea video animato',
     embedTitle: 'Spoglio in diretta · Segundo Turno',
   },
+  language: {
+    label: 'Lingua',
+    current: (name: string) => `Lingua: ${name}`,
+  },
   units: { points: 'p.p.' },
 };
 

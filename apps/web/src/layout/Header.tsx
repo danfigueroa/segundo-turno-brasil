@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { useI18n } from '../i18n/i18n-context';
+import { LanguagePicker } from '../features/language/LanguagePicker';
 import styles from './Layout.module.css';
 
 interface Props {
-  /** Status pill and, on wide screens, the round tabs. */
+  /** Status pill and, on wide screens, the round tabs; the language picker comes last. */
   readonly children?: ReactNode;
 }
 
@@ -34,7 +35,10 @@ export function Header({ children }: Props) {
             </div>
           </div>
         </div>
-        {children && <div className={styles.headerActions}>{children}</div>}
+        <div className={styles.headerActions}>
+          {children}
+          <LanguagePicker />
+        </div>
       </div>
     </header>
   );

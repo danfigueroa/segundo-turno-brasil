@@ -272,6 +272,10 @@ const messages: Messages = {
     makeVideo: 'アニメーション動画を作成',
     embedTitle: '開票速報 · Segundo Turno',
   },
+  language: {
+    label: '言語',
+    current: (name: string) => `言語:${name}`,
+  },
   units: { points: 'pt' },
 };
 

@@ -293,6 +293,10 @@ const messages: Messages = {
     makeVideo: 'Créer une vidéo animée',
     embedTitle: 'Dépouillement en direct · Segundo Turno',
   },
+  language: {
+    label: 'Langue',
+    current: (name: string) => `Langue : ${name}`,
+  },
   units: { points: 'pts' },
 };
 

@@ -297,6 +297,10 @@ const messages: Messages = {
     makeVideo: 'Animiertes Video erstellen',
     embedTitle: 'Auszählung live · Segundo Turno',
   },
+  language: {
+    label: 'Sprache',
+    current: (name: string) => `Sprache: ${name}`,
+  },
   units: { points: 'Pp.' },
 };
 
