@@ -112,7 +112,7 @@ describe('Insights', () => {
     expect(onSelect).toHaveBeenCalledWith({ kind: 'state', code: 'BA' });
     await userEvent.click(within(card).getByRole('button', { name: 'Ver todos os 28' }));
     expect(
-      within(card).getByRole('button', { name: 'Exterior: Flávio +10 votos' }),
+      within(card).getByRole('button', { name: 'Outros países: Flávio +10 votos' }),
     ).toBeInTheDocument();
   });
 

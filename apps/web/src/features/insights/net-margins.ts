@@ -1,7 +1,7 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { STATE_CODES, STATES, statesInRegion, type StateCode } from '@stb/domain';
 import { finalistResults, type Finalist } from '../../lib/finalists';
-import { ABROAD, regionOf, type Selection } from '../../lib/selection';
+import { ABROAD, ABROAD_LABEL, regionOf, type Selection } from '../../lib/selection';
 
 export interface MarginRow {
   /** UF code, or `EXT` for abroad. */
@@ -47,7 +47,7 @@ export function netMargins(
   if (!region) {
     rows.push({
       code: 'EXT',
-      name: 'Exterior',
+      name: ABROAD_LABEL,
       target: ABROAD,
       margin: marginOf(data, finalists, 'ZZ'),
     });

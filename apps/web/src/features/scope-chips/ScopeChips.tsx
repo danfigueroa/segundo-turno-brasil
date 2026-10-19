@@ -2,6 +2,7 @@ import { REGION_CODES, REGION_NAMES } from '@stb/domain';
 import type { MyPlace } from '../../lib/my-place';
 import {
   ABROAD,
+  ABROAD_LABEL,
   COUNTRY,
   isSameSelection,
   parseSelectionPath,
@@ -23,7 +24,7 @@ const CHIPS: { label: string; target: Selection }[] = [
     label: REGION_NAMES[code],
     target: { kind: 'region', code } as const,
   })),
-  { label: 'Exterior', target: ABROAD },
+  { label: ABROAD_LABEL, target: ABROAD },
 ];
 
 /**

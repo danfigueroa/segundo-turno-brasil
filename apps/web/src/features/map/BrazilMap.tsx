@@ -5,7 +5,7 @@ import { abstentionOf, abstentionStep } from '../../lib/abstention';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
-import { ABROAD, type Selection } from '../../lib/selection';
+import { ABROAD, ABROAD_LABEL, type Selection } from '../../lib/selection';
 import { BRAZIL_MAP } from './brazil-map';
 import { prefetchStateMap } from '../state-map/state-maps';
 import { emphasisOf, type Area } from './emphasis';
@@ -23,7 +23,7 @@ interface Props {
 /** Labels for states too small to fit their code inside are skipped. */
 const UNLABELED = new Set<StateCode>(['DF', 'SE', 'AL', 'PB', 'PE', 'RN', 'ES', 'RJ']);
 
-const areaName = (area: Area) => (area === 'abroad' ? 'Exterior' : STATES[area].name);
+const areaName = (area: Area) => (area === 'abroad' ? ABROAD_LABEL : STATES[area].name);
 const areaSelection = (area: Area): Selection =>
   area === 'abroad' ? ABROAD : { kind: 'state', code: area };
 
@@ -114,8 +114,8 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           {!anyLead
             ? 'Os estados ganham cor conforme as urnas são apuradas.'
             : wide
-              ? 'Clique em um estado ou no Exterior.'
-              : 'Toque em um estado ou no Exterior para ver o resultado.'}
+              ? `Clique em um estado ou em ${ABROAD_LABEL}.`
+              : `Toque em um estado ou em ${ABROAD_LABEL} para ver o resultado.`}
         </p>
         {anyLead && (
           <div className={styles.modes} role="group" aria-label="Mostrar no mapa">
@@ -163,7 +163,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           className={`${styles.state} ${styles.abroad}`}
           {...interactive('abroad')}
         >
-          Exterior
+          {ABROAD_LABEL}
         </button>
       </div>
 

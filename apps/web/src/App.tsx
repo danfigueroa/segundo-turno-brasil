@@ -25,6 +25,7 @@ import { fullSiteUrl, isEmbed } from './lib/embed';
 import { finalistsOf, type Finalist } from './lib/finalists';
 import { isPinnable, useMyPlace } from './lib/my-place';
 import {
+  ABROAD_LABEL,
   countryOf,
   isAbroad,
   resolveTally,
@@ -56,7 +57,7 @@ function shareLabel(
     case 'state':
       return `Compartilhar ${STATES[selection.code].name}`;
     case 'abroad':
-      return 'Compartilhar Exterior';
+      return `Compartilhar ${ABROAD_LABEL}`;
     case 'city':
     case 'abroadCountry':
       return `Compartilhar ${selectionTitle(selection, cities, countries)}`;

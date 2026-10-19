@@ -57,6 +57,9 @@ export function countryOf(selection: Selection, countries: Countries): CountryRe
 export const COUNTRY: Selection = { kind: 'country' };
 export const ABROAD: Selection = { kind: 'abroad' };
 
+/** How abroad is named on screen: clearer than "Exterior" for votes cast in other countries. */
+export const ABROAD_LABEL = 'Outros países';
+
 /** Whether the selection is abroad as a whole or one of its countries. */
 export const isAbroad = (selection: Selection): boolean =>
   selection.kind === 'abroad' || selection.kind === 'abroadCountry';
@@ -109,7 +112,7 @@ export function resolveTally(
   }
 }
 
-/** "Brasil", "Região Nordeste", "Bahia", "Exterior", a city ("São Paulo") or a country abroad. */
+/** "Brasil", "Região Nordeste", "Bahia", "Outros países", a city ("São Paulo") or a country abroad. */
 export function selectionTitle(
   selection: Selection,
   cities?: Municipalities,
@@ -123,13 +126,13 @@ export function selectionTitle(
     case 'state':
       return STATES[selection.code].name;
     case 'abroad':
-      return 'Exterior';
+      return ABROAD_LABEL;
     case 'city': {
       const municipality = municipalityOf(selection, cities);
       return municipality ? formatName(municipality.name) : STATES[selection.state].name;
     }
     case 'abroadCountry':
-      return countryOf(selection, countries)?.name ?? 'Exterior';
+      return countryOf(selection, countries)?.name ?? ABROAD_LABEL;
   }
 }
 
@@ -212,7 +215,7 @@ export function breadcrumbsOf(
     crumbs.push({ label: selectionTitle(selection, cities), target: selection });
   }
   if (selection.kind === 'abroad' || selection.kind === 'abroadCountry') {
-    crumbs.push({ label: 'Exterior', target: ABROAD });
+    crumbs.push({ label: ABROAD_LABEL, target: ABROAD });
   }
   if (selection.kind === 'abroadCountry') {
     crumbs.push({ label: selectionTitle(selection, cities, countries), target: selection });

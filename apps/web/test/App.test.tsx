@@ -170,8 +170,8 @@ describe('App abroad votes', () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Exterior' }));
-    const scoreboard = await screen.findByRole('region', { name: 'Exterior' });
+    await userEvent.click(await screen.findByRole('button', { name: 'Outros países' }));
+    const scoreboard = await screen.findByRole('region', { name: 'Outros países' });
     expect(within(scoreboard).getByText('66,67%')).toBeInTheDocument();
     expect(window.location.hash).toBe('#/exterior');
   });
@@ -200,7 +200,7 @@ describe('App abroad votes', () => {
     await userEvent.clear(within(section).getByRole('searchbox'));
     expect(within(section).getAllByRole('listitem')).toHaveLength(1);
 
-    const scoreboard = screen.getByRole('region', { name: 'Exterior' });
+    const scoreboard = screen.getByRole('region', { name: 'Outros países' });
     expect(within(scoreboard).getByText('Países com votos')).toBeInTheDocument();
     expect(within(scoreboard).getByText('1 Lula · 1 Flávio')).toBeInTheDocument();
   });
@@ -209,7 +209,7 @@ describe('App abroad votes', () => {
     mockFetch(() => Response.json(resultsResponse()));
     renderApp();
 
-    await userEvent.click(await screen.findByRole('button', { name: /^Exterior: Flávio/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Outros países: Flávio/ }));
     expect(window.location.hash).toBe('#/exterior');
     expect(screen.queryByRole('heading', { name: 'Resultado por estado' })).not.toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Votação por país' })).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('App abroad votes', () => {
       within(crumbs)
         .getAllByRole('button')
         .map((b) => b.textContent),
-    ).toEqual(['Brasil', 'Exterior', 'Portugal']);
+    ).toEqual(['Brasil', 'Outros países', 'Portugal']);
     expect(within(scoreboard).getByText('Seções apuradas')).toBeInTheDocument();
     expect(
       within(scoreboard).getByRole('button', { name: 'Compartilhar Portugal' }),

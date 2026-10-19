@@ -16,7 +16,7 @@ describe('ScopeChips', () => {
   it('selects a scope', async () => {
     const onSelect = vi.fn();
     render(<ScopeChips selection={{ kind: 'country' }} onSelect={onSelect} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Exterior' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Outros países' }));
     expect(onSelect).toHaveBeenCalledWith({ kind: 'abroad' });
   });
 });

@@ -1,5 +1,5 @@
 import { STATE_CODES, STATES, isStateCode } from '@stb/domain';
-import { ABROAD, COUNTRY, stateOf, type Selection } from '../../lib/selection';
+import { ABROAD, ABROAD_LABEL, COUNTRY, stateOf, type Selection } from '../../lib/selection';
 import styles from './BrazilMap.module.css';
 
 interface Props {
@@ -37,7 +37,7 @@ export function StateSelect({ selection, onSelect, label, className }: Props) {
             {STATES[code].name}
           </option>
         ))}
-        <option value={ABROAD_VALUE}>Exterior</option>
+        <option value={ABROAD_VALUE}>{ABROAD_LABEL}</option>
       </select>
     </div>
   );

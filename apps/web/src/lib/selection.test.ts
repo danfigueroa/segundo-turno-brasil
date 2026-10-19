@@ -57,7 +57,7 @@ describe('selectionTitle', () => {
     expect(selectionTitle({ kind: 'country' })).toBe('Brasil');
     expect(selectionTitle({ kind: 'region', code: 'CO' })).toBe('Região Centro-Oeste');
     expect(selectionTitle({ kind: 'state', code: 'PI' })).toBe('Piauí');
-    expect(selectionTitle({ kind: 'abroad' })).toBe('Exterior');
+    expect(selectionTitle({ kind: 'abroad' })).toBe('Outros países');
   });
 });
 
@@ -80,7 +80,10 @@ describe('breadcrumbsOf', () => {
   });
 
   it('places abroad right under the country', () => {
-    expect(breadcrumbsOf({ kind: 'abroad' }).map((c) => c.label)).toEqual(['Brasil', 'Exterior']);
+    expect(breadcrumbsOf({ kind: 'abroad' }).map((c) => c.label)).toEqual([
+      'Brasil',
+      'Outros países',
+    ]);
   });
 
   it('walks down to a city through its state, named once loaded', () => {
@@ -144,13 +147,13 @@ describe('a country abroad', () => {
 
   it('falls back to abroad until the countries load', () => {
     expect(resolveTally(data, portugal)).toBe(data.abroad);
-    expect(selectionTitle(portugal)).toBe('Exterior');
+    expect(selectionTitle(portugal)).toBe('Outros países');
   });
 
   it('walks down from Brazil through abroad', () => {
     expect(breadcrumbsOf(portugal, undefined, countries).map((c) => c.label)).toEqual([
       'Brasil',
-      'Exterior',
+      'Outros países',
       'Portugal',
     ]);
     expect(regionOf(portugal)).toBeUndefined();
