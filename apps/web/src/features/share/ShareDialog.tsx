@@ -43,7 +43,9 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
   const [format, setFormat] = useState<ShareFormat>('story');
   const [prepared, setPrepared] = useState<Prepared>();
   const [error, setError] = useState(false);
-  const [textOutcome, setTextOutcome] = useState<TextShareOutcome | 'embed-copied'>();
+  const [textOutcome, setTextOutcome] = useState<
+    TextShareOutcome | 'embed-copied' | 'share-failed'
+  >();
   // Sites are built on computers: the embed code is only offered there.
   const wide = useMediaQuery('(min-width: 960px)');
   // Made on request (it takes a few seconds), then shared with a second tap: Safari only
@@ -90,6 +92,11 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
       ? `Resultado do 1º turno em ${content.title}: veja em ${content.siteUrl}`
       : `Apuração do 2º turno em ${content.title}: acompanhe ao vivo em ${content.siteUrl}`;
 
+  // A refused share (a file type or size the browser rejects) points to the download.
+  const share = (file: File) => {
+    shareFile(file, text).catch(() => setTextOutcome('share-failed'));
+  };
+
   return (
     <dialog
       ref={dialogRef}
@@ -129,11 +136,7 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
 
       <div className={styles.actions}>
         {prepared && canShareFile(prepared.file) && (
-          <button
-            type="button"
-            className={styles.primary}
-            onClick={() => void shareFile(prepared.file, text)}
-          >
+          <button type="button" className={styles.primary} onClick={() => share(prepared.file)}>
             Compartilhar
           </button>
         )}
@@ -145,7 +148,7 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
         >
           Baixar imagem
         </button>
-        {videoSupported && <VideoActions video={video} text={text} onRecord={recordVideo} />}
+        {videoSupported && <VideoActions video={video} onShare={share} onRecord={recordVideo} />}
         <button
           type="button"
           className={styles.secondary}
@@ -168,13 +171,15 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
           </button>
         )}
         <p className={styles.status} role="status">
-          {textOutcome === 'embed-copied'
-            ? 'Código copiado. Cole no HTML do seu site.'
-            : textOutcome === 'copied'
-              ? 'Texto copiado. É só colar no WhatsApp.'
-              : textOutcome === 'failed'
-                ? 'Não foi possível copiar o texto.'
-                : ''}
+          {textOutcome === 'share-failed'
+            ? 'Não foi possível abrir o compartilhamento. Use Baixar.'
+            : textOutcome === 'embed-copied'
+              ? 'Código copiado. Cole no HTML do seu site.'
+              : textOutcome === 'copied'
+                ? 'Texto copiado. É só colar no WhatsApp.'
+                : textOutcome === 'failed'
+                  ? 'Não foi possível copiar o texto.'
+                  : ''}
         </p>
       </div>
     </dialog>
@@ -183,21 +188,17 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
 
 interface VideoActionsProps {
   readonly video: File | 'recording' | 'failed' | undefined;
-  readonly text: string;
+  readonly onShare: (file: File) => void;
   readonly onRecord: () => void;
 }
 
 /** "Gerar vídeo animado", then share or download the recorded video. */
-function VideoActions({ video, text, onRecord }: VideoActionsProps) {
+function VideoActions({ video, onShare, onRecord }: VideoActionsProps) {
   if (video instanceof File) {
     return (
       <>
         {canShareFile(video) && (
-          <button
-            type="button"
-            className={styles.primary}
-            onClick={() => void shareFile(video, text)}
-          >
+          <button type="button" className={styles.primary} onClick={() => onShare(video)}>
             Compartilhar vídeo
           </button>
         )}
