@@ -19,6 +19,11 @@ describe('createFormat', () => {
     expect(pt.compactVotes(1_234_567)).toBe('1,2 mi');
     expect(pt.compactVotes(45_600)).toBe('46 mil');
     expect(pt.compactVotes(9_870)).toBe('9.870');
+    expect(pt.compactVotes(999_600)).toBe('1,0 mi');
+    expect(pt.compactVotes(-2_500_000)).toBe('-2,5 mi');
+    expect(pt.pointsChange(2.5)).toBe('+2,50 p.p.');
+    expect(pt.pointsChange(0)).toBe('0,00 p.p.');
+    expect(pt.date('2026-10-05T02:00:00Z')).toBe('04/10');
   });
 
   it('writes numbers the way each language does', () => {

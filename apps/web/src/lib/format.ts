@@ -1,17 +1,3 @@
-import { DEFAULT_I18N } from '../i18n/i18n';
-
-// pt-BR formats, while the screens move to the language on screen (`useI18n().f`).
-export const {
-  percent: formatPercent,
-  votes: formatVotes,
-  lead: formatLead,
-  compactVotes: formatCompactVotes,
-  pointsChange: formatPointsChange,
-  points: formatPoints,
-  date: formatDate,
-  time: formatTime,
-} = DEFAULT_I18N.f;
-
 const LOWERCASE_WORDS = new Set(['da', 'das', 'de', 'do', 'dos', 'e']);
 
 /** Ballot names the TSE publishes without their accents. */
