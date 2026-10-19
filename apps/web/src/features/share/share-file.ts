@@ -28,14 +28,24 @@ export async function shareFile(file: File, text: string): Promise<boolean> {
   }
 }
 
+/**
+ * How long the downloaded file's URL stays alive. Chrome on Android asks "Baixar arquivo?"
+ * first and only reads the file once the user confirms.
+ */
+const DOWNLOAD_URL_LIFETIME_MS = 60_000;
+
 /** Fallback for desktops and browsers without file sharing. */
 export function downloadFile(file: File): void {
   const url = URL.createObjectURL(file);
   const link = document.createElement('a');
   link.href = url;
   link.download = file.name;
+  link.hidden = true;
+  // Firefox only follows links that are in the page.
+  document.body.append(link);
   link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_URL_LIFETIME_MS);
 }
 
 export type TextShareOutcome = 'shared' | 'copied' | 'dismissed' | 'failed';
