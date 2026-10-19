@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_I18N as pt } from '../../i18n/i18n';
+import { loadI18n } from '../../i18n/load';
 import { finalistsOf } from '../../lib/finalists';
 import { resultsResponse, tally } from '../../../test/fixtures';
 import { shareContentFrom } from './share-content';
@@ -24,6 +25,23 @@ describe('shareTextOf', () => {
         'Acompanhe ao vivo: https://example.com/#/ba',
       ].join('\n'),
     );
+  });
+
+  it('writes in the language on screen', async () => {
+    const en = await loadI18n('en');
+    const content = shareContentFrom(data, { kind: 'abroad' }, finalists, en, 'x');
+    expect(content.kicker).toBe('RUNOFF 2026 · LIVE COUNT');
+    expect(shareTextOf(content, 'https://example.com/?lang=en#/exterior').split('\n')).toEqual([
+      '🗳️ Runoff count · Other countries',
+      '',
+      expect.stringMatching(/^🔴 Lula: [\d.]+% \([\d,]+ votes?\)$/),
+      expect.stringMatching(/^🔵 Flávio Bolsonaro: /),
+      '',
+      expect.stringMatching(/ of polling stations counted$/),
+      expect.stringMatching(/^🕒 Updated at .* · Source: TSE$/),
+      '',
+      'Follow it live: https://example.com/?lang=en#/exterior',
+    ]);
   });
 
   it('presents the first round as a final result', () => {

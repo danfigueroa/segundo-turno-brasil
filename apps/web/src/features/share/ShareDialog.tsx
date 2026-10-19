@@ -9,6 +9,7 @@ import {
   shareText,
   type TextShareOutcome,
 } from './share-file';
+import { useI18n } from '../../i18n/i18n-context';
 import { embedCode, fullSiteUrl } from '../../lib/embed';
 import { SITE_URL } from '../../lib/site';
 import { useMediaQuery } from '../../lib/use-media-query';
@@ -29,16 +30,15 @@ interface Prepared {
   readonly previewUrl: string;
 }
 
-const FORMATS: { value: ShareFormat; label: string }[] = [
-  { value: 'story', label: 'Stories (9:16)' },
-  { value: 'feed', label: 'Feed (4:5)' },
-];
+const FORMATS: readonly ShareFormat[] = ['story', 'feed'];
 
 /**
  * Previews the share image and prepares the file up front, so the share button can call
  * `navigator.share` synchronously within the tap (a Safari requirement).
  */
 export default function ShareDialog({ content, selection, onClose }: Props) {
+  const i18n = useI18n();
+  const { m } = i18n;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [format, setFormat] = useState<ShareFormat>('story');
   const [prepared, setPrepared] = useState<Prepared>();
@@ -89,8 +89,8 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
 
   const text =
     content.round === 1
-      ? `Resultado do 1º turno em ${content.title}: veja em ${content.siteUrl}`
-      : `Apuração do 2º turno em ${content.title}: acompanhe ao vivo em ${content.siteUrl}`;
+      ? m.share.sheetFirstRound(content.title, content.siteUrl)
+      : m.share.sheetRunoff(content.title, content.siteUrl);
 
   // A refused share (a file type or size the browser rejects) points to the download.
   const share = (file: File) => {
@@ -105,39 +105,39 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
       aria-labelledby="share-title"
     >
       <div className={styles.dialogHeader}>
-        <h2 id="share-title">Compartilhar resultado</h2>
-        <button type="button" className={styles.close} onClick={onClose} aria-label="Fechar">
+        <h2 id="share-title">{m.share.result}</h2>
+        <button type="button" className={styles.close} onClick={onClose} aria-label={m.share.close}>
           ×
         </button>
       </div>
 
-      <div className={styles.formats} role="radiogroup" aria-label="Formato da imagem">
-        {FORMATS.map((f) => (
+      <div className={styles.formats} role="radiogroup" aria-label={m.share.formats}>
+        {FORMATS.map((value) => (
           <button
-            key={f.value}
+            key={value}
             type="button"
             role="radio"
-            aria-checked={format === f.value}
+            aria-checked={format === value}
             className={styles.format}
-            onClick={() => setFormat(f.value)}
+            onClick={() => setFormat(value)}
           >
-            {f.label}
+            {m.share[value]}
           </button>
         ))}
       </div>
 
       <div className={styles.preview} data-format={format}>
         {prepared ? (
-          <img src={prepared.previewUrl} alt={`Prévia da imagem: apuração em ${content.title}`} />
+          <img src={prepared.previewUrl} alt={m.share.preview(content.title)} />
         ) : (
-          <span>{error ? 'Não foi possível gerar a imagem.' : 'Gerando imagem…'}</span>
+          <span>{error ? m.share.imageFailed : m.share.making}</span>
         )}
       </div>
 
       <div className={styles.actions}>
         {prepared && canShareFile(prepared.file) && (
           <button type="button" className={styles.primary} onClick={() => share(prepared.file)}>
-            Compartilhar
+            {m.share.share}
           </button>
         )}
         <button
@@ -146,15 +146,17 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
           disabled={!prepared}
           onClick={() => prepared && downloadFile(prepared.file)}
         >
-          Baixar imagem
+          {m.share.download}
         </button>
         {videoSupported && <VideoActions video={video} onShare={share} onRecord={recordVideo} />}
         <button
           type="button"
           className={styles.secondary}
-          onClick={() => void shareText(shareTextOf(content, fullSiteUrl())).then(setTextOutcome)}
+          onClick={() =>
+            void shareText(shareTextOf(content, fullSiteUrl(i18n.locale))).then(setTextOutcome)
+          }
         >
-          Enviar como texto
+          {m.share.asText}
         </button>
         {wide && (
           <button
@@ -162,23 +164,23 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
             className={styles.secondary}
             onClick={() =>
               void navigator.clipboard
-                .writeText(embedCode(SITE_URL, selection))
+                .writeText(embedCode(SITE_URL, selection, i18n))
                 .then(() => setTextOutcome('embed-copied'))
                 .catch(() => setTextOutcome('failed'))
             }
           >
-            Copiar código para incorporar no seu site
+            {m.share.embed}
           </button>
         )}
         <p className={styles.status} role="status">
           {textOutcome === 'share-failed'
-            ? 'Não foi possível abrir o compartilhamento. Use Baixar.'
+            ? m.share.shareFailed
             : textOutcome === 'embed-copied'
-              ? 'Código copiado. Cole no HTML do seu site.'
+              ? m.share.embedCopied
               : textOutcome === 'copied'
-                ? 'Texto copiado. É só colar no WhatsApp.'
+                ? m.share.textCopied
                 : textOutcome === 'failed'
-                  ? 'Não foi possível copiar o texto.'
+                  ? m.share.copyFailed
                   : ''}
         </p>
       </div>
@@ -194,16 +196,17 @@ interface VideoActionsProps {
 
 /** "Gerar vídeo animado", then share or download the recorded video. */
 function VideoActions({ video, onShare, onRecord }: VideoActionsProps) {
+  const { m } = useI18n();
   if (video instanceof File) {
     return (
       <>
         {canShareFile(video) && (
           <button type="button" className={styles.primary} onClick={() => onShare(video)}>
-            Compartilhar vídeo
+            {m.share.shareVideo}
           </button>
         )}
         <button type="button" className={styles.secondary} onClick={() => downloadFile(video)}>
-          Baixar vídeo
+          {m.share.downloadVideo}
         </button>
       </>
     );
@@ -216,10 +219,10 @@ function VideoActions({ video, onShare, onRecord }: VideoActionsProps) {
       onClick={onRecord}
     >
       {video === 'recording'
-        ? 'Gravando vídeo…'
+        ? m.share.recording
         : video === 'failed'
-          ? 'Tentar gerar o vídeo de novo'
-          : 'Gerar vídeo animado'}
+          ? m.share.retryVideo
+          : m.share.makeVideo}
     </button>
   );
 }

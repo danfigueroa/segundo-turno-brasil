@@ -1,5 +1,4 @@
 import { STATE_CODES } from '@stb/domain';
-import { formatPercent, formatVotes } from '../../lib/format';
 import { BRAZIL_MAP } from '../map/brazil-map';
 import { SHARE_PALETTE as P } from './palette';
 import type { DetailMap, ShareContent } from './share-content';
@@ -189,7 +188,7 @@ function drawBand(ctx: CanvasRenderingContext2D, content: ShareContent, layout: 
   ctx.textAlign = 'left';
   ctx.fillStyle = P.onBrand;
   ctx.font = font(800, 39);
-  ctx.fillText('Segundo Turno', MARGIN + 90, layout.brand + 47);
+  ctx.fillText(content.i18n.m.site.name, MARGIN + 90, layout.brand + 47);
 
   ctx.font = font(700, 33);
   ctx.letterSpacing = '4px';
@@ -215,6 +214,7 @@ function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareContent, la
   const left = CARD.x + CARD.padding;
   const right = CARD.x + width - CARD.padding;
   const columnWidth = (right - left) / 2 - 15;
+  const { m, f } = content.i18n;
 
   content.results.forEach((r, index) => {
     const isRight = index === 1;
@@ -227,12 +227,14 @@ function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareContent, la
     fitText(ctx, r.name, 700, 39, columnWidth - 48);
     ctx.fillText(r.name, isRight ? x - 48 : x + 48, top + 87);
 
-    fitText(ctx, formatPercent(r.share), 800, 102, columnWidth);
-    ctx.fillText(formatPercent(r.share), x, top + 209);
+    const share = f.percent(r.share);
+    fitText(ctx, share, 800, 102, columnWidth);
+    ctx.fillText(share, x, top + 209);
 
     ctx.fillStyle = P.secondary;
-    fitText(ctx, `${r.party} · ${formatVotes(r.votes)} votos`, 500, 30, columnWidth);
-    ctx.fillText(`${r.party} · ${formatVotes(r.votes)} votos`, x, top + 254);
+    const note = `${r.party} · ${m.common.votes(Math.round(r.votes), f.votes(r.votes))}`;
+    fitText(ctx, note, 500, 30, columnWidth);
+    ctx.fillText(note, x, top + 254);
   });
 
   drawSplitBar(ctx, content, left, top + 294, right - left);
@@ -398,11 +400,8 @@ function drawFooter(ctx: CanvasRenderingContext2D, content: ShareContent, layout
   ctx.fillStyle = P.secondary;
   ctx.font = font(600, 30);
   ctx.textAlign = 'left';
-  ctx.fillText(
-    `${formatPercent(content.counted)} das seções apuradas`,
-    MARGIN,
-    layout.progress + 54,
-  );
+  const { m, f } = content.i18n;
+  ctx.fillText(m.common.sectionsCounted(f.percent(content.counted)), MARGIN, layout.progress + 54);
   ctx.textAlign = 'right';
   ctx.fillText(content.source, layout.width - MARGIN, layout.progress + 54);
 

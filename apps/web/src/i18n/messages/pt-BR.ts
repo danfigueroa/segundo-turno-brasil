@@ -297,6 +297,59 @@ export const ptBR = {
     source2022: 'Em 2022, o 22 era Jair Bolsonaro. Fonte: TSE, dados abertos.',
     partial2026: (share: string) => ` Parcial de 2026: ${share} das seções.`,
   },
+  /** Sharing: the button, the image, the video, the text and the embed. */
+  share: {
+    /** The share button: "Compartilhar Bahia". */
+    place: (place: string) => `Compartilhar ${place}`,
+    result: 'Compartilhar resultado',
+    victory: (name: string) => `Compartilhar a vitória de ${name}`,
+    /** Kicker of the image, after "2º turno 2026 · ". */
+    live: 'apuração ao vivo',
+    final: 'resultado final',
+    wins: (name: string) => `${name} vence`,
+    difference: (points: string) => `Diferença: ${points}`,
+    others: (share: string) => `Demais candidatos: ${share}`,
+    sourceFinal: (date: string, time: string) => `Fonte: TSE · ${date}, ${time}`,
+    sourceLive: (time: string) => `Atualizado às ${time} · Fonte: TSE`,
+    /** Above a count of states, cities or countries: "Lula lidera em" / "12 estados". */
+    leadsIn: (name: string) => `${name} lidera em`,
+    states: (count: number) => (count === 1 ? '1 estado' : `${count} estados`),
+    /** The Federal District is not a state: "12 estados + DF", or just "Distrito Federal". */
+    withDistrict: (states: string) => `${states} + DF`,
+    district: 'Distrito Federal',
+    winnerHeading: (name: string) => `${name} vence a eleição presidencial`,
+    firstRoundHeading: (place: string) => `Resultado do 1º turno · ${place}`,
+    runoffHeading: (place: string) => `Apuração do 2º turno · ${place}`,
+    see: (url: string) => `Veja: ${url}`,
+    follow: (url: string) => `Acompanhe ao vivo: ${url}`,
+    /** Text of the native share sheet. */
+    sheetFirstRound: (place: string, site: string) =>
+      `Resultado do 1º turno em ${place}: veja em ${site}`,
+    sheetRunoff: (place: string, site: string) =>
+      `Apuração do 2º turno em ${place}: acompanhe ao vivo em ${site}`,
+    close: 'Fechar',
+    formats: 'Formato da imagem',
+    story: 'Stories (9:16)',
+    feed: 'Feed (4:5)',
+    preview: (place: string) => `Prévia da imagem: apuração em ${place}`,
+    imageFailed: 'Não foi possível gerar a imagem.',
+    making: 'Gerando imagem…',
+    share: 'Compartilhar',
+    download: 'Baixar imagem',
+    asText: 'Enviar como texto',
+    embed: 'Copiar código para incorporar no seu site',
+    shareFailed: 'Não foi possível abrir o compartilhamento. Use Baixar.',
+    embedCopied: 'Código copiado. Cole no HTML do seu site.',
+    textCopied: 'Texto copiado. É só colar no WhatsApp.',
+    copyFailed: 'Não foi possível copiar o texto.',
+    shareVideo: 'Compartilhar vídeo',
+    downloadVideo: 'Baixar vídeo',
+    recording: 'Gravando vídeo…',
+    retryVideo: 'Tentar gerar o vídeo de novo',
+    makeVideo: 'Gerar vídeo animado',
+    /** Title of the embedded `<iframe>`. */
+    embedTitle: 'Apuração ao vivo · Segundo Turno',
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 

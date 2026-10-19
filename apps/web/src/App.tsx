@@ -51,18 +51,19 @@ function shareLabel(
   countries: Countries,
   winner: Finalist | undefined,
 ): string {
+  const { share } = i18n.m;
   switch (selection.kind) {
     case 'country':
-      return winner ? `Compartilhar a vitória de ${winner.shortName}` : 'Compartilhar resultado';
+      return winner ? share.victory(winner.shortName) : share.result;
     case 'region':
-      return `Compartilhar ${i18n.m.places.regions[selection.code]}`;
+      return share.place(i18n.m.places.regions[selection.code]);
     case 'state':
-      return `Compartilhar ${STATES[selection.code].name}`;
+      return share.place(STATES[selection.code].name);
     case 'abroad':
-      return `Compartilhar ${i18n.m.places.abroad}`;
+      return share.place(i18n.m.places.abroad);
     case 'city':
     case 'abroadCountry':
-      return `Compartilhar ${selectionTitle(selection, i18n, cities, countries)}`;
+      return share.place(selectionTitle(selection, i18n, cities, countries));
   }
 }
 
@@ -188,7 +189,7 @@ export function App() {
           >
             <a
               className={styles.embedLink}
-              href={fullSiteUrl()}
+              href={fullSiteUrl(i18n.locale)}
               target="_blank"
               rel="noopener noreferrer"
             >

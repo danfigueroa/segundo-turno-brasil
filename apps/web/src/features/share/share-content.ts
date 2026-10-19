@@ -19,8 +19,8 @@ import {
   type Finalist,
   type FinalistResult,
 } from '../../lib/finalists';
-import { formatDate, formatPercent, formatPoints, formatTime } from '../../lib/format';
 import type { I18n } from '../../i18n/i18n';
+import type { Messages } from '../../i18n/messages/pt-BR';
 import { countryOf, resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import type { StateMapShape } from '../state-map/state-maps';
 import type { ContinentMapShape } from '../world-map/continent-maps';
@@ -36,6 +36,8 @@ export interface LeadCount {
 
 /** Everything the share image shows, already resolved for the current selection. */
 export interface ShareContent {
+  /** The language the content is written in, also for the numbers the video animates. */
+  readonly i18n: I18n;
   readonly round: Round;
   /**
    * The president-elect, when sharing Brazil once the race is decided: the image then
@@ -96,13 +98,10 @@ export interface AbroadDetail {
 /** Radius of the marker of a country too small to see, as on the site's map. */
 const MARKER_RADIUS = 9;
 
-const citiesText = (n: number) => (n === 1 ? '1 cidade' : `${n} cidades`);
-const countriesText = (n: number) => (n === 1 ? '1 país' : `${n} países`);
-
-function statesText(count: number, withDistrict: boolean): string {
-  const states = count === 1 ? '1 estado' : `${count} estados`;
+function statesText(count: number, withDistrict: boolean, { share }: Messages): string {
+  const states = share.states(count);
   if (!withDistrict) return states;
-  return count === 0 ? 'Distrito Federal' : `${states} + DF`;
+  return count === 0 ? share.district : share.withDistrict(states);
 }
 
 /** Leads per finalist; the Federal District is not a state, so it is named apart. */
@@ -110,6 +109,7 @@ function leadCountsOf(
   data: ResultsResponse,
   finalists: readonly Finalist[],
   codes: readonly StateCode[],
+  { m }: I18n,
 ): LeadCount[] {
   const leaders = codes.map((code) => ({
     code,
@@ -120,8 +120,8 @@ function leadCountsOf(
     const district = led.some(({ code }) => code === 'DF');
     return {
       hue: f.hue,
-      label: `${f.shortName} lidera em`,
-      value: statesText(led.length - (district ? 1 : 0), district),
+      label: m.share.leadsIn(f.shortName),
+      value: statesText(led.length - (district ? 1 : 0), district, m),
     };
   });
 }
@@ -178,7 +178,8 @@ export function shareContentFrom(
     selection.kind === 'city' && detail
       ? municipalMapOf(detail, selection.ibge, (votes) => fillOfLead(leadOfVotes(votes, finalists)))
       : undefined;
-  const cityLeadCounts = detailMap && cities ? cityLeadCountsOf(cities, finalists) : undefined;
+  const cityLeadCounts =
+    detailMap && cities ? cityLeadCountsOf(cities, finalists, i18n) : undefined;
 
   const country = countryOf(selection, countries);
   const continentMap =
@@ -188,35 +189,39 @@ export function shareContentFrom(
         )
       : undefined;
   const countryLeadCounts =
-    countries && country ? countryLeadCountsOf(countries, finalists) : undefined;
+    countries && country ? countryLeadCountsOf(countries, finalists, i18n) : undefined;
 
   const winner = selection.kind === 'country' ? winnerOf(data, finalists) : undefined;
   const { updatedAt } = tally;
+  const { m, f } = i18n;
+  const round = `${m.round.labels[data.round]} 2026`;
   return {
+    i18n,
     round: data.round,
     winner,
     kicker: (winner
-      ? `${data.round}º turno 2026 · Brasil`
-      : `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`
-    ).toUpperCase(),
+      ? `${round} · ${m.places.brazil}`
+      : `${round} · ${final ? m.share.final : m.share.live}`
+    ).toLocaleUpperCase(i18n.locale),
     title: winner
-      ? `${winner.shortName} vence`
+      ? m.share.wins(winner.shortName)
       : selectionTitle(selection, i18n, cities, countries),
     results,
     leaderNumber: lead?.leader.number,
     othersVotes: others.reduce((sum, c) => sum + c.votes, 0),
     notes: [
-      lead ? `Diferença: ${formatPoints(lead.margin)}` : 'Sem votos apurados',
-      others.length > 0 ? `Demais candidatos: ${formatPercent(othersShare)}` : '',
+      lead ? m.share.difference(f.points(lead.margin)) : m.common.noVotes,
+      others.length > 0 ? m.share.others(f.percent(othersShare)) : '',
     ],
     counted,
     source: final
-      ? `Fonte: TSE · ${formatDate(updatedAt)}, ${formatTime(updatedAt)}`
-      : `Atualizado às ${formatTime(updatedAt)} · Fonte: TSE`,
+      ? m.share.sourceFinal(f.date(updatedAt), f.time(updatedAt))
+      : m.share.sourceLive(f.time(updatedAt)),
     mapFills,
     focus,
     detailMap: detailMap ?? continentMap,
-    leadCounts: cityLeadCounts ?? countryLeadCounts ?? leadCountsOf(data, finalists, countScope),
+    leadCounts:
+      cityLeadCounts ?? countryLeadCounts ?? leadCountsOf(data, finalists, countScope, i18n),
     siteUrl,
   };
 }
@@ -240,12 +245,13 @@ function municipalMapOf(
 function cityLeadCountsOf(
   cities: readonly MunicipalityResult[],
   finalists: readonly Finalist[],
+  { m }: I18n,
 ): LeadCount[] {
   const wins = cityWins(cityRows(cities, finalists), finalists);
   return finalists.map((f) => ({
     hue: f.hue,
-    label: `${f.shortName} lidera em`,
-    value: citiesText(wins[f.number] ?? 0),
+    label: m.share.leadsIn(f.shortName),
+    value: m.lists.cities(wins[f.number] ?? 0),
   }));
 }
 
@@ -299,11 +305,12 @@ function circle(x: number, y: number, r: number): string {
 function countryLeadCountsOf(
   countries: readonly CountryResult[],
   finalists: readonly Finalist[],
+  { m }: I18n,
 ): LeadCount[] {
   const { wins } = countryStandings(countryRows(countries, finalists), finalists);
   return finalists.map((f) => ({
     hue: f.hue,
-    label: `${f.shortName} lidera em`,
-    value: countriesText(wins[f.number] ?? 0),
+    label: m.share.leadsIn(f.shortName),
+    value: m.lists.countries(wins[f.number] ?? 0),
   }));
 }
