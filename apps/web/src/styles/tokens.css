@@ -7,7 +7,10 @@
  */
 :root {
   color-scheme: light;
-  --font-sans: 'Schibsted Grotesk Variable', 'Helvetica Neue', Helvetica, sans-serif;
+  /* Schibsted Grotesk has no Japanese: the system's Japanese gothic fills in (nothing to download). */
+  --font-sans:
+    'Schibsted Grotesk Variable', 'Helvetica Neue', Helvetica, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, 'Noto Sans JP', sans-serif;
 
   --page: #f5f6f1;
   --surface: #ffffff;

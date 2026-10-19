@@ -57,7 +57,9 @@ export const LAYOUTS: Readonly<Record<ShareFormat, Layout>> = {
 
 const MARGIN = 66;
 const CARD = { x: 42, padding: 48, height: 436, radius: 54 } as const;
-const FAMILY = '"Schibsted Grotesk Variable", "Helvetica Neue", Helvetica, sans-serif';
+/** As on the site, with the system's Japanese gothic for Japanese. */
+const FAMILY =
+  '"Schibsted Grotesk Variable", "Helvetica Neue", Helvetica, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, "Noto Sans JP", sans-serif';
 
 /** The canvas only uses web fonts that are already loaded: load them before drawing. */
 export async function loadShareFonts(): Promise<void> {
