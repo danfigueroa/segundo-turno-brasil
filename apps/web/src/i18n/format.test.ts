@@ -36,5 +36,7 @@ describe('createFormat', () => {
     expect(de.time('2026-10-25T22:42:00Z')).toBe('19:42');
     expect(en.time('2026-10-25T22:42:00Z')).toBe('07:42 PM');
     expect(en.date('2026-10-05T02:00:00Z')).toBe('10/04');
+    expect(pt.dayMonth('2026-10-25T12:00:00-03:00')).toBe('25 de outubro');
+    expect(en.dayMonth('2026-10-04T12:00:00-03:00')).toBe('October 4');
   });
 });

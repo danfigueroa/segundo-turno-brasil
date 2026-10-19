@@ -18,6 +18,8 @@ export interface Format {
   pointsChange(value: number): string;
   /** ISO timestamp → Brasília date `"05/10"`. */
   date(iso: string): string;
+  /** ISO timestamp → Brasília day and month in words: `"25 de outubro"`. */
+  dayMonth(iso: string): string;
   /** ISO timestamp → Brasília time `"19:42"`. */
   time(iso: string): string;
 }
@@ -67,6 +69,12 @@ export function createFormat(locale: string, units: Units): Format {
     timeZone: TIME_ZONE,
   });
 
+  const dayMonth = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    timeZone: TIME_ZONE,
+  });
+
   return {
     percent: (value) => percent.format(value / 100),
     counted: (value) => (value >= 100 ? whole.format(1) : percent.format(value / 100)),
@@ -85,6 +93,7 @@ export function createFormat(locale: string, units: Units): Format {
       return `${sign}${twoDecimals.format(Math.abs(value))} ${units.points}`;
     },
     date: (iso) => date.format(new Date(iso)),
+    dayMonth: (iso) => dayMonth.format(new Date(iso)),
     time: (iso) => time.format(new Date(iso)),
   };
 }
