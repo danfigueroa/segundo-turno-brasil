@@ -4,6 +4,8 @@ const TIME_ZONE = 'America/Sao_Paulo';
 export interface Format {
   /** `47.027` → `"47,03%"` (`"47.03%"` in English). */
   percent(value: number): string;
+  /** Share of sections counted, rounded only when done: `87.4` → `"87,40%"`, `100` → `"100%"`. */
+  counted(value: number): string;
   /** `56104503` → `"56.104.503"` (`"56,104,503"` in English). */
   votes(value: number): string;
   /** Lead in percentage points: `2.345` → `"+2,3"`, or `"+2,35"` with two decimals. */
@@ -35,6 +37,7 @@ export function createFormat(locale: string, units: Units): Format {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+  const whole = new Intl.NumberFormat(locale, { style: 'percent' });
   const twoDecimals = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -66,6 +69,7 @@ export function createFormat(locale: string, units: Units): Format {
 
   return {
     percent: (value) => percent.format(value / 100),
+    counted: (value) => (value >= 100 ? whole.format(1) : percent.format(value / 100)),
     votes: (value) => integer.format(Math.round(value)),
     lead: (value, decimals = 1) => `+${(decimals === 1 ? oneDecimal : twoDecimals).format(value)}`,
     compactVotes: (value) => {

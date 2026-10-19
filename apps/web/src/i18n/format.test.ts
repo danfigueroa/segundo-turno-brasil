@@ -9,6 +9,8 @@ const ja = createFormat('ja', { points: 'pt' });
 describe('createFormat', () => {
   it('keeps the Brazilian formats', () => {
     expect(pt.percent(47.027772)).toBe('47,03%');
+    expect(pt.counted(87.4)).toBe('87,40%');
+    expect(pt.counted(100)).toBe('100%');
     expect(pt.votes(56104503)).toBe('56.104.503');
     expect(pt.lead(2.345)).toBe('+2,3');
     expect(pt.lead(2.345, 2)).toBe('+2,35');
