@@ -400,10 +400,18 @@ function drawFooter(ctx: CanvasRenderingContext2D, content: ShareContent, layout
   roundRect(ctx, MARGIN, layout.progress, (width * content.counted) / 100, 12, 6);
 
   ctx.fillStyle = P.secondary;
-  ctx.font = font(600, 30);
-  ctx.textAlign = 'left';
   const { m, f } = content.i18n;
-  ctx.fillText(m.common.sectionsCounted(f.percent(content.counted)), MARGIN, layout.progress + 54);
+  const counted = m.common.sectionsCounted(f.percent(content.counted));
+  // Side by side: smaller in languages where both lines do not fit at full size.
+  let size = 30;
+  ctx.font = font(600, size);
+  const both = () => ctx.measureText(counted).width + ctx.measureText(content.source).width;
+  while (both() + 24 > width && size > 20) {
+    size -= 2;
+    ctx.font = font(600, size);
+  }
+  ctx.textAlign = 'left';
+  ctx.fillText(counted, MARGIN, layout.progress + 54);
   ctx.textAlign = 'right';
   ctx.fillText(content.source, layout.width - MARGIN, layout.progress + 54);
 
