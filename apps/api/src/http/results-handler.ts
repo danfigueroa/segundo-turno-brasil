@@ -11,8 +11,11 @@ export const FRESH_CACHE = 'public, s-maxage=15, stale-while-revalidate=30, stal
 /** Final results (first round): cached for an hour, served stale for a day if needed. */
 export const FINAL_CACHE =
   'public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400';
-/** Stale data (TSE unreachable): short CDN cache so recovery shows up quickly. */
-export const STALE_CACHE = 'public, s-maxage=5';
+/**
+ * Stale data (TSE unreachable): short CDN cache so recovery shows up quickly, revalidated
+ * in the background so no viewer waits for the TSE timeout while it is down.
+ */
+export const STALE_CACHE = 'public, s-maxage=5, stale-while-revalidate=30, stale-if-error=600';
 
 interface RoundResults {
   execute(): Promise<ResultsSnapshot>;
