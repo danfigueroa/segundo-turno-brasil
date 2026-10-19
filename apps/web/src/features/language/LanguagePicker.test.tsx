@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { I18nProvider } from '../../i18n/context';
@@ -62,7 +62,8 @@ describe('LanguagePicker', () => {
     expect(screen.getByRole('button', { name: 'Language: English' })).toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expect(localStorage.getItem('stb:locale')).toBe('en');
-    expect(document.documentElement.lang).toBe('en');
+    // Set by an effect, right after the render the heading above came from.
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'));
   });
 
   it('closes on Escape', async () => {
