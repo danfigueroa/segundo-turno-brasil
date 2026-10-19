@@ -14,7 +14,7 @@ import { SITE_URL } from '../../lib/site';
 import { useMediaQuery } from '../../lib/use-media-query';
 import type { Selection } from '../../lib/selection';
 import { shareTextOf } from './share-text';
-import { recordShareVideo, videoMimeType } from './share-video';
+import { canMakeVideo, makeShareVideo } from './encode-share-video';
 import styles from './Share.module.css';
 
 interface Props {
@@ -46,9 +46,9 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
   const [textOutcome, setTextOutcome] = useState<TextShareOutcome | 'embed-copied'>();
   // Sites are built on computers: the embed code is only offered there.
   const wide = useMediaQuery('(min-width: 960px)');
-  // Recorded on request (it takes a few seconds), then shared with a second tap: Safari
-  // only opens the share sheet right after a tap.
-  const [mimeType] = useState(videoMimeType);
+  // Made on request (it takes a few seconds), then shared with a second tap: Safari only
+  // opens the share sheet right after a tap.
+  const [videoSupported] = useState(canMakeVideo);
   const [video, setVideo] = useState<File | 'recording' | 'failed'>();
 
   useEffect(() => {
@@ -78,10 +78,9 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
   }, [content, format]);
 
   const recordVideo = () => {
-    if (!mimeType) return;
     setVideo('recording');
     loadShareFonts()
-      .then(() => recordShareVideo(content, format, mimeType))
+      .then(() => makeShareVideo(content, format))
       .then(setVideo)
       .catch(() => setVideo('failed'));
   };
@@ -146,7 +145,7 @@ export default function ShareDialog({ content, selection, onClose }: Props) {
         >
           Baixar imagem
         </button>
-        {mimeType && <VideoActions video={video} text={text} onRecord={recordVideo} />}
+        {videoSupported && <VideoActions video={video} text={text} onRecord={recordVideo} />}
         <button
           type="button"
           className={styles.secondary}
