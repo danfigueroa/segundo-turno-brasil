@@ -4,7 +4,7 @@ import type { Messages } from './pt-BR';
 const messages: Messages = {
   places: {
     brazil: 'Brasilien',
-    abroad: 'Andere Länder',
+    abroad: 'Ausland',
     region: (name: string) => `Region ${name}`,
     regions: { N: 'Norden', NE: 'Nordosten', CO: 'Mittelwesten', SE: 'Südosten', S: 'Süden' },
     continents: { AM: 'Amerika', EU: 'Europa', AS: 'Asien und Ozeanien', AF: 'Afrika' },
@@ -49,7 +49,7 @@ const messages: Messages = {
     regionVotes: 'Stimmen in der Region',
     leads: 'Führt',
     mostVoted: 'Meiste Stimmen',
-    half: '50 % der gültigen Stimmen',
+    half: '50% der gültigen Stimmen',
     difference: 'Abstand',
     ahead: (name: string) => `${name} vorn`,
     sections: 'Wahllokale ausgezählt',
@@ -189,7 +189,7 @@ const messages: Messages = {
     text: 'Ortszeit Brasília, gleich nach Schließung der Wahllokale. Die Zahlen erscheinen hier, sobald das TSE sie veröffentlicht.',
     timer: 'Zeit bis zum Beginn der Auszählung',
     units: { days: 'Tage', hours: 'Std.', minutes: 'Min.', seconds: 'Sek.' },
-    wins: '50 % + 1 gewinnt',
+    wins: '50% + 1 gewinnt',
     meanwhile: 'In der Zwischenzeit',
     firstRound: 'Ergebnis des 1. Wahlgangs ansehen',
   },
@@ -225,7 +225,7 @@ const messages: Messages = {
     countDone: 'Auszählung beendet',
     perMinute: 'Wahllokale pro Minute',
     collecting: 'Daten werden gesammelt…',
-    eta: '100 % voraussichtlich um',
+    eta: '100% voraussichtlich um',
     sectionsLeft: (count: string) => `${count} Wahllokale übrig`,
     margins: 'Woher der Vorsprung kommt',
     marginsText: (inRegion: boolean) =>

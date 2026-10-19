@@ -27,7 +27,7 @@ describe('outlookView', () => {
     const view = outlookView(tally(country, 600, 700, 25), finalists, await loadI18n('de'));
     expect(view?.headline).toBe('Ja, es ist noch möglich');
     expect(view?.sentence).toBe(
-      'Lula braucht 51,28\u00a0% der verbleibenden gültigen Stimmen für die Wende.',
+      'Lula braucht 51,28% der verbleibenden gültigen Stimmen für die Wende.',
     );
   });
 

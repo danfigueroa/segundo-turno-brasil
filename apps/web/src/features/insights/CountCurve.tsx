@@ -18,8 +18,8 @@ interface Props {
 
 /** Whole percentages for the axes: `"80%"`. */
 const axisFormat = (locale: string) => {
-  const format = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
-  return (value: number) => format.format(value / 100);
+  const format = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+  return (value: number) => `${format.format(value)}%`;
 };
 
 function describeCurve(curve: Curve, counted: number, { locale, m, f }: I18n): string {

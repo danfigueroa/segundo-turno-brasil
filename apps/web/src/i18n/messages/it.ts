@@ -19,7 +19,7 @@ const messages: Messages = {
   },
   site: {
     name: 'Segundo Turno',
-    subtitle: 'Elezioni presidenziali 2026',
+    subtitle: 'Presidenziali 2026',
     subtitleWide: ' · spoglio in tempo reale',
     title: 'Segundo Turno 2026 · Spoglio in diretta',
     loading: 'Caricamento dei risultati…',

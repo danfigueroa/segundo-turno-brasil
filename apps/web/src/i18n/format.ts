@@ -34,12 +34,6 @@ export interface Units {
 const plainSpaces = (text: string) => text.replace(/\u00a0/g, ' ');
 
 export function createFormat(locale: string, units: Units): Format {
-  const percent = new Intl.NumberFormat(locale, {
-    style: 'percent',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  const whole = new Intl.NumberFormat(locale, { style: 'percent' });
   const twoDecimals = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -76,8 +70,10 @@ export function createFormat(locale: string, units: Units): Format {
   });
 
   return {
-    percent: (value) => percent.format(value / 100),
-    counted: (value) => (value >= 100 ? whole.format(1) : percent.format(value / 100)),
+    // "%" right after the number in every language, as in the design: the big numbers of the
+    // scoreboard have no room for the space French or German put before it.
+    percent: (value) => `${twoDecimals.format(value)}%`,
+    counted: (value) => (value >= 100 ? '100%' : `${twoDecimals.format(value)}%`),
     votes: (value) => integer.format(Math.round(value)),
     lead: (value, decimals = 1) => `+${(decimals === 1 ? oneDecimal : twoDecimals).format(value)}`,
     compactVotes: (value) => {
