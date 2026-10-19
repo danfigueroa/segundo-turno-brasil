@@ -3,24 +3,36 @@
 }
 
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 8px;
-  border: 1px solid var(--control-border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  justify-content: center;
+  /* Narrow, so the phone header still fits on one line; the touch area is wider (below). */
+  width: 36px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
   cursor: pointer;
+}
+
+/* 44×44 touch target around the 36px button. */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
 }
 
 .button[aria-expanded='true'] {
   background: var(--surface-sunken);
+}
+
+.currentFlag {
+  width: 27px;
+  height: 18px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px var(--hairline);
 }
 
 .flag {

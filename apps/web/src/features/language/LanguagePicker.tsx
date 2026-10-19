@@ -48,10 +48,7 @@ export function LanguagePicker() {
         aria-label={m.language.current(current.name)}
         onClick={() => setOpen((value) => !value)}
       >
-        <Flag code={current.flag} className={styles.flag} />
-        <span className={styles.code} aria-hidden="true">
-          {current.code}
-        </span>
+        <Flag code={current.flag} className={styles.currentFlag} />
       </button>
       {open && (
         <ul id={listId} className={styles.menu} aria-label={m.language.label}>

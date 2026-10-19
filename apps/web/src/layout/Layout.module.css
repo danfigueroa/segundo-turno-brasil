@@ -48,7 +48,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  /* Tight on phones: brand, status and language fit one line at 360px. */
+  gap: 4px;
   margin-left: auto;
 }
 
