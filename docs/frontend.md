@@ -103,9 +103,21 @@ Não existe API web para postar direto nos Stories; a folha nativa do sistema of
 
 Um link do site colado no WhatsApp, Facebook, X ou LinkedIn mostra título, descrição e a imagem `public/og.png` (1200×630), pelas meta tags Open Graph e `twitter:card` do `index.html` (ADR 0018). As URLs absolutas usam `%SITE_URL%`, que o plugin `site-url` do `vite.config.ts` troca pelo domínio de produção (`VERCEL_PROJECT_PRODUCTION_URL`, ou `eleicao.danielfigueroa.dev` fora da Vercel). A imagem é estática, sem placar, e se regera com `pnpm --filter @stb/web og:build` (precisa de Chromium: `npx playwright install chromium-headless-shell` ou `CHROME_PATH`). As redes guardam a prévia: depois de trocar a imagem, use o [depurador de compartilhamento do Facebook](https://developers.facebook.com/tools/debug/) para renovar o cache.
 
+## Idiomas
+
+O site fala sete idiomas (ADR 0030): português (padrão), inglês, espanhol, francês, italiano, alemão e japonês.
+
+- **Onde ficam os textos:** `src/i18n/messages/pt-BR.ts` é a fonte de todos eles, agrupados por área (`site`, `result`, `map`, `lists`, `insights`, `share`…). Cada tradução (`en.ts`, `es.ts`…) é declarada como `Messages`, então o typecheck falha se faltar uma chave.
+- **Nos componentes:** `const { m, f } = useI18n()`; `m` são os textos (`m.result.turnout`, `m.share.place('Bahia')`) e `f` os formatadores (`f.percent`, `f.votes`, `f.time`…). Funções puras que montam texto (`headlineOf`, `shareContentFrom`, `selectionTitle`, `documentTitle`…) recebem o `I18n` por parâmetro; nos testes, `DEFAULT_I18N` (pt-BR) ou `await loadI18n('en')`.
+- **Texto novo:** acrescente a chave em `pt-BR.ts` (com TSDoc se o uso não for óbvio) e a tradução nos outros seis arquivos. Textos com números ou nomes viram funções.
+- **Idioma novo:** acrescente o código em `LOCALES` e `LOCALE_INFO` (`i18n/locales.ts`, com a bandeira em `features/language/flags.tsx`), o arquivo de mensagens e o carregador em `i18n/load.ts`.
+- **Escolha do idioma:** `?lang=xx` > `localStorage` (`stb:locale`) > idioma do navegador > pt-BR. O `main.tsx` carrega o chunk do idioma antes do primeiro render; trocar pela bandeira atualiza o `<html lang>` e o `?lang` da URL, se houver.
+- **O que não se traduz:** nomes de estados, cidades, candidatos e partidos, a marca "Segundo Turno", os slugs da URL (`#/exterior/estados-unidos`) e a prévia de links. Países do exterior são nomeados por `Intl.DisplayNames` (`lib/country-codes.ts`).
+- **Formatos:** separadores de milhar e decimal do idioma, `%` colado ao número em todos, horários sempre de Brasília.
+
 ## Orçamento de performance
 
-JS inicial ≈ 113 KB gzip, somando o `index` e os chunks que ele importa de início (React DOM ≈ 62 KB, mapa ≈ 14 KB, TanStack Query ≈ 10 KB, zod/mini ≈ 8 KB), CSS ≈ 6 KB, fonte ≈ 47 KB (woff2, subconjunto latino). Ficam em chunks separados, carregados só quando aparecem: diálogo de compartilhamento, análise da apuração (~5,5 KB), listas "Votação por cidade" e "Votação por país", mapas municipais e por continente e o Vercel Analytics (ADR 0010), que carrega depois do primeiro paint.
+JS inicial ≈ 124 KB gzip, somando o `index` e os chunks que ele importa de início (React DOM ≈ 62 KB, mapa ≈ 14 KB, TanStack Query ≈ 10 KB, zod/mini ≈ 8 KB, textos em pt-BR e formatadores ≈ 5 KB), CSS ≈ 6 KB, fonte ≈ 47 KB (woff2, subconjunto latino). Ficam em chunks separados, carregados só quando aparecem: as traduções (~4 KB cada) e a tabela de países para elas, diálogo de compartilhamento, análise da apuração (~5,5 KB), listas "Votação por cidade" e "Votação por país", mapas municipais e por continente e o Vercel Analytics (ADR 0010), que carrega depois do primeiro paint.
 
 Para o primeiro paint (ADR 0021):
 
