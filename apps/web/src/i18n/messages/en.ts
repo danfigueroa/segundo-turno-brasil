@@ -182,6 +182,63 @@ const messages: Messages = {
     meanwhile: 'Meanwhile',
     firstRound: 'See the 1st round result',
   },
+  insights: {
+    outlook: 'Can it still turn around?',
+    outlookBasis: (place: string) =>
+      `Estimate based on the polling stations still to be counted in ${place}.`,
+    decided: 'Decided',
+    open: 'Open',
+    decidedHeadline: 'No, it is decided',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Even if every voter still to be counted voted for ${runnerUp}, ${leader} would stay ahead.`,
+    unlikelyHeadline: 'Only with an unlikely turnaround',
+    unlikelySentence: (runnerUp: string) =>
+      `By the estimate, ${runnerUp} would need more votes than are left to count.`,
+    possibleHeadline: 'Yes, it still can',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} needs ${share} of the valid votes left to turn it around.`,
+    needs: (runnerUp: string) => `Needed for ${runnerUp} to turn it around`,
+    leadOf: (leader: string) => `${leader}’s lead`,
+    votes: 'votes',
+    remaining: 'Left to count',
+    remainingNote: 'valid votes (estimate)',
+    curve: 'How the count evolved',
+    curveText: 'Valid votes of each finalist as polling stations are counted.',
+    legend: 'Legend',
+    curveNow: (shares: string, counted: string) =>
+      `${shares} with ${counted} of polling stations counted`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} took the lead with ${counted} counted`,
+    turnaround: (counted: string) => `Lead change · ${counted}`,
+    pace: 'Pace',
+    countDone: 'Count finished',
+    perMinute: 'polling stations per minute',
+    collecting: 'Collecting data…',
+    eta: '100% expected at',
+    sectionsLeft: (count: string) => `${count} polling stations left`,
+    margins: 'Where the lead comes from',
+    marginsText: (inRegion: boolean) =>
+      `Net votes between the finalists in each state${inRegion ? ' of the region' : ''}.`,
+    balance: (inRegion: boolean) => (inRegion ? 'Region net:' : 'Overall net:'),
+    seeAll: (count: number) => `See all ${count}`,
+    swing: 'From the 1st round to the runoff',
+    swingText: (place: string) => `Valid votes of each finalist in ${place}.`,
+    othersFirstRound: (share: string, votes: string) =>
+      `In the 1st round, the other candidates got ${share} of the valid votes (${votes}).`,
+    flipped: 'States with a different leader',
+    noneFlipped: 'The same leaders as in the 1st round in every state.',
+    to: 'to',
+    partialRunoff: (share: string) => `Runoff so far: ${share} of polling stations counted.`,
+    compare2022: 'Compared with 2022',
+    compare2022Text: (place: string) => `Valid votes in the 2022 runoff and now, in ${place}.`,
+    sameCount2022: (counted: string, shares: string) =>
+      `In 2022, with ${counted} of polling stations counted, ${shares}.`,
+    had: (name: string, share: string) => `${name} had ${share}`,
+    flipped2022: 'States with a different leader than in 2022',
+    noneFlipped2022: 'The same ballot numbers as in 2022 lead in every state.',
+    source2022: 'In 2022, number 22 was Jair Bolsonaro. Source: TSE open data.',
+    partial2026: (share: string) => ` 2026 so far: ${share} of polling stations.`,
+  },
   units: { points: 'pts' },
 };
 

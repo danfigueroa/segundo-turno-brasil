@@ -1,8 +1,9 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { paceOf, type CountPoint } from '@stb/domain';
 import { useHistory } from '../../api/history';
+import type { I18n } from '../../i18n/i18n';
+import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
-import { formatPercent, formatTime, formatVotes } from '../../lib/format';
 import type { Selection } from '../../lib/selection';
 import { curveOf, mergePoints, type Curve } from './curve';
 import { liveSeries } from './live-history';
@@ -15,20 +16,26 @@ interface Props {
   readonly finalists: readonly Finalist[];
 }
 
-const formatAxis = (value: number) => `${Math.round(value)}%`;
+/** Whole percentages for the axes: `"80%"`. */
+const axisFormat = (locale: string) => {
+  const format = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
+  return (value: number) => format.format(value / 100);
+};
 
-function describeCurve(curve: Curve, counted: number): string {
-  const lines = curve.lines.map((l) => `${l.finalist.shortName} ${formatPercent(l.last)}`);
-  const changes = curve.changes.map(
-    (c) => `${c.leader.shortName} passou à frente com ${formatAxis(c.counted)} apurado`,
+function describeCurve(curve: Curve, counted: number, { locale, m, f }: I18n): string {
+  const formatAxis = axisFormat(locale);
+  const lines = curve.lines.map((l) => `${l.finalist.shortName} ${f.percent(l.last)}`);
+  const changes = curve.changes.map((c) =>
+    m.insights.overtook(c.leader.shortName, formatAxis(c.counted)),
   );
-  return [`${lines.join(', ')} com ${formatAxis(counted)} das seções apuradas`, ...changes].join(
-    '. ',
-  );
+  return [m.insights.curveNow(lines.join(', '), formatAxis(counted)), ...changes].join('. ');
 }
 
 /** Runoff count curve of the selection, with the counting pace and expected end. */
 export function CountCurve({ runoff, selection, finalists }: Props) {
+  const i18n = useI18n();
+  const { m, f } = i18n;
+  const formatAxis = axisFormat(i18n.locale);
   const history = useHistory(selection);
   const points: CountPoint[] = mergePoints(
     history.data?.points ?? [],
@@ -46,27 +53,25 @@ export function CountCurve({ runoff, selection, finalists }: Props) {
     <section className={`card ${shell.card}`} aria-labelledby="curve-title">
       <div className={shell.head}>
         <h2 id="curve-title" className={shell.title}>
-          Como a apuração evoluiu
+          {m.insights.curve}
         </h2>
-        <p className={shell.subtitle}>
-          Votos válidos de cada finalista conforme as seções são apuradas.
-        </p>
+        <p className={shell.subtitle}>{m.insights.curveText}</p>
       </div>
 
-      <ul className={styles.legend} aria-label="Legenda">
+      <ul className={styles.legend} aria-label={m.insights.legend}>
         {curve.lines.map((line) => (
           <li key={line.finalist.number} data-hue={line.finalist.hue}>
             <span className={styles.swatch} aria-hidden="true" />
             {line.finalist.shortName}
-            <strong>{formatPercent(line.last)}</strong>
+            <strong>{f.percent(line.last)}</strong>
           </li>
         ))}
       </ul>
 
-      <div className={styles.chart} role="img" aria-label={describeCurve(curve, counted)}>
+      <div className={styles.chart} role="img" aria-label={describeCurve(curve, counted, i18n)}>
         <div className={styles.yAxis} aria-hidden="true">
           <span style={{ top: '0%' }}>{formatAxis(curve.yMax)}</span>
-          <span style={{ top: `${curve.middle}%` }}>50%</span>
+          <span style={{ top: `${curve.middle}%` }}>{formatAxis(50)}</span>
           <span style={{ top: '100%' }}>{formatAxis(curve.yMin)}</span>
         </div>
         <div className={styles.plot}>
@@ -87,7 +92,9 @@ export function CountCurve({ runoff, selection, finalists }: Props) {
               className={styles.change}
               style={{ left: `${change.x}%`, top: `${change.y}%` }}
             >
-              <span className={styles.changeLabel}>Virada · {formatAxis(change.counted)}</span>
+              <span className={styles.changeLabel}>
+                {m.insights.turnaround(formatAxis(change.counted))}
+              </span>
             </span>
           ))}
           {curve.lines.map((line) => (
@@ -100,27 +107,27 @@ export function CountCurve({ runoff, selection, finalists }: Props) {
           ))}
         </div>
         <div className={styles.xAxis} aria-hidden="true">
-          <span>0%</span>
-          <span>50%</span>
-          <span>100% apurado</span>
+          <span>{formatAxis(0)}</span>
+          <span>{formatAxis(50)}</span>
+          <span>{m.common.counted(formatAxis(100))}</span>
         </div>
       </div>
 
       <dl className={shell.stats}>
         <div className={shell.stat}>
-          <dt>Ritmo</dt>
+          <dt>{m.insights.pace}</dt>
           <dd className={shell.statValue}>
-            {pace && !done ? formatVotes(pace.sectionsPerMinute) : '—'}
+            {pace && !done ? f.votes(pace.sectionsPerMinute) : '—'}
           </dd>
           <dd className={shell.statNote}>
-            {done ? 'Apuração concluída' : pace ? 'seções por minuto' : 'Coletando dados…'}
+            {done ? m.insights.countDone : pace ? m.insights.perMinute : m.insights.collecting}
           </dd>
         </div>
         <div className={shell.stat}>
-          <dt>Previsão de 100%</dt>
-          <dd className={shell.statValue}>{pace?.eta && !done ? formatTime(pace.eta) : '—'}</dd>
+          <dt>{m.insights.eta}</dt>
+          <dd className={shell.statValue}>{pace?.eta && !done ? f.time(pace.eta) : '—'}</dd>
           <dd className={shell.statNote}>
-            {pace && !done ? `${formatVotes(pace.remainingSections)} seções restantes` : ''}
+            {pace && !done ? m.insights.sectionsLeft(f.votes(pace.remainingSections)) : ''}
           </dd>
         </div>
       </dl>

@@ -192,6 +192,64 @@ const messages: Messages = {
     meanwhile: 'Mientras tanto',
     firstRound: 'Ver el resultado de la 1.ª vuelta',
   },
+  insights: {
+    outlook: '¿Todavía hay remontada?',
+    outlookBasis: (place: string) =>
+      `Estimación basada en las urnas que faltan escrutar en ${place}.`,
+    decided: 'Decidido',
+    open: 'Abierto',
+    decidedHeadline: 'No, ya está decidido',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Aunque todos los electores aún no escrutados votaran por ${runnerUp}, ${leader} seguiría adelante.`,
+    unlikelyHeadline: 'Solo con una remontada improbable',
+    unlikelySentence: (runnerUp: string) =>
+      `Según la estimación, ${runnerUp} necesitaría más votos de los que faltan escrutar.`,
+    possibleHeadline: 'Sí, todavía es posible',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} necesita el ${share} de los votos válidos que faltan para remontar.`,
+    needs: (runnerUp: string) => `Necesario para que ${runnerUp} remonte`,
+    leadOf: (leader: string) => `Ventaja de ${leader}`,
+    votes: 'votos',
+    remaining: 'Faltan escrutar',
+    remainingNote: 'votos válidos (estimación)',
+    curve: 'Cómo evolucionó el escrutinio',
+    curveText: 'Votos válidos de cada finalista a medida que se escrutan las urnas.',
+    legend: 'Leyenda',
+    curveNow: (shares: string, counted: string) =>
+      `${shares} con el ${counted} de las urnas escrutadas`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} pasó adelante con el ${counted} escrutado`,
+    turnaround: (counted: string) => `Remontada · ${counted}`,
+    pace: 'Ritmo',
+    countDone: 'Escrutinio terminado',
+    perMinute: 'urnas por minuto',
+    collecting: 'Recopilando datos…',
+    eta: 'Previsión del 100 %',
+    sectionsLeft: (count: string) => `${count} urnas restantes`,
+    margins: 'De dónde viene la ventaja',
+    marginsText: (inRegion: boolean) =>
+      `Saldo de votos entre los finalistas en cada estado${inRegion ? ' de la región' : ''}.`,
+    balance: (inRegion: boolean) => (inRegion ? 'Saldo de la región:' : 'Saldo total:'),
+    seeAll: (count: number) => `Ver los ${count}`,
+    swing: 'De la 1.ª a la 2.ª vuelta',
+    swingText: (place: string) => `Votos válidos de cada finalista en ${place}.`,
+    othersFirstRound: (share: string, votes: string) =>
+      `En la 1.ª vuelta, los demás candidatos sumaron el ${share} de los votos válidos (${votes}).`,
+    flipped: 'Estados con otro líder',
+    noneFlipped: 'Los mismos líderes de la 1.ª vuelta en todos los estados.',
+    to: 'a',
+    partialRunoff: (share: string) => `Parcial de la 2.ª vuelta: ${share} de las urnas escrutadas.`,
+    compare2022: 'Comparación con 2022',
+    compare2022Text: (place: string) =>
+      `Votos válidos en la 2.ª vuelta de 2022 y ahora, en ${place}.`,
+    sameCount2022: (counted: string, shares: string) =>
+      `En 2022, con el ${counted} de las urnas escrutadas, ${shares}.`,
+    had: (name: string, share: string) => `${name} tenía el ${share}`,
+    flipped2022: 'Estados con otro líder que en 2022',
+    noneFlipped2022: 'Los mismos números de urna de 2022 lideran en todos los estados.',
+    source2022: 'En 2022, el 22 era Jair Bolsonaro. Fuente: TSE, datos abiertos.',
+    partial2026: (share: string) => ` Parcial de 2026: ${share} de las urnas.`,
+  },
   units: { points: 'p.p.' },
 };
 

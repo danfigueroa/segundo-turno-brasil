@@ -2,7 +2,6 @@ import type { ResultsResponse } from '@stb/contracts';
 import { useState } from 'react';
 import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
-import { formatCompactVotes, formatVotes } from '../../lib/format';
 import { regionOf, type Selection } from '../../lib/selection';
 import { netMargins, type MarginRow } from './net-margins';
 import shell from './Insights.module.css';
@@ -24,6 +23,7 @@ const COLLAPSED = 10;
  */
 export function NetMarginCard({ data, selection, finalists, onSelect }: Props) {
   const i18n = useI18n();
+  const { m, f } = i18n;
   const [expanded, setExpanded] = useState(false);
   const [first, second] = finalists;
   const { rows, total, scale } = netMargins(data, finalists, selection, i18n);
@@ -38,16 +38,15 @@ export function NetMarginCard({ data, selection, finalists, onSelect }: Props) {
     <section className={`card ${shell.card}`} aria-labelledby="margins-title">
       <div className={shell.head}>
         <h2 id="margins-title" className={shell.title}>
-          De onde vem a vantagem
+          {m.insights.margins}
         </h2>
-        <p className={shell.subtitle}>
-          Saldo de votos entre os finalistas em cada estado{region ? ' da região' : ''}.
-        </p>
+        <p className={shell.subtitle}>{m.insights.marginsText(region !== undefined)}</p>
       </div>
 
       <p className={styles.total} data-hue={ahead.hue}>
-        Saldo {region ? 'da região' : 'total'}: <strong>{ahead.shortName}</strong>{' '}
-        <strong className={styles.totalValue}>+{formatVotes(Math.abs(total))}</strong> votos
+        {m.insights.balance(region !== undefined)} <strong>{ahead.shortName}</strong>{' '}
+        <strong className={styles.totalValue}>+{f.votes(Math.abs(total))}</strong>{' '}
+        {m.insights.votes}
       </p>
 
       <div className={styles.sides} aria-hidden="true">
@@ -77,7 +76,7 @@ export function NetMarginCard({ data, selection, finalists, onSelect }: Props) {
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? 'Mostrar menos' : `Ver todos os ${rows.length}`}
+          {expanded ? m.lists.showLess : m.insights.seeAll(rows.length)}
         </button>
       )}
     </section>
@@ -99,15 +98,17 @@ interface RowProps {
 }
 
 function Row({ row, scale, first, second, selected, onSelect }: RowProps) {
+  const { m, f } = useI18n();
   const leader = row.margin > 0 ? first : row.margin < 0 ? second : undefined;
   const width = `${(Math.abs(row.margin) / scale) * 100}%`;
-  const amount = leader ? `+${formatCompactVotes(Math.abs(row.margin))}` : '0';
+  const margin = Math.abs(row.margin);
+  const amount = leader ? `+${f.compactVotes(margin)}` : '0';
   return (
     <button
       type="button"
       className={styles.row}
       aria-current={selected || undefined}
-      aria-label={`${row.name}: ${leader ? `${leader.shortName} +${formatVotes(Math.abs(row.margin))} votos` : 'empate'}`}
+      aria-label={`${row.name}: ${leader ? `${leader.shortName} +${m.common.votes(margin, f.votes(margin))}` : m.common.tie}`}
       onClick={onSelect}
     >
       <span className={styles.code}>{row.code}</span>

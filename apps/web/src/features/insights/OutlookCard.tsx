@@ -1,6 +1,6 @@
 import type { Tally } from '@stb/domain';
+import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
-import { formatCompactVotes, formatPercent, formatVotes } from '../../lib/format';
 import { outlookView } from './outlook-view';
 import shell from './Insights.module.css';
 import styles from './OutlookCard.module.css';
@@ -14,7 +14,9 @@ interface Props {
 
 /** "Ainda dá virada?": what the runner-up needs from the votes still to be counted. */
 export function OutlookCard({ tally, finalists, place }: Props) {
-  const view = outlookView(tally, finalists);
+  const i18n = useI18n();
+  const { m, f } = i18n;
+  const view = outlookView(tally, finalists, i18n);
   if (!view) return null;
   const { runnerUp, leader } = view;
 
@@ -23,15 +25,13 @@ export function OutlookCard({ tally, finalists, place }: Props) {
       <div className={shell.head}>
         <div className={shell.titleRow}>
           <h2 id="outlook-title" className={shell.title}>
-            Ainda dá virada?
+            {m.insights.outlook}
           </h2>
           <span className={styles.pill} data-decided={view.decided || undefined}>
             {view.status}
           </span>
         </div>
-        <p className={shell.subtitle}>
-          Estimativa com base nas seções que faltam apurar em {place}.
-        </p>
+        <p className={shell.subtitle}>{m.insights.outlookBasis(place)}</p>
       </div>
 
       <div className={styles.answer}>
@@ -42,9 +42,9 @@ export function OutlookCard({ tally, finalists, place }: Props) {
       {view.needs !== undefined && (
         <div className={styles.gauge} data-hue={runnerUp.hue}>
           <div className={styles.gaugeLabel}>
-            <span>Necessário para {runnerUp.shortName} virar</span>
+            <span>{m.insights.needs(runnerUp.shortName)}</span>
             <strong className={styles.gaugeValue}>
-              {view.needs >= 100 ? '+100%' : formatPercent(view.needs)}
+              {view.needs >= 100 ? `+${f.counted(100)}` : f.percent(view.needs)}
             </strong>
           </div>
           <div className={styles.track} aria-hidden="true">
@@ -61,14 +61,14 @@ export function OutlookCard({ tally, finalists, place }: Props) {
 
       <dl className={shell.stats}>
         <div className={shell.stat} data-hue={leader.hue}>
-          <dt>Vantagem de {leader.shortName}</dt>
-          <dd className={`${shell.statValue} ${styles.leadValue}`}>{formatVotes(view.lead)}</dd>
-          <dd className={shell.statNote}>votos</dd>
+          <dt>{m.insights.leadOf(leader.shortName)}</dt>
+          <dd className={`${shell.statValue} ${styles.leadValue}`}>{f.votes(view.lead)}</dd>
+          <dd className={shell.statNote}>{m.insights.votes}</dd>
         </div>
         <div className={shell.stat}>
-          <dt>Faltam apurar</dt>
-          <dd className={shell.statValue}>~{formatCompactVotes(view.remaining)}</dd>
-          <dd className={shell.statNote}>votos válidos (estimativa)</dd>
+          <dt>{m.insights.remaining}</dt>
+          <dd className={shell.statValue}>~{f.compactVotes(view.remaining)}</dd>
+          <dd className={shell.statNote}>{m.insights.remainingNote}</dd>
         </div>
       </dl>
     </section>

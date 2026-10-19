@@ -1,6 +1,6 @@
 import { outlook, type Tally } from '@stb/domain';
 import type { Finalist } from '../../lib/finalists';
-import { formatPercent } from '../../lib/format';
+import type { I18n } from '../../i18n/i18n';
 
 export interface OutlookView {
   readonly decided: boolean;
@@ -22,7 +22,11 @@ export interface OutlookView {
  * "Can it still turn around?" for a live tally. `undefined` once the count is over or
  * while the finalists have no votes.
  */
-export function outlookView(tally: Tally, finalists: readonly Finalist[]): OutlookView | undefined {
+export function outlookView(
+  tally: Tally,
+  finalists: readonly Finalist[],
+  { m, f }: I18n,
+): OutlookView | undefined {
   if (tally.sections.counted >= tally.sections.total) return undefined;
   const result = outlook(tally);
   const leader = finalists.find((f) => f.number === result?.leader.number);
@@ -35,9 +39,9 @@ export function outlookView(tally: Tally, finalists: readonly Finalist[]): Outlo
     return {
       ...base,
       decided: true,
-      status: 'Decidido',
-      headline: 'Não, já está decidido',
-      sentence: `Mesmo que todos os eleitores ainda não apurados votassem em ${runnerUp.shortName}, ${leader.shortName} continuaria à frente.`,
+      status: m.insights.decided,
+      headline: m.insights.decidedHeadline,
+      sentence: m.insights.decidedSentence(runnerUp.shortName, leader.shortName),
       needs: undefined,
     };
   }
@@ -45,18 +49,18 @@ export function outlookView(tally: Tally, finalists: readonly Finalist[]): Outlo
     return {
       ...base,
       decided: false,
-      status: 'Em aberto',
-      headline: 'Só com uma virada improvável',
-      sentence: `Pela estimativa, ${runnerUp.shortName} precisaria de mais votos do que os que faltam apurar.`,
+      status: m.insights.open,
+      headline: m.insights.unlikelyHeadline,
+      sentence: m.insights.unlikelySentence(runnerUp.shortName),
       needs: 100,
     };
   }
   return {
     ...base,
     decided: false,
-    status: 'Em aberto',
-    headline: 'Sim, ainda dá',
-    sentence: `${runnerUp.shortName} precisa de ${formatPercent(needs)} dos votos válidos que faltam para virar.`,
+    status: m.insights.open,
+    headline: m.insights.possibleHeadline,
+    sentence: m.insights.possibleSentence(runnerUp.shortName, f.percent(needs)),
     needs,
   };
 }

@@ -1,5 +1,5 @@
 import { STATES } from '@stb/domain';
-import { formatPercent, formatPointsChange } from '../../lib/format';
+import { useI18n } from '../../i18n/i18n-context';
 import type { Selection } from '../../lib/selection';
 import type { Compare2022View } from './compare-2022';
 import shell from './Insights.module.css';
@@ -16,13 +16,15 @@ interface Props {
  * now, the same moment of the 2022 count (Brazil) and the states led by the other number.
  */
 export function Compare2022Card({ view, place, onSelect }: Props) {
+  const { locale, m, f } = useI18n();
+  const and = new Intl.ListFormat(locale, { type: 'conjunction' });
   return (
     <section className={`card ${shell.card}`} aria-labelledby="compare-2022-title">
       <div className={shell.head}>
         <h2 id="compare-2022-title" className={shell.title}>
-          Comparação com 2022
+          {m.insights.compare2022}
         </h2>
-        <p className={shell.subtitle}>Votos válidos no 2º turno de 2022 e agora, em {place}.</p>
+        <p className={shell.subtitle}>{m.insights.compare2022Text(place)}</p>
       </div>
 
       <div className={styles.rows}>
@@ -31,7 +33,7 @@ export function Compare2022Card({ view, place, onSelect }: Props) {
             <div className={styles.rowHead}>
               <span className={styles.name}>{row.finalist.name}</span>
               <span className={styles.change} data-down={row.change < 0 || undefined}>
-                {formatPointsChange(row.change)}
+                {f.pointsChange(row.change)}
               </span>
             </div>
             <Bar label="2022" value={row.before} muted />
@@ -42,24 +44,22 @@ export function Compare2022Card({ view, place, onSelect }: Props) {
 
       {view.atSameCount && (
         <p className={styles.others}>
-          Em 2022, com {formatPercent(view.atSameCount.counted)} das seções apuradas,{' '}
-          {view.rows
-            .map(
-              (row, i) =>
-                `${row.name2022} tinha ${formatPercent(view.atSameCount?.shares[i] ?? 0)}`,
-            )
-            .join(' e ')}
-          .
+          {m.insights.sameCount2022(
+            f.percent(view.atSameCount.counted),
+            and.format(
+              view.rows.map((row, i) =>
+                m.insights.had(row.name2022, f.percent(view.atSameCount?.shares[i] ?? 0)),
+              ),
+            ),
+          )}
         </p>
       )}
 
       {view.flipped && (
         <div className={styles.flipped}>
-          <h3 className={styles.flippedTitle}>Estados com outro líder que em 2022</h3>
+          <h3 className={styles.flippedTitle}>{m.insights.flipped2022}</h3>
           {view.flipped.length === 0 ? (
-            <p className={styles.none}>
-              Os mesmos números de urna de 2022 lideram em todos os estados.
-            </p>
+            <p className={styles.none}>{m.insights.noneFlipped2022}</p>
           ) : (
             <div className={styles.chips}>
               {view.flipped.map(({ code, from, to }) => (
@@ -74,7 +74,7 @@ export function Compare2022Card({ view, place, onSelect }: Props) {
                   <span data-hue={from.hue} className={styles.from}>
                     {from.shortName}
                   </span>
-                  <span aria-label="para">→</span>
+                  <span aria-label={m.insights.to}>→</span>
                   <span data-hue={to.hue} className={styles.to}>
                     {to.shortName}
                   </span>
@@ -86,21 +86,22 @@ export function Compare2022Card({ view, place, onSelect }: Props) {
       )}
 
       <p className={shell.note}>
-        Em 2022, o 22 era Jair Bolsonaro. Fonte: TSE, dados abertos.
-        {view.counted < 100 && ` Parcial de 2026: ${formatPercent(view.counted)} das seções.`}
+        {m.insights.source2022}
+        {view.counted < 100 && m.insights.partial2026(f.percent(view.counted))}
       </p>
     </section>
   );
 }
 
 function Bar({ label, value, muted }: { label: string; value: number; muted?: boolean }) {
+  const { f } = useI18n();
   return (
     <div className={styles.bar} data-muted={muted || undefined}>
       <span className={styles.barLabel}>{label}</span>
       <span className={styles.track} aria-hidden="true">
         <span className={styles.fill} style={{ width: `${value}%` }} />
       </span>
-      <span className={styles.barValue}>{formatPercent(value)}</span>
+      <span className={styles.barValue}>{f.percent(value)}</span>
     </div>
   );
 }

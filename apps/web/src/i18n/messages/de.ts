@@ -193,6 +193,64 @@ const messages: Messages = {
     meanwhile: 'In der Zwischenzeit',
     firstRound: 'Ergebnis des 1. Wahlgangs ansehen',
   },
+  insights: {
+    outlook: 'Ist eine Wende noch möglich?',
+    outlookBasis: (place: string) =>
+      `Schätzung anhand der noch auszuzählenden Wahllokale in ${place}.`,
+    decided: 'Entschieden',
+    open: 'Offen',
+    decidedHeadline: 'Nein, es ist entschieden',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Selbst wenn alle noch nicht ausgezählten Wähler für ${runnerUp} stimmten, bliebe ${leader} vorn.`,
+    unlikelyHeadline: 'Nur mit einer unwahrscheinlichen Wende',
+    unlikelySentence: (runnerUp: string) =>
+      `Laut Schätzung bräuchte ${runnerUp} mehr Stimmen, als noch auszuzählen sind.`,
+    possibleHeadline: 'Ja, es ist noch möglich',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} braucht ${share} der verbleibenden gültigen Stimmen für die Wende.`,
+    needs: (runnerUp: string) => `Nötig für die Wende von ${runnerUp}`,
+    leadOf: (leader: string) => `Vorsprung von ${leader}`,
+    votes: 'Stimmen',
+    remaining: 'Noch auszuzählen',
+    remainingNote: 'gültige Stimmen (Schätzung)',
+    curve: 'Verlauf der Auszählung',
+    curveText: 'Gültige Stimmen jedes Finalisten im Laufe der Auszählung.',
+    legend: 'Legende',
+    curveNow: (shares: string, counted: string) =>
+      `${shares} bei ${counted} ausgezählten Wahllokalen`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} ging bei ${counted} ausgezählt in Führung`,
+    turnaround: (counted: string) => `Führungswechsel · ${counted}`,
+    pace: 'Tempo',
+    countDone: 'Auszählung beendet',
+    perMinute: 'Wahllokale pro Minute',
+    collecting: 'Daten werden gesammelt…',
+    eta: '100 % voraussichtlich um',
+    sectionsLeft: (count: string) => `${count} Wahllokale übrig`,
+    margins: 'Woher der Vorsprung kommt',
+    marginsText: (inRegion: boolean) =>
+      `Stimmensaldo zwischen den Finalisten in jedem Bundesstaat${inRegion ? ' der Region' : ''}.`,
+    balance: (inRegion: boolean) => (inRegion ? 'Saldo der Region:' : 'Gesamtsaldo:'),
+    seeAll: (count: number) => `Alle ${count} anzeigen`,
+    swing: 'Vom 1. Wahlgang zur Stichwahl',
+    swingText: (place: string) => `Gültige Stimmen jedes Finalisten in ${place}.`,
+    othersFirstRound: (share: string, votes: string) =>
+      `Im 1. Wahlgang kamen die übrigen Kandidaten auf ${share} der gültigen Stimmen (${votes}).`,
+    flipped: 'Bundesstaaten mit anderem Führenden',
+    noneFlipped: 'In allen Bundesstaaten führen dieselben wie im 1. Wahlgang.',
+    to: 'zu',
+    partialRunoff: (share: string) => `Stichwahl bisher: ${share} der Wahllokale ausgezählt.`,
+    compare2022: 'Vergleich mit 2022',
+    compare2022Text: (place: string) =>
+      `Gültige Stimmen in der Stichwahl 2022 und jetzt, in ${place}.`,
+    sameCount2022: (counted: string, shares: string) =>
+      `2022 bei ${counted} ausgezählten Wahllokalen: ${shares}.`,
+    had: (name: string, share: string) => `${name} hatte ${share}`,
+    flipped2022: 'Bundesstaaten mit anderem Führenden als 2022',
+    noneFlipped2022: 'In allen Bundesstaaten führen dieselben Wahlnummern wie 2022.',
+    source2022: '2022 war die 22 Jair Bolsonaro. Quelle: TSE, offene Daten.',
+    partial2026: (share: string) => ` 2026 bisher: ${share} der Wahllokale.`,
+  },
   units: { points: 'Pp.' },
 };
 

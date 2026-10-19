@@ -189,6 +189,64 @@ const messages: Messages = {
     meanwhile: 'En attendant',
     firstRound: 'Voir le résultat du 1er tour',
   },
+  insights: {
+    outlook: 'Un renversement est-il encore possible ?',
+    outlookBasis: (place: string) =>
+      `Estimation fondée sur les bureaux restant à dépouiller (${place}).`,
+    decided: 'Joué',
+    open: 'Ouvert',
+    decidedHeadline: 'Non, c’est joué',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Même si tous les électeurs pas encore dépouillés votaient pour ${runnerUp}, ${leader} resterait en tête.`,
+    unlikelyHeadline: 'Seulement avec un renversement improbable',
+    unlikelySentence: (runnerUp: string) =>
+      `Selon l’estimation, ${runnerUp} aurait besoin de plus de voix qu’il n’en reste à dépouiller.`,
+    possibleHeadline: 'Oui, c’est encore possible',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} a besoin de ${share} des suffrages exprimés restants pour passer devant.`,
+    needs: (runnerUp: string) => `Nécessaire pour que ${runnerUp} passe devant`,
+    leadOf: (leader: string) => `Avance de ${leader}`,
+    votes: 'voix',
+    remaining: 'Reste à dépouiller',
+    remainingNote: 'suffrages exprimés (estimation)',
+    curve: 'L’évolution du dépouillement',
+    curveText: 'Suffrages exprimés de chaque finaliste au fil du dépouillement.',
+    legend: 'Légende',
+    curveNow: (shares: string, counted: string) =>
+      `${shares} avec ${counted} des bureaux dépouillés`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} est passé devant à ${counted} dépouillés`,
+    turnaround: (counted: string) => `Renversement · ${counted}`,
+    pace: 'Rythme',
+    countDone: 'Dépouillement terminé',
+    perMinute: 'bureaux par minute',
+    collecting: 'Collecte des données…',
+    eta: '100 % prévu à',
+    sectionsLeft: (count: string) => `${count} bureaux restants`,
+    margins: 'D’où vient l’avance',
+    marginsText: (inRegion: boolean) =>
+      `Solde de voix entre les finalistes dans chaque État${inRegion ? ' de la région' : ''}.`,
+    balance: (inRegion: boolean) => (inRegion ? 'Solde de la région :' : 'Solde total :'),
+    seeAll: (count: number) => `Voir les ${count}`,
+    swing: 'Du 1er au 2nd tour',
+    swingText: (place: string) => `Suffrages exprimés de chaque finaliste (${place}).`,
+    othersFirstRound: (share: string, votes: string) =>
+      `Au 1er tour, les autres candidats ont totalisé ${share} des suffrages exprimés (${votes}).`,
+    flipped: 'États ayant changé de leader',
+    noneFlipped: 'Les mêmes leaders qu’au 1er tour dans tous les États.',
+    to: 'vers',
+    partialRunoff: (share: string) => `2nd tour partiel : ${share} des bureaux dépouillés.`,
+    compare2022: 'Comparaison avec 2022',
+    compare2022Text: (place: string) =>
+      `Suffrages exprimés au 2nd tour de 2022 et aujourd’hui (${place}).`,
+    sameCount2022: (counted: string, shares: string) =>
+      `En 2022, avec ${counted} des bureaux dépouillés, ${shares}.`,
+    had: (name: string, share: string) => `${name} avait ${share}`,
+    flipped2022: 'États avec un autre leader qu’en 2022',
+    noneFlipped2022: 'Les mêmes numéros de vote qu’en 2022 sont en tête dans tous les États.',
+    source2022: 'En 2022, le 22 était Jair Bolsonaro. Source : TSE, données ouvertes.',
+    partial2026: (share: string) => ` 2026 partiel : ${share} des bureaux.`,
+  },
   units: { points: 'pts' },
 };
 

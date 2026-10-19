@@ -195,6 +195,62 @@ const messages: Messages = {
     meanwhile: 'Nel frattempo',
     firstRound: 'Vedi il risultato del 1° turno',
   },
+  insights: {
+    outlook: 'C’è ancora spazio per il sorpasso?',
+    outlookBasis: (place: string) => `Stima basata sulle sezioni ancora da scrutinare in ${place}.`,
+    decided: 'Deciso',
+    open: 'Aperto',
+    decidedHeadline: 'No, è già deciso',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Anche se tutti gli elettori non ancora scrutinati votassero ${runnerUp}, ${leader} resterebbe in testa.`,
+    unlikelyHeadline: 'Solo con un sorpasso improbabile',
+    unlikelySentence: (runnerUp: string) =>
+      `Secondo la stima, ${runnerUp} avrebbe bisogno di più voti di quelli ancora da scrutinare.`,
+    possibleHeadline: 'Sì, è ancora possibile',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} ha bisogno del ${share} dei voti validi rimanenti per il sorpasso.`,
+    needs: (runnerUp: string) => `Necessario per il sorpasso di ${runnerUp}`,
+    leadOf: (leader: string) => `Vantaggio di ${leader}`,
+    votes: 'voti',
+    remaining: 'Da scrutinare',
+    remainingNote: 'voti validi (stima)',
+    curve: 'Come si è evoluto lo spoglio',
+    curveText: 'Voti validi di ogni finalista man mano che le sezioni vengono scrutinate.',
+    legend: 'Legenda',
+    curveNow: (shares: string, counted: string) =>
+      `${shares} con il ${counted} delle sezioni scrutinate`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} è passato in testa con il ${counted} scrutinato`,
+    turnaround: (counted: string) => `Sorpasso · ${counted}`,
+    pace: 'Ritmo',
+    countDone: 'Spoglio concluso',
+    perMinute: 'sezioni al minuto',
+    collecting: 'Raccolta dati…',
+    eta: 'Previsione del 100%',
+    sectionsLeft: (count: string) => `${count} sezioni rimanenti`,
+    margins: 'Da dove viene il vantaggio',
+    marginsText: (inRegion: boolean) =>
+      `Saldo di voti tra i finalisti in ogni stato${inRegion ? ' della regione' : ''}.`,
+    balance: (inRegion: boolean) => (inRegion ? 'Saldo della regione:' : 'Saldo totale:'),
+    seeAll: (count: number) => `Vedi tutti i ${count}`,
+    swing: 'Dal 1° turno al ballottaggio',
+    swingText: (place: string) => `Voti validi di ogni finalista in ${place}.`,
+    othersFirstRound: (share: string, votes: string) =>
+      `Al 1° turno, gli altri candidati hanno ottenuto il ${share} dei voti validi (${votes}).`,
+    flipped: 'Stati con un altro leader',
+    noneFlipped: 'Gli stessi leader del 1° turno in tutti gli stati.',
+    to: 'a',
+    partialRunoff: (share: string) => `Ballottaggio parziale: ${share} delle sezioni scrutinate.`,
+    compare2022: 'Confronto con il 2022',
+    compare2022Text: (place: string) => `Voti validi al ballottaggio del 2022 e oggi, in ${place}.`,
+    sameCount2022: (counted: string, shares: string) =>
+      `Nel 2022, con il ${counted} delle sezioni scrutinate, ${shares}.`,
+    had: (name: string, share: string) => `${name} aveva il ${share}`,
+    flipped2022: 'Stati con un leader diverso dal 2022',
+    noneFlipped2022: 'Gli stessi numeri di lista del 2022 sono in testa in tutti gli stati.',
+    source2022: 'Nel 2022, il 22 era Jair Bolsonaro. Fonte: TSE, dati aperti.',
+    partial2026: (share: string) => ` 2026 parziale: ${share} delle sezioni.`,
+  },
   units: { points: 'p.p.' },
 };
 

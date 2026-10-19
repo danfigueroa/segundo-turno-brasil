@@ -237,6 +237,66 @@ export const ptBR = {
     meanwhile: 'Enquanto isso',
     firstRound: 'Ver o resultado do 1º turno',
   },
+  /** The count analysis below the map. */
+  insights: {
+    outlook: 'Ainda dá virada?',
+    outlookBasis: (place: string) =>
+      `Estimativa com base nas seções que faltam apurar em ${place}.`,
+    decided: 'Decidido',
+    open: 'Em aberto',
+    decidedHeadline: 'Não, já está decidido',
+    decidedSentence: (runnerUp: string, leader: string) =>
+      `Mesmo que todos os eleitores ainda não apurados votassem em ${runnerUp}, ${leader} continuaria à frente.`,
+    unlikelyHeadline: 'Só com uma virada improvável',
+    unlikelySentence: (runnerUp: string) =>
+      `Pela estimativa, ${runnerUp} precisaria de mais votos do que os que faltam apurar.`,
+    possibleHeadline: 'Sim, ainda dá',
+    possibleSentence: (runnerUp: string, share: string) =>
+      `${runnerUp} precisa de ${share} dos votos válidos que faltam para virar.`,
+    needs: (runnerUp: string) => `Necessário para ${runnerUp} virar`,
+    leadOf: (leader: string) => `Vantagem de ${leader}`,
+    votes: 'votos',
+    remaining: 'Faltam apurar',
+    remainingNote: 'votos válidos (estimativa)',
+    curve: 'Como a apuração evoluiu',
+    curveText: 'Votos válidos de cada finalista conforme as seções são apuradas.',
+    legend: 'Legenda',
+    /** The curve for screen readers: "Lula 49%, Flávio 51% com 80% das seções apuradas". */
+    curveNow: (shares: string, counted: string) => `${shares} com ${counted} das seções apuradas`,
+    overtook: (leader: string, counted: string) =>
+      `${leader} passou à frente com ${counted} apurado`,
+    turnaround: (counted: string) => `Virada · ${counted}`,
+    pace: 'Ritmo',
+    countDone: 'Apuração concluída',
+    perMinute: 'seções por minuto',
+    collecting: 'Coletando dados…',
+    eta: 'Previsão de 100%',
+    sectionsLeft: (count: string) => `${count} seções restantes`,
+    margins: 'De onde vem a vantagem',
+    marginsText: (inRegion: boolean) =>
+      `Saldo de votos entre os finalistas em cada estado${inRegion ? ' da região' : ''}.`,
+    /** "Saldo total:" before the leader and the net votes. */
+    balance: (inRegion: boolean): string => (inRegion ? 'Saldo da região:' : 'Saldo total:'),
+    seeAll: (count: number) => `Ver todos os ${count}`,
+    swing: 'Do 1º para o 2º turno',
+    swingText: (place: string) => `Votos válidos de cada finalista em ${place}.`,
+    othersFirstRound: (share: string, votes: string) =>
+      `No 1º turno, os demais candidatos somaram ${share} dos votos válidos (${votes}).`,
+    flipped: 'Estados com outro líder',
+    noneFlipped: 'Os mesmos líderes do 1º turno em todos os estados.',
+    /** Read between the old and the new leader of a state. */
+    to: 'para',
+    partialRunoff: (share: string) => `Parcial do 2º turno: ${share} das seções apuradas.`,
+    compare2022: 'Comparação com 2022',
+    compare2022Text: (place: string) => `Votos válidos no 2º turno de 2022 e agora, em ${place}.`,
+    sameCount2022: (counted: string, shares: string) =>
+      `Em 2022, com ${counted} das seções apuradas, ${shares}.`,
+    had: (name: string, share: string) => `${name} tinha ${share}`,
+    flipped2022: 'Estados com outro líder que em 2022',
+    noneFlipped2022: 'Os mesmos números de urna de 2022 lideram em todos os estados.',
+    source2022: 'Em 2022, o 22 era Jair Bolsonaro. Fonte: TSE, dados abertos.',
+    partial2026: (share: string) => ` Parcial de 2026: ${share} das seções.`,
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 
