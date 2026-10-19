@@ -182,6 +182,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `Abstención en el exterior: ${share}.`,
   },
+  countdown: {
+    day: 'Domingo, 25 de octubre',
+    title: 'El escrutinio empieza a las 17 h',
+    text: 'Hora de Brasilia, justo después del cierre de las urnas. Los números aparecen aquí en cuanto el TSE los publique.',
+    timer: 'Tiempo hasta el inicio del escrutinio',
+    units: { days: 'días', hours: 'horas', minutes: 'min', seconds: 'seg' },
+    wins: '50 % + 1 gana',
+    meanwhile: 'Mientras tanto',
+    firstRound: 'Ver el resultado de la 1.ª vuelta',
+  },
   units: { points: 'p.p.' },
 };
 

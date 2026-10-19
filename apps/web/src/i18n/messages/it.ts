@@ -185,6 +185,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `Astensione all’estero: ${share}.`,
   },
+  countdown: {
+    day: 'Domenica 25 ottobre',
+    title: 'Lo spoglio inizia alle 17',
+    text: 'Ora di Brasília, subito dopo la chiusura dei seggi. I numeri compaiono qui non appena il TSE li pubblica.',
+    timer: 'Tempo all’inizio dello spoglio',
+    units: { days: 'giorni', hours: 'ore', minutes: 'min', seconds: 'sec' },
+    wins: '50% + 1 vince',
+    meanwhile: 'Nel frattempo',
+    firstRound: 'Vedi il risultato del 1° turno',
+  },
   units: { points: 'p.p.' },
 };
 

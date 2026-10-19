@@ -172,6 +172,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `Abstention abroad: ${share}.`,
   },
+  countdown: {
+    day: 'Sunday, October 25',
+    title: 'The count starts at 5 p.m.',
+    text: 'Brasília time, right after the polls close. The numbers show up here as soon as the TSE releases them.',
+    timer: 'Time until the count starts',
+    units: { days: 'days', hours: 'hours', minutes: 'min', seconds: 'sec' },
+    wins: '50% + 1 wins',
+    meanwhile: 'Meanwhile',
+    firstRound: 'See the 1st round result',
+  },
   units: { points: 'pts' },
 };
 

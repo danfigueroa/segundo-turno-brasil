@@ -226,6 +226,17 @@ export const ptBR = {
     },
     abroadAbstention: (share: string) => `Abstenção no exterior: ${share}.`,
   },
+  /** Before the runoff count. */
+  countdown: {
+    day: 'Domingo, 25 de outubro',
+    title: 'A apuração começa às 17h',
+    text: 'Horário de Brasília, logo após o fechamento das urnas. Os números aparecem aqui assim que o TSE divulgar.',
+    timer: 'Tempo até o início da apuração',
+    units: { days: 'dias', hours: 'horas', minutes: 'min', seconds: 'seg' },
+    wins: '50% + 1 vence',
+    meanwhile: 'Enquanto isso',
+    firstRound: 'Ver o resultado do 1º turno',
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 

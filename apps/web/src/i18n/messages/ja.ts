@@ -166,6 +166,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `海外の棄権率:${share}。`,
   },
+  countdown: {
+    day: '10月25日(日)',
+    title: '開票は17時に始まります',
+    text: 'ブラジリア時間、投票締め切り直後。TSEが発表すると、ここに数字が表示されます。',
+    timer: '開票開始までの時間',
+    units: { days: '日', hours: '時間', minutes: '分', seconds: '秒' },
+    wins: '過半数で当選',
+    meanwhile: 'それまでの間に',
+    firstRound: '第1回投票の結果を見る',
+  },
   units: { points: 'pt' },
 };
 

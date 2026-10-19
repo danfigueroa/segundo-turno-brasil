@@ -179,6 +179,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `Abstention à l’étranger : ${share}.`,
   },
+  countdown: {
+    day: 'Dimanche 25 octobre',
+    title: 'Le dépouillement commence à 17 h',
+    text: 'Heure de Brasília, juste après la fermeture des bureaux de vote. Les chiffres apparaissent ici dès que le TSE les publie.',
+    timer: 'Temps restant avant le dépouillement',
+    units: { days: 'jours', hours: 'heures', minutes: 'min', seconds: 's' },
+    wins: '50 % + 1 l’emporte',
+    meanwhile: 'En attendant',
+    firstRound: 'Voir le résultat du 1er tour',
+  },
   units: { points: 'pts' },
 };
 

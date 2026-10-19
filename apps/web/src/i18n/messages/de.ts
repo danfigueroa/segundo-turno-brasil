@@ -183,6 +183,16 @@ const messages: Messages = {
     },
     abroadAbstention: (share: string) => `Nichtwähler im Ausland: ${share}.`,
   },
+  countdown: {
+    day: 'Sonntag, 25. Oktober',
+    title: 'Die Auszählung beginnt um 17 Uhr',
+    text: 'Ortszeit Brasília, gleich nach Schließung der Wahllokale. Die Zahlen erscheinen hier, sobald das TSE sie veröffentlicht.',
+    timer: 'Zeit bis zum Beginn der Auszählung',
+    units: { days: 'Tage', hours: 'Std.', minutes: 'Min.', seconds: 'Sek.' },
+    wins: '50 % + 1 gewinnt',
+    meanwhile: 'In der Zwischenzeit',
+    firstRound: 'Ergebnis des 1. Wahlgangs ansehen',
+  },
   units: { points: 'Pp.' },
 };
 
