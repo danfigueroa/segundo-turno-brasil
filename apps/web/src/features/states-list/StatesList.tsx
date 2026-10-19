@@ -1,8 +1,9 @@
 import type { ResultsResponse } from '@stb/contracts';
-import { REGION_NAMES, STATE_CODES, STATES, type StateCode } from '@stb/domain';
+import { STATE_CODES, STATES, type StateCode } from '@stb/domain';
 import { useState } from 'react';
+import { useI18n } from '../../i18n/i18n-context';
+import type { Messages } from '../../i18n/messages/pt-BR';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
-import { formatLead, formatPercent } from '../../lib/format';
 import { regionOf, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
 import { prefetchStateMap } from '../state-map/state-maps';
@@ -15,23 +16,25 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
 }
 
-const BY_NAME = STATE_CODES.toSorted((a, b) => STATES[a].name.localeCompare(STATES[b].name));
+const BY_NAME = STATE_CODES.toSorted((a, b) =>
+  STATES[a].name.localeCompare(STATES[b].name, 'pt-BR'),
+);
 
 /** Copy differs between phones (touch, compact) and wide screens, as in the design. */
-function headingOf(selection: Selection, wide: boolean): { title: string; subtitle: string } {
+function headingOf(
+  selection: Selection,
+  wide: boolean,
+  { lists, places }: Messages,
+): { title: string; subtitle: string } {
   const region = regionOf(selection);
   if (!region) {
-    return {
-      title: 'Resultado por estado',
-      subtitle: wide
-        ? 'Clique em uma linha para ver os detalhes do estado.'
-        : 'Toque em um estado para ver os detalhes.',
-    };
+    return { title: lists.byState, subtitle: wide ? lists.clickState : lists.tapState };
   }
-  const regionTitle = wide ? `Estados da região ${REGION_NAMES[region]}` : 'Estados da região';
+  const name = places.regions[region];
+  const regionTitle = wide ? lists.regionStatesOf(name) : lists.regionStates;
   return {
-    title: selection.kind === 'state' ? `Outros estados do ${REGION_NAMES[region]}` : regionTitle,
-    subtitle: wide ? 'Vantagem em pontos percentuais.' : 'Diferença em pontos percentuais.',
+    title: selection.kind === 'state' ? lists.otherStates(name) : regionTitle,
+    subtitle: wide ? lists.leadInPoints : lists.differenceInPoints,
   };
 }
 
@@ -40,12 +43,13 @@ function headingOf(selection: Selection, wide: boolean): { title: string; subtit
  * color-independent twin of the map. The full country list starts collapsed.
  */
 export function StatesList({ data, finalists, selection, onSelect }: Props) {
+  const { m } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const wide = useMediaQuery('(min-width: 960px)');
   const region = regionOf(selection);
   const codes = region ? BY_NAME.filter((code) => STATES[code].region === region) : BY_NAME;
   const collapsible = !region;
-  const { title, subtitle } = headingOf(selection, wide);
+  const { title, subtitle } = headingOf(selection, wide, m);
   const [first, second] = finalists;
 
   return (
@@ -58,11 +62,11 @@ export function StatesList({ data, finalists, selection, onSelect }: Props) {
       </div>
 
       <div className={styles.columns} aria-hidden="true">
-        <span>Estado</span>
-        <span>Distribuição</span>
+        <span>{m.lists.state}</span>
+        <span>{m.lists.distribution}</span>
         <span data-hue={first?.hue}>{first?.shortName}</span>
         <span data-hue={second?.hue}>{second?.shortName}</span>
-        <span>Vantagem</span>
+        <span>{m.lists.lead}</span>
       </div>
       <ul className={styles.list} data-collapsed={(collapsible && !expanded) || undefined}>
         {codes.map((code) => (
@@ -86,7 +90,9 @@ export function StatesList({ data, finalists, selection, onSelect }: Props) {
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? 'Mostrar menos' : `${wide ? 'Mostrar' : 'Ver'} os ${codes.length} estados`}
+          {expanded
+            ? m.lists.showLess
+            : (wide ? m.lists.showStates : m.lists.seeStates)(codes.length)}
         </button>
       )}
     </section>
@@ -103,6 +109,7 @@ interface RowProps {
 }
 
 function Row({ code, data, finalists, selected, decimals, onSelect }: RowProps) {
+  const { m, f } = useI18n();
   const results = finalistResults(data.states[code], finalists);
   const lead = leadOf(results);
   const [first, second] = results;
@@ -124,7 +131,7 @@ function Row({ code, data, finalists, selected, decimals, onSelect }: RowProps) 
       </span>
       <span className={styles.name}>{STATES[code].name}</span>
       <span className={styles.lead}>
-        {lead ? `${lead.leader.shortName} ${formatLead(lead.margin, decimals)}` : 'Sem votos'}
+        {lead ? `${lead.leader.shortName} ${f.lead(lead.margin, decimals)}` : m.lists.noVotes}
       </span>
       <span className={styles.bar} aria-hidden="true">
         {first && (
@@ -147,7 +154,7 @@ function Row({ code, data, finalists, selected, decimals, onSelect }: RowProps) 
           data-side={index === 0 ? 'first' : 'second'}
           data-leader={lead?.leader.number === r.number || undefined}
         >
-          <span className={styles.shareName}>{r.shortName}</span> {formatPercent(r.share)}
+          <span className={styles.shareName}>{r.shortName}</span> {f.percent(r.share)}
         </span>
       ))}
     </button>

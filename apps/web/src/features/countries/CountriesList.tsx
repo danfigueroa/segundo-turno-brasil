@@ -1,14 +1,9 @@
 import type { AbroadResponse, ResultsResponse } from '@stb/contracts';
-import {
-  CONTINENT_CODES,
-  CONTINENT_NAMES,
-  countedPercentage,
-  type ContinentCode,
-} from '@stb/domain';
+import { CONTINENT_CODES, countedPercentage, type ContinentCode } from '@stb/domain';
 import { useState } from 'react';
+import { useI18n } from '../../i18n/i18n-context';
 import { countryRows, countryStandings, matchesSearch } from '../../lib/countries';
 import type { Finalist } from '../../lib/finalists';
-import { formatVotes } from '../../lib/format';
 import { abroadCountry, countryOf, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
 import rowStyles from '../cities/CitiesList.module.css';
@@ -27,12 +22,7 @@ interface Props {
 
 type ContinentFilter = ContinentCode | 'ALL';
 
-const FILTERS: { value: ContinentFilter; label: string }[] = [
-  { value: 'ALL', label: 'Todos' },
-  ...CONTINENT_CODES.map((code) => ({ value: code, label: CONTINENT_NAMES[code] })),
-];
-
-const votes = (n: number) => (n === 1 ? '1 voto' : `${formatVotes(n)} votos`);
+const FILTERS: readonly ContinentFilter[] = ['ALL', ...CONTINENT_CODES];
 
 /**
  * Votes abroad by country, as in the design: summary, search, continent filter and one
@@ -40,6 +30,9 @@ const votes = (n: number) => (n === 1 ? '1 voto' : `${formatVotes(n)} votos`);
  * countries with most votes. Each row selects its country.
  */
 export function CountriesList({ data, abroad, failed, finalists, selection, onSelect }: Props) {
+  const i18n = useI18n();
+  const { m, f, country } = i18n;
+  const { lists } = m;
   const wide = useMediaQuery('(min-width: 960px)');
   const [query, setQuery] = useState('');
   const [continent, setContinent] = useState<ContinentFilter>('ALL');
@@ -48,67 +41,67 @@ export function CountriesList({ data, abroad, failed, finalists, selection, onSe
   const rows = abroad ? countryRows(abroad.countries, finalists) : [];
   const final = data.round === 1 || countedPercentage(data.abroad) >= 100;
   const summary = abroad
-    ? abroadSummary(countryStandings(rows, finalists), finalists, data.abroad, final)
+    ? abroadSummary(countryStandings(rows, finalists), finalists, data.abroad, final, i18n)
     : failed
-      ? 'Não foi possível carregar a votação por país agora.'
-      : 'Carregando a votação por país…';
+      ? lists.countriesFailed
+      : lists.countriesLoading;
 
   const filtered = rows.filter(
     (row) =>
       (continent === 'ALL' || row.continent === continent) &&
-      (!query.trim() || matchesSearch(row.name, query)),
+      // The TSE name too: "Japão" also finds Japan.
+      (!query.trim() || matchesSearch(country(row.name), query) || matchesSearch(row.name, query)),
   );
   const limit = wide ? 20 : 12;
   const searching = query.trim() !== '';
   const shown = expanded || searching ? filtered : filtered.slice(0, limit);
   const [first, second] = finalists;
   const selected = countryOf(selection, abroad?.countries)?.name;
-  const count = filtered.length === 1 ? '1 país' : `${filtered.length} países`;
 
   return (
     <section className={`card ${styles.card}`} aria-labelledby="countries-title">
       <div className={styles.head}>
         <div className={styles.heading}>
           <h2 id="countries-title" className={styles.title}>
-            Votação por país
+            {lists.byCountry}
           </h2>
           <p className={styles.summary}>{summary}</p>
         </div>
         <div className={styles.search}>
           <label htmlFor="country-search" className={styles.searchLabel}>
-            Buscar país
+            {lists.searchCountry}
           </label>
           <input
             id="country-search"
             type="search"
             className={styles.searchInput}
             value={query}
-            placeholder="Ex.: Portugal, Japão…"
+            placeholder={lists.countryPlaceholder}
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
       </div>
 
-      <div className={styles.filters} role="group" aria-label="Continente">
+      <div className={styles.filters} role="group" aria-label={lists.continent}>
         {FILTERS.map((filter) => (
           <button
-            key={filter.value}
+            key={filter}
             type="button"
             className={styles.filter}
-            aria-pressed={continent === filter.value}
+            aria-pressed={continent === filter}
             onClick={() => {
-              setContinent(filter.value);
+              setContinent(filter);
               setExpanded(false);
             }}
           >
-            {filter.label}
+            {filter === 'ALL' ? lists.all : m.places.continents[filter]}
           </button>
         ))}
       </div>
 
       <div className={styles.table}>
         <div className={styles.columns}>
-          <span>{count}</span>
+          <span>{lists.countries(filtered.length)}</span>
           <span className={styles.wideOnly}>
             {first?.shortName} × {second?.shortName}
           </span>
@@ -118,9 +111,7 @@ export function CountriesList({ data, abroad, failed, finalists, selection, onSe
           <span className={styles.wideOnly} data-hue={second?.hue}>
             {second?.shortName}
           </span>
-          <span className={styles.totalHead}>
-            {wide ? 'Total (2 cand.)' : 'Votos nos 2 candidatos'}
-          </span>
+          <span className={styles.totalHead}>{wide ? lists.totalWide : lists.total}</span>
         </div>
         <ul className={styles.list}>
           {shown.map((row) => (
@@ -131,37 +122,37 @@ export function CountriesList({ data, abroad, failed, finalists, selection, onSe
                 aria-current={row.name === selected ? 'location' : undefined}
                 onClick={() => onSelect(abroadCountry(row.name))}
               >
-                <span className={styles.name}>{row.name}</span>
+                <span className={styles.name}>{country(row.name)}</span>
                 <span className={styles.total}>
-                  {wide ? formatVotes(row.total) : votes(row.total)}
+                  {wide ? f.votes(row.total) : m.common.votes(row.total, f.votes(row.total))}
                 </span>
                 <span className={styles.bar} aria-hidden="true">
-                  {finalists.map((f, index) => (
+                  {finalists.map((finalist, index) => (
                     <span
-                      key={f.number}
+                      key={finalist.number}
                       className={styles.part}
-                      data-hue={f.hue}
+                      data-hue={finalist.hue}
                       style={{ width: `${((row.votes[index] ?? 0) / row.total) * 100}%` }}
                     />
                   ))}
                 </span>
-                {finalists.map((f, index) => (
+                {finalists.map((finalist, index) => (
                   <span
-                    key={f.number}
+                    key={finalist.number}
                     className={styles.votes}
-                    data-hue={f.hue}
+                    data-hue={finalist.hue}
                     data-side={index === 0 ? 'first' : 'second'}
-                    data-leader={row.leader === f.number || undefined}
+                    data-leader={row.leader === finalist.number || undefined}
                   >
-                    <span className={styles.votesName}>{f.shortName}</span>{' '}
-                    {formatVotes(row.votes[index] ?? 0)}
+                    <span className={styles.votesName}>{finalist.shortName}</span>{' '}
+                    {f.votes(row.votes[index] ?? 0)}
                   </span>
                 ))}
               </button>
             </li>
           ))}
         </ul>
-        {abroad && filtered.length === 0 && <p className={styles.empty}>Nenhum país encontrado.</p>}
+        {abroad && filtered.length === 0 && <p className={styles.empty}>{lists.noCountry}</p>}
       </div>
 
       {!searching && filtered.length > limit && (
@@ -171,7 +162,7 @@ export function CountriesList({ data, abroad, failed, finalists, selection, onSe
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? 'Mostrar menos' : `Ver todos os ${filtered.length} países`}
+          {expanded ? lists.showLess : lists.seeCountries(filtered.length)}
         </button>
       )}
     </section>

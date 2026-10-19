@@ -1,9 +1,9 @@
 import { STATES, type StateCode } from '@stb/domain';
 import { useState } from 'react';
+import { useI18n } from '../../i18n/i18n-context';
 import { cityRows, cityWins, sortCityRows, type CityOrder } from '../../lib/cities';
 import { matchesSearch } from '../../lib/countries';
 import type { Finalist } from '../../lib/finalists';
-import { formatVotes } from '../../lib/format';
 import type { Municipalities, Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
 import listStyles from '../countries/CountriesList.module.css';
@@ -18,14 +18,7 @@ interface Props {
   readonly onSelect: (selection: Selection) => void;
 }
 
-const votes = (n: number) => (n === 1 ? '1 voto' : `${formatVotes(n)} votos`);
-const citiesText = (n: number) => (n === 1 ? '1 cidade' : `${n} cidades`);
-
-const ORDERS: { value: CityOrder; label: string }[] = [
-  { value: 'electorate', label: 'Maior eleitorado' },
-  { value: 'margin', label: 'Maior vantagem' },
-  { value: 'pending', label: 'Mais urnas a apurar' },
-];
+const ORDERS: readonly CityOrder[] = ['electorate', 'margin', 'pending'];
 
 /**
  * Every municipality of the selected state, like the list by country abroad: summary,
@@ -34,6 +27,8 @@ const ORDERS: { value: CityOrder; label: string }[] = [
  * Each row selects its city.
  */
 export function CitiesList({ uf, selection, cities, failed, finalists, onSelect }: Props) {
+  const { m, f } = useI18n();
+  const { lists } = m;
   const wide = useMediaQuery('(min-width: 960px)');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -44,11 +39,18 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
   const anyLead = Object.values(wins).some((n) => n > 0);
   const summary = cities
     ? anyLead
-      ? `${finalists.map((f) => `${f.shortName} lidera em ${citiesText(wins[f.number] ?? 0)}`).join(', ')}, de ${citiesText(rows.length)}.`
-      : `${citiesText(rows.length)}. Elas ganham cor conforme as urnas são apuradas.`
+      ? lists.outOfCities(
+          finalists
+            .map((finalist) =>
+              lists.leadsIn(finalist.shortName, lists.cities(wins[finalist.number] ?? 0)),
+            )
+            .join(', '),
+          lists.cities(rows.length),
+        )
+      : lists.citiesFill(lists.cities(rows.length))
     : failed
-      ? 'Não foi possível carregar a votação por cidade agora.'
-      : 'Carregando a votação por cidade…';
+      ? lists.citiesFailed
+      : lists.citiesLoading;
 
   const searching = query.trim() !== '';
   const ranked = sortCityRows(rows, order);
@@ -63,45 +65,45 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
       <div className={listStyles.head}>
         <div className={listStyles.heading}>
           <h2 id="cities-title" className={listStyles.title}>
-            Votação por cidade
+            {lists.byCity}
           </h2>
           <p className={listStyles.summary}>{summary}</p>
         </div>
         <div className={listStyles.search}>
           <label htmlFor="city-search" className={listStyles.searchLabel}>
-            Buscar cidade em {STATES[uf].name}
+            {lists.searchCity(STATES[uf].name)}
           </label>
           <input
             id="city-search"
             type="search"
             className={listStyles.searchInput}
             value={query}
-            placeholder="Ex.: nome da cidade"
+            placeholder={lists.cityPlaceholder}
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
       </div>
 
-      <div className={listStyles.filters} role="group" aria-label="Ordenar cidades por">
+      <div className={listStyles.filters} role="group" aria-label={lists.sortCities}>
         {ORDERS.map((option) => (
           <button
-            key={option.value}
+            key={option}
             type="button"
             className={listStyles.filter}
-            aria-pressed={order === option.value}
+            aria-pressed={order === option}
             onClick={() => {
-              setOrder(option.value);
+              setOrder(option);
               setExpanded(false);
             }}
           >
-            {option.label}
+            {lists.orders[option]}
           </button>
         ))}
       </div>
 
       <div className={listStyles.table}>
         <div className={listStyles.columns}>
-          <span>{citiesText(filtered.length)}</span>
+          <span>{lists.cities(filtered.length)}</span>
           <span className={listStyles.wideOnly}>
             {first?.shortName} × {second?.shortName}
           </span>
@@ -111,9 +113,7 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
           <span className={listStyles.wideOnly} data-hue={second?.hue}>
             {second?.shortName}
           </span>
-          <span className={listStyles.totalHead}>
-            {wide ? 'Total (2 cand.)' : 'Votos nos 2 candidatos'}
-          </span>
+          <span className={listStyles.totalHead}>{wide ? lists.totalWide : lists.total}</span>
         </div>
         <ul className={listStyles.list}>
           {shown.map((row) => (
@@ -126,38 +126,36 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
               >
                 <span className={listStyles.name}>{row.name}</span>
                 <span className={listStyles.total}>
-                  {wide ? formatVotes(row.total) : votes(row.total)}
+                  {wide ? f.votes(row.total) : m.common.votes(row.total, f.votes(row.total))}
                 </span>
                 <span className={listStyles.bar} aria-hidden="true">
                   {row.total > 0 &&
-                    finalists.map((f, index) => (
+                    finalists.map((finalist, index) => (
                       <span
-                        key={f.number}
+                        key={finalist.number}
                         className={listStyles.part}
-                        data-hue={f.hue}
+                        data-hue={finalist.hue}
                         style={{ width: `${((row.votes[index] ?? 0) / row.total) * 100}%` }}
                       />
                     ))}
                 </span>
-                {finalists.map((f, index) => (
+                {finalists.map((finalist, index) => (
                   <span
-                    key={f.number}
+                    key={finalist.number}
                     className={listStyles.votes}
-                    data-hue={f.hue}
+                    data-hue={finalist.hue}
                     data-side={index === 0 ? 'first' : 'second'}
-                    data-leader={row.leader === f.number || undefined}
+                    data-leader={row.leader === finalist.number || undefined}
                   >
-                    <span className={listStyles.votesName}>{f.shortName}</span>{' '}
-                    {formatVotes(row.votes[index] ?? 0)}
+                    <span className={listStyles.votesName}>{finalist.shortName}</span>{' '}
+                    {f.votes(row.votes[index] ?? 0)}
                   </span>
                 ))}
               </button>
             </li>
           ))}
         </ul>
-        {cities && filtered.length === 0 && (
-          <p className={listStyles.empty}>Nenhuma cidade encontrada.</p>
-        )}
+        {cities && filtered.length === 0 && <p className={listStyles.empty}>{lists.noCity}</p>}
       </div>
 
       {!searching && filtered.length > limit && (
@@ -167,7 +165,7 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? 'Mostrar menos' : `Ver todas as ${filtered.length} cidades`}
+          {expanded ? lists.showLess : lists.seeCities(filtered.length)}
         </button>
       )}
     </section>

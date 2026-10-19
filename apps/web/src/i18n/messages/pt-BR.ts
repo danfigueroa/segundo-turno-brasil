@@ -158,6 +158,74 @@ export const ptBR = {
     /** The scope bar. */
     chips: 'Ver resultado de',
   },
+  /** The lists by state, city and country. */
+  lists: {
+    byState: 'Resultado por estado',
+    clickState: 'Clique em uma linha para ver os detalhes do estado.',
+    tapState: 'Toque em um estado para ver os detalhes.',
+    regionStates: 'Estados da região',
+    regionStatesOf: (region: string) => `Estados da região ${region}`,
+    otherStates: (region: string) => `Outros estados do ${region}`,
+    leadInPoints: 'Vantagem em pontos percentuais.',
+    differenceInPoints: 'Diferença em pontos percentuais.',
+    state: 'Estado',
+    distribution: 'Distribuição',
+    lead: 'Vantagem',
+    noVotes: 'Sem votos',
+    showLess: 'Mostrar menos',
+    showStates: (count: number) => `Mostrar os ${count} estados`,
+    seeStates: (count: number) => `Ver os ${count} estados`,
+    byCity: 'Votação por cidade',
+    cities: (count: number) => (count === 1 ? '1 cidade' : `${count} cidades`),
+    /** "Lula lidera em 120 cidades": the count comes from {@link cities}. */
+    leadsIn: (name: string, places: string) => `${name} lidera em ${places}`,
+    /** The leads by city, and out of how many: "…, de 417 cidades." */
+    outOfCities: (leads: string, cities: string) => `${leads}, de ${cities}.`,
+    citiesFill: (cities: string) => `${cities}. Elas ganham cor conforme as urnas são apuradas.`,
+    citiesFailed: 'Não foi possível carregar a votação por cidade agora.',
+    citiesLoading: 'Carregando a votação por cidade…',
+    searchCity: (state: string) => `Buscar cidade em ${state}`,
+    cityPlaceholder: 'Ex.: nome da cidade',
+    sortCities: 'Ordenar cidades por',
+    orders: {
+      electorate: 'Maior eleitorado',
+      margin: 'Maior vantagem',
+      pending: 'Mais urnas a apurar',
+    },
+    totalWide: 'Total (2 cand.)',
+    total: 'Votos nos 2 candidatos',
+    noCity: 'Nenhuma cidade encontrada.',
+    seeCities: (count: number) => `Ver todas as ${count} cidades`,
+    byCountry: 'Votação por país',
+    countries: (count: number) => (count === 1 ? '1 país' : `${count} países`),
+    countriesFailed: 'Não foi possível carregar a votação por país agora.',
+    countriesLoading: 'Carregando a votação por país…',
+    searchCountry: 'Buscar país',
+    countryPlaceholder: 'Ex.: Portugal, Japão…',
+    continent: 'Continente',
+    all: 'Todos',
+    noCountry: 'Nenhum país encontrado.',
+    seeCountries: (count: number) => `Ver todos os ${count} países`,
+    /**
+     * "Lula venceu em 64 países, Flávio em 36 e houve 1 empate (Guiné-Bissau)." The tied
+     * countries come as one list.
+     */
+    abroadWins: (
+      final: boolean,
+      first: string,
+      firstWins: number,
+      second: string,
+      secondWins: number,
+      ties: number,
+      tied: string,
+    ) => {
+      const firstPart = `${first} ${final ? 'venceu' : 'lidera'} em ${firstWins === 1 ? '1 país' : `${firstWins} países`}`;
+      const secondPart = `${second} em ${secondWins}`;
+      if (ties === 0) return `${firstPart} e ${secondPart}.`;
+      return `${firstPart}, ${secondPart} e houve ${ties === 1 ? '1 empate' : `${ties} empates`} (${tied}).`;
+    },
+    abroadAbstention: (share: string) => `Abstenção no exterior: ${share}.`,
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 
