@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_I18N as pt } from '../../i18n/i18n';
 import { resultsResponse } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
 import {
@@ -63,6 +64,7 @@ const content = shareContentFrom(
   data,
   { kind: 'state', code: 'BA' },
   finalistsOf(data.country),
+  pt,
   'x',
 );
 

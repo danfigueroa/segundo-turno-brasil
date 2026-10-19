@@ -1,5 +1,6 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { useState } from 'react';
+import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
 import { formatCompactVotes, formatVotes } from '../../lib/format';
 import { regionOf, type Selection } from '../../lib/selection';
@@ -22,9 +23,10 @@ const COLLAPSED = 10;
  * as a diverging bar chart with the first finalist on the left.
  */
 export function NetMarginCard({ data, selection, finalists, onSelect }: Props) {
+  const i18n = useI18n();
   const [expanded, setExpanded] = useState(false);
   const [first, second] = finalists;
-  const { rows, total, scale } = netMargins(data, finalists, selection);
+  const { rows, total, scale } = netMargins(data, finalists, selection, i18n);
   if (!first || !second || scale === 0) return null;
 
   const region = regionOf(selection);

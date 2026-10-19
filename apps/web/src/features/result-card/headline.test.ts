@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_I18N as pt } from '../../i18n/i18n';
 import { resultsResponse, tally } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
 import { headlineOf, turnoutStats } from './headline';
@@ -8,7 +9,7 @@ describe('headlineOf', () => {
   const finalists = finalistsOf(data.country);
 
   it('shows vote shares and the margin for the country', () => {
-    const headline = headlineOf(data, { kind: 'country' }, finalists);
+    const headline = headlineOf(data, { kind: 'country' }, finalists, pt);
     expect(headline.title).toBe('Brasil');
     expect(headline.eyebrow).toBe('Presidente · 2º turno');
     expect(
@@ -32,13 +33,13 @@ describe('headlineOf', () => {
   });
 
   it('names the leader of a state', () => {
-    const headline = headlineOf(data, { kind: 'state', code: 'BA' }, finalists);
+    const headline = headlineOf(data, { kind: 'state', code: 'BA' }, finalists, pt);
     expect(headline.eyebrow).toBe('Presidente · 2º turno · BA');
     expect(headline.stats[0]?.note).toBe('Lula à frente');
   });
 
   it('shows shares, votes and states won in a region', () => {
-    const headline = headlineOf(data, { kind: 'region', code: 'NE' }, finalists);
+    const headline = headlineOf(data, { kind: 'region', code: 'NE' }, finalists, pt);
     expect(headline.title).toBe('Região Nordeste');
     expect(headline.eyebrow).toBe('Presidente · 2º turno · votos na região');
     expect(headline.columns.map((c) => [c.value.toFixed(2), c.note, c.states, c.leads])).toEqual([
@@ -75,12 +76,12 @@ describe('headlineOf', () => {
         ...voters,
       },
     ];
-    expect(headlineOf(data, { kind: 'abroad' }, finalists).stats[2]).toEqual({
+    expect(headlineOf(data, { kind: 'abroad' }, finalists, pt).stats[2]).toEqual({
       label: 'Países com votos',
       value: '—',
       note: '',
     });
-    expect(headlineOf(data, { kind: 'abroad' }, finalists, countries).stats[2]).toEqual({
+    expect(headlineOf(data, { kind: 'abroad' }, finalists, pt, countries).stats[2]).toEqual({
       label: 'Países com votos',
       value: '2',
       note: '1 Lula · 1 Flávio',
@@ -97,7 +98,7 @@ describe('headlineOf', () => {
       ],
     };
     const firstRound = resultsResponse({ round: 1, country });
-    const headline = headlineOf(firstRound, { kind: 'country' }, finalistsOf(country));
+    const headline = headlineOf(firstRound, { kind: 'country' }, finalistsOf(country), pt);
     expect(headline.badge).toBe('Mais votado');
     expect(headline.stats[1]).toEqual({ label: 'Demais candidatos', value: '8,00%', note: '' });
     expect(headline.bar.map((s) => s.weight)).toEqual([450, 80, 470]);
@@ -107,7 +108,7 @@ describe('headlineOf', () => {
   });
 
   it('reports abstention instead of the other candidates in the runoff', () => {
-    expect(headlineOf(data, { kind: 'country' }, finalists).stats[1]).toEqual({
+    expect(headlineOf(data, { kind: 'country' }, finalists, pt).stats[1]).toEqual({
       label: 'Abstenção',
       value: '20,00%',
       note: '200 eleitores',
@@ -121,7 +122,7 @@ describe('headlineOf', () => {
       { kind: 'state', code: 'SP' },
       { kind: 'abroad' },
     ] as const) {
-      expect(headlineOf(data, selection, finalists).turnoutStats.map((s) => s.label)).toEqual([
+      expect(headlineOf(data, selection, finalists, pt).turnoutStats.map((s) => s.label)).toEqual([
         'Votos válidos',
         'Comparecimento',
         'Brancos e nulos',
@@ -156,7 +157,7 @@ describe('turnoutStats', () => {
       note: '1.000 eleitores',
     });
     const data = resultsResponse({ country: halfCounted });
-    expect(headlineOf(data, { kind: 'country' }, finalistsOf(halfCounted)).stats[1]).toEqual({
+    expect(headlineOf(data, { kind: 'country' }, finalistsOf(halfCounted), pt).stats[1]).toEqual({
       label: 'Abstenção',
       value: '20,00%',
       note: '250 eleitores',

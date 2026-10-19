@@ -20,6 +20,7 @@ import {
   type FinalistResult,
 } from '../../lib/finalists';
 import { formatDate, formatPercent, formatPoints, formatTime } from '../../lib/format';
+import type { I18n } from '../../i18n/i18n';
 import { countryOf, resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import type { StateMapShape } from '../state-map/state-maps';
 import type { ContinentMapShape } from '../world-map/continent-maps';
@@ -129,6 +130,7 @@ export function shareContentFrom(
   data: ResultsResponse,
   selection: Selection,
   finalists: readonly Finalist[],
+  i18n: I18n,
   siteUrl: string,
   /** Needed to share a city; without it, a city is shared like its state. */
   detail?: StateDetail,
@@ -197,7 +199,9 @@ export function shareContentFrom(
       ? `${data.round}º turno 2026 · Brasil`
       : `${data.round}º turno 2026 · ${final ? 'resultado final' : 'apuração ao vivo'}`
     ).toUpperCase(),
-    title: winner ? `${winner.shortName} vence` : selectionTitle(selection, cities, countries),
+    title: winner
+      ? `${winner.shortName} vence`
+      : selectionTitle(selection, i18n, cities, countries),
     results,
     leaderNumber: lead?.leader.number,
     othersVotes: others.reduce((sum, c) => sum + c.votes, 0),

@@ -11,6 +11,8 @@ import {
   selectionTitle,
   type Selection,
 } from './selection';
+import { DEFAULT_I18N as pt } from '../i18n/i18n';
+import { loadI18n } from '../i18n/load';
 import { abroadResponse, citiesResponse, resultsResponse } from '../../test/fixtures';
 
 describe('selection path', () => {
@@ -54,10 +56,20 @@ describe('selection path', () => {
 
 describe('selectionTitle', () => {
   it('names each kind of scope', () => {
-    expect(selectionTitle({ kind: 'country' })).toBe('Brasil');
-    expect(selectionTitle({ kind: 'region', code: 'CO' })).toBe('Região Centro-Oeste');
-    expect(selectionTitle({ kind: 'state', code: 'PI' })).toBe('Piauí');
-    expect(selectionTitle({ kind: 'abroad' })).toBe('Outros países');
+    expect(selectionTitle({ kind: 'country' }, pt)).toBe('Brasil');
+    expect(selectionTitle({ kind: 'region', code: 'CO' }, pt)).toBe('Região Centro-Oeste');
+    expect(selectionTitle({ kind: 'state', code: 'PI' }, pt)).toBe('Piauí');
+    expect(selectionTitle({ kind: 'abroad' }, pt)).toBe('Outros países');
+  });
+
+  it('speaks the language on screen', async () => {
+    const en = await loadI18n('en');
+    expect(selectionTitle({ kind: 'region', code: 'NE' }, en)).toBe('Northeast region');
+    expect(selectionTitle({ kind: 'state', code: 'PI' }, en)).toBe('Piauí');
+    const countries = abroadResponse().countries;
+    expect(selectionTitle(abroadCountry('Estados Unidos'), en, undefined, countries)).toBe(
+      'United States',
+    );
   });
 });
 
@@ -72,7 +84,7 @@ describe('regionOf', () => {
 
 describe('breadcrumbsOf', () => {
   it('walks from the country down to a state', () => {
-    expect(breadcrumbsOf({ kind: 'state', code: 'BA' }).map((c) => c.label)).toEqual([
+    expect(breadcrumbsOf({ kind: 'state', code: 'BA' }, pt).map((c) => c.label)).toEqual([
       'Brasil',
       'Nordeste',
       'Bahia',
@@ -80,7 +92,7 @@ describe('breadcrumbsOf', () => {
   });
 
   it('places abroad right under the country', () => {
-    expect(breadcrumbsOf({ kind: 'abroad' }).map((c) => c.label)).toEqual([
+    expect(breadcrumbsOf({ kind: 'abroad' }, pt).map((c) => c.label)).toEqual([
       'Brasil',
       'Outros países',
     ]);
@@ -88,13 +100,13 @@ describe('breadcrumbsOf', () => {
 
   it('walks down to a city through its state, named once loaded', () => {
     const salvador = { kind: 'city', state: 'BA', ibge: '2927408' } as const;
-    expect(breadcrumbsOf(salvador).map((c) => c.label)).toEqual([
+    expect(breadcrumbsOf(salvador, pt).map((c) => c.label)).toEqual([
       'Brasil',
       'Nordeste',
       'Bahia',
       'Bahia',
     ]);
-    const crumbs = breadcrumbsOf(salvador, citiesResponse().cities);
+    const crumbs = breadcrumbsOf(salvador, pt, citiesResponse().cities);
     expect(crumbs.map((c) => c.label)).toEqual(['Brasil', 'Nordeste', 'Bahia', 'Salvador']);
     expect(crumbs[2]?.target).toEqual({ kind: 'state', code: 'BA' });
   });
@@ -110,7 +122,7 @@ describe('resolveTally for a city', () => {
       ['LULA', 700, 70],
       ['FLAVIO BOLSONARO', 300, 30],
     ]);
-    expect(selectionTitle(salvador, citiesResponse().cities)).toBe('Salvador');
+    expect(selectionTitle(salvador, pt, citiesResponse().cities)).toBe('Salvador');
   });
 
   it('falls back to the state until the municipalities load', () => {
@@ -142,16 +154,16 @@ describe('a country abroad', () => {
     ]);
     expect(tally.electorate).toBe(2000);
     expect(tally.votes).toEqual({ valid: 9, blank: 1, null: 1 });
-    expect(selectionTitle(portugal, undefined, countries)).toBe('Portugal');
+    expect(selectionTitle(portugal, pt, undefined, countries)).toBe('Portugal');
   });
 
   it('falls back to abroad until the countries load', () => {
     expect(resolveTally(data, portugal)).toBe(data.abroad);
-    expect(selectionTitle(portugal)).toBe('Outros países');
+    expect(selectionTitle(portugal, pt)).toBe('Outros países');
   });
 
   it('walks down from Brazil through abroad', () => {
-    expect(breadcrumbsOf(portugal, undefined, countries).map((c) => c.label)).toEqual([
+    expect(breadcrumbsOf(portugal, pt, undefined, countries).map((c) => c.label)).toEqual([
       'Brasil',
       'Outros países',
       'Portugal',

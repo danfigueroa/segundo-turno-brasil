@@ -2,6 +2,7 @@ import type { ResultsResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
 import { useEffect } from 'react';
 import type { Finalist } from '../../lib/finalists';
+import { useI18n } from '../../i18n/i18n-context';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
 import { Compare2022Card } from './Compare2022Card';
 import { compare2022View } from './compare-2022';
@@ -39,7 +40,8 @@ export default function Insights({
   // Every polled runoff snapshot feeds the count curve, whatever is on screen.
   useEffect(() => recordLive(runoff), [runoff]);
 
-  const place = selectionTitle(selection);
+  const i18n = useI18n();
+  const place = selectionTitle(selection, i18n);
 
   if (round === 1) {
     if (!firstRound) return null;

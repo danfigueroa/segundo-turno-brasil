@@ -1,8 +1,9 @@
-import { REGION_CODES, REGION_NAMES } from '@stb/domain';
+import { REGION_CODES } from '@stb/domain';
+import type { Messages } from '../../i18n/messages/pt-BR';
+import { useI18n } from '../../i18n/i18n-context';
 import type { MyPlace } from '../../lib/my-place';
 import {
   ABROAD,
-  ABROAD_LABEL,
   COUNTRY,
   isSameSelection,
   parseSelectionPath,
@@ -18,13 +19,13 @@ interface Props {
   readonly myPlace?: MyPlace | undefined;
 }
 
-const CHIPS: { label: string; target: Selection }[] = [
-  { label: 'Brasil', target: COUNTRY },
+const chipsOf = ({ places }: Messages): { label: string; target: Selection }[] => [
+  { label: places.brazil, target: COUNTRY },
   ...REGION_CODES.map((code) => ({
-    label: REGION_NAMES[code],
+    label: places.regions[code],
     target: { kind: 'region', code } as const,
   })),
-  { label: ABROAD_LABEL, target: ABROAD },
+  { label: places.abroad, target: ABROAD },
 ];
 
 /**
@@ -33,6 +34,7 @@ const CHIPS: { label: string; target: Selection }[] = [
  * the abroad chip does. A place the viewer pinned comes first, with a star.
  */
 export function ScopeChips({ selection, onSelect, myPlace }: Props) {
+  const { m } = useI18n();
   const parent = selection.kind === 'state' ? regionOf(selection) : undefined;
   const inAbroad = selection.kind === 'abroadCountry';
   const pinned = myPlace && parseSelectionPath(myPlace.path);
@@ -51,7 +53,7 @@ export function ScopeChips({ selection, onSelect, myPlace }: Props) {
             {myPlace.label}
           </button>
         )}
-        {CHIPS.map(({ label, target }) => {
+        {chipsOf(m).map(({ label, target }) => {
           const exact = isSameSelection(selection, target);
           const isParent =
             (target.kind === 'region' && target.code === parent) ||

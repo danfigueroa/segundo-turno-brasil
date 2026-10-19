@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_I18N as pt } from '../../i18n/i18n';
 import { finalistsOf } from '../../lib/finalists';
 import { abroadCountry } from '../../lib/selection';
 import { abroadResponse, citiesResponse, resultsResponse, tally } from '../../../test/fixtures';
@@ -13,7 +14,7 @@ describe('shareContentFrom', () => {
     // Half the voters still to count: the race is open.
     const country = { ...data.country, electorate: 60_000, turnout: 48_000 };
     const open = resultsResponse({ country });
-    const content = shareContentFrom(open, { kind: 'country' }, finalists, 'example.com');
+    const content = shareContentFrom(open, { kind: 'country' }, finalists, pt, 'example.com');
     expect(content.winner).toBeUndefined();
     expect(content.title).toBe('Brasil');
     expect(content.kicker).toBe('2º TURNO 2026 · APURAÇÃO AO VIVO');
@@ -26,14 +27,14 @@ describe('shareContentFrom', () => {
   });
 
   it('colors each state by leader and margin', () => {
-    const content = shareContentFrom(data, { kind: 'country' }, finalists, 'example.com');
+    const content = shareContentFrom(data, { kind: 'country' }, finalists, pt, 'example.com');
     // Bahia: Lula 70% x 30% and São Paulo: Flávio 60% x 40% are both 20+ p.p. margins.
     expect(content.mapFills.BA).toBe(SHARE_PALETTE.ramps.red[4]);
     expect(content.mapFills.SP).toBe(SHARE_PALETTE.ramps.blue[4]);
   });
 
   it('counts the states each finalist leads, naming the Federal District apart', () => {
-    const content = shareContentFrom(data, { kind: 'country' }, finalists, 'x');
+    const content = shareContentFrom(data, { kind: 'country' }, finalists, pt, 'x');
     expect(content.leadCounts.map((c) => [c.label, c.value])).toEqual([
       ['Lula lidera em', '9 estados'],
       ['Flávio lidera em', '17 estados + DF'],
@@ -41,10 +42,10 @@ describe('shareContentFrom', () => {
   });
 
   it('focuses on the selected region or state', () => {
-    const region = shareContentFrom(data, { kind: 'region', code: 'S' }, finalists, 'x');
+    const region = shareContentFrom(data, { kind: 'region', code: 'S' }, finalists, pt, 'x');
     expect([...region.focus].sort()).toEqual(['PR', 'RS', 'SC']);
     expect(region.leadCounts[1]?.value).toBe('3 estados');
-    const state = shareContentFrom(data, { kind: 'state', code: 'BA' }, finalists, 'x');
+    const state = shareContentFrom(data, { kind: 'state', code: 'BA' }, finalists, pt, 'x');
     expect(state.title).toBe('Bahia');
     expect(state.leaderNumber).toBe('13');
     expect([...state.focus]).toEqual(['BA']);
@@ -63,6 +64,7 @@ describe('shareContentFrom', () => {
       resultsResponse({ round: 1, country }),
       { kind: 'country' },
       finalistsOf(country),
+      pt,
       'x',
     );
     expect(content.kicker).toBe('1º TURNO 2026 · RESULTADO FINAL');
@@ -78,7 +80,7 @@ describe('shareContentFrom', () => {
       cities: { '2927408': 'M0,0L1,1Z', '2903201': 'M2,2L3,3Z', '2900108': 'M4,4L5,5Z' },
     };
     const { cities } = citiesResponse();
-    const content = shareContentFrom(data, salvador, finalists, 'x', { cities, map });
+    const content = shareContentFrom(data, salvador, finalists, pt, 'x', { cities, map });
     expect(content.title).toBe('Salvador');
     expect(content.detailMap?.selected).toBe('M0,0L1,1Z');
     // Numeric keys come in IBGE order: a municipality without results is drawn empty.
@@ -95,7 +97,7 @@ describe('shareContentFrom', () => {
 
   it('shares a city like its state until its details load', () => {
     const salvador = { kind: 'city', state: 'BA', ibge: '2927408' } as const;
-    const content = shareContentFrom(data, salvador, finalists, 'x');
+    const content = shareContentFrom(data, salvador, finalists, pt, 'x');
     expect(content.detailMap).toBeUndefined();
     expect([...content.focus]).toEqual(['BA']);
   });
@@ -112,7 +114,7 @@ describe('shareContentFrom', () => {
         { d: 'M4Z', name: 'Haiti', label: [10, 20], tiny: true },
       ],
     } as const;
-    const content = shareContentFrom(data, abroadCountry('Haiti'), finalists, 'x', undefined, {
+    const content = shareContentFrom(data, abroadCountry('Haiti'), finalists, pt, 'x', undefined, {
       countries,
       map,
     });
@@ -135,10 +137,18 @@ describe('shareContentFrom', () => {
 
   it('shares a country abroad on the map of Brazil until its continent loads', () => {
     const { countries } = abroadResponse();
-    const content = shareContentFrom(data, abroadCountry('Portugal'), finalists, 'x', undefined, {
-      countries,
-      map: undefined,
-    });
+    const content = shareContentFrom(
+      data,
+      abroadCountry('Portugal'),
+      finalists,
+      pt,
+      'x',
+      undefined,
+      {
+        countries,
+        map: undefined,
+      },
+    );
     expect(content.title).toBe('Portugal');
     expect(content.detailMap).toBeUndefined();
     expect(content.focus.size).toBe(27);
@@ -147,12 +157,12 @@ describe('shareContentFrom', () => {
   it('announces the winner of Brazil once the race is decided', () => {
     const decided = resultsResponse({ country: tally({ kind: 'country' }, 550, 250, 80) });
     const finalistsNow = finalistsOf(decided.country);
-    const content = shareContentFrom(decided, { kind: 'country' }, finalistsNow, 'x');
+    const content = shareContentFrom(decided, { kind: 'country' }, finalistsNow, pt, 'x');
     expect(content.winner?.shortName).toBe('Lula');
     expect(content.kicker).toBe('2º TURNO 2026 · BRASIL');
     expect(content.title).toBe('Lula vence');
 
-    const state = shareContentFrom(decided, { kind: 'state', code: 'BA' }, finalistsNow, 'x');
+    const state = shareContentFrom(decided, { kind: 'state', code: 'BA' }, finalistsNow, pt, 'x');
     expect(state.winner).toBeUndefined();
     expect(state.title).toBe('Bahia');
   });

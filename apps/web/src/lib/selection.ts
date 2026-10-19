@@ -5,7 +5,6 @@ import {
   isStateCode,
   municipalityTally,
   REGION_CODES,
-  REGION_NAMES,
   STATES,
   type RegionCode,
   type MunicipalityResult,
@@ -13,6 +12,7 @@ import {
   type Tally,
   type CountryResult,
 } from '@stb/domain';
+import type { I18n } from '../i18n/i18n';
 import { formatName } from './format';
 
 /** What the user is looking at. Serialized in the URL hash so it can be shared. */
@@ -56,9 +56,6 @@ export function countryOf(selection: Selection, countries: Countries): CountryRe
 
 export const COUNTRY: Selection = { kind: 'country' };
 export const ABROAD: Selection = { kind: 'abroad' };
-
-/** How abroad is named on screen: clearer than "Exterior" for votes cast in other countries. */
-export const ABROAD_LABEL = 'Outros países';
 
 /** Whether the selection is abroad as a whole or one of its countries. */
 export const isAbroad = (selection: Selection): boolean =>
@@ -112,27 +109,33 @@ export function resolveTally(
   }
 }
 
-/** "Brasil", "Região Nordeste", "Bahia", "Outros países", a city ("São Paulo") or a country abroad. */
+/**
+ * "Brasil", "Região Nordeste", "Bahia", "Outros países", a city ("São Paulo") or a country
+ * abroad, in the language on screen.
+ */
 export function selectionTitle(
   selection: Selection,
+  { m, country }: I18n,
   cities?: Municipalities,
   countries?: Countries,
 ): string {
   switch (selection.kind) {
     case 'country':
-      return 'Brasil';
+      return m.places.brazil;
     case 'region':
-      return `Região ${REGION_NAMES[selection.code]}`;
+      return m.places.region(m.places.regions[selection.code]);
     case 'state':
       return STATES[selection.code].name;
     case 'abroad':
-      return ABROAD_LABEL;
+      return m.places.abroad;
     case 'city': {
       const municipality = municipalityOf(selection, cities);
       return municipality ? formatName(municipality.name) : STATES[selection.state].name;
     }
-    case 'abroadCountry':
-      return countryOf(selection, countries)?.name ?? ABROAD_LABEL;
+    case 'abroadCountry': {
+      const name = countryOf(selection, countries)?.name;
+      return name ? country(name) : m.places.abroad;
+    }
   }
 }
 
@@ -202,23 +205,25 @@ export interface Breadcrumb {
  */
 export function breadcrumbsOf(
   selection: Selection,
+  i18n: I18n,
   cities?: Municipalities,
   countries?: Countries,
 ): Breadcrumb[] {
-  const crumbs: Breadcrumb[] = [{ label: 'Brasil', target: COUNTRY }];
+  const { places } = i18n.m;
+  const crumbs: Breadcrumb[] = [{ label: places.brazil, target: COUNTRY }];
   const region = regionOf(selection);
   if (region)
-    crumbs.push({ label: REGION_NAMES[region], target: { kind: 'region', code: region } });
+    crumbs.push({ label: places.regions[region], target: { kind: 'region', code: region } });
   const state = stateOf(selection);
   if (state) crumbs.push({ label: STATES[state].name, target: { kind: 'state', code: state } });
   if (selection.kind === 'city') {
-    crumbs.push({ label: selectionTitle(selection, cities), target: selection });
+    crumbs.push({ label: selectionTitle(selection, i18n, cities), target: selection });
   }
   if (selection.kind === 'abroad' || selection.kind === 'abroadCountry') {
-    crumbs.push({ label: ABROAD_LABEL, target: ABROAD });
+    crumbs.push({ label: places.abroad, target: ABROAD });
   }
   if (selection.kind === 'abroadCountry') {
-    crumbs.push({ label: selectionTitle(selection, cities, countries), target: selection });
+    crumbs.push({ label: selectionTitle(selection, i18n, cities, countries), target: selection });
   }
   return crumbs;
 }

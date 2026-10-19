@@ -5,7 +5,8 @@ import { abstentionOf, abstentionStep } from '../../lib/abstention';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
-import { ABROAD, ABROAD_LABEL, type Selection } from '../../lib/selection';
+import { useI18n } from '../../i18n/i18n-context';
+import { ABROAD, type Selection } from '../../lib/selection';
 import { BRAZIL_MAP } from './brazil-map';
 import { prefetchStateMap } from '../state-map/state-maps';
 import { emphasisOf, type Area } from './emphasis';
@@ -23,7 +24,6 @@ interface Props {
 /** Labels for states too small to fit their code inside are skipped. */
 const UNLABELED = new Set<StateCode>(['DF', 'SE', 'AL', 'PB', 'PE', 'RN', 'ES', 'RJ']);
 
-const areaName = (area: Area) => (area === 'abroad' ? ABROAD_LABEL : STATES[area].name);
 const areaSelection = (area: Area): Selection =>
   area === 'abroad' ? ABROAD : { kind: 'state', code: area };
 
@@ -34,9 +34,11 @@ type MapMode = 'lead' | 'abstention';
  * count starts, it can switch to abstention, on a neutral ramp.
  */
 export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
+  const { m } = useI18n();
   const wide = useMediaQuery('(min-width: 960px)');
   const [chosenMode, setMode] = useState<MapMode>('lead');
 
+  const areaName = (area: Area) => (area === 'abroad' ? m.places.abroad : STATES[area].name);
   const tallyOf = (area: Area): Tally => (area === 'abroad' ? data.abroad : data.states[area]);
 
   const describe = (area: Area) => {
@@ -114,8 +116,8 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           {!anyLead
             ? 'Os estados ganham cor conforme as urnas são apuradas.'
             : wide
-              ? `Clique em um estado ou em ${ABROAD_LABEL}.`
-              : `Toque em um estado ou em ${ABROAD_LABEL} para ver o resultado.`}
+              ? `Clique em um estado ou em ${m.places.abroad}.`
+              : `Toque em um estado ou em ${m.places.abroad} para ver o resultado.`}
         </p>
         {anyLead && (
           <div className={styles.modes} role="group" aria-label="Mostrar no mapa">
@@ -163,7 +165,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
           className={`${styles.state} ${styles.abroad}`}
           {...interactive('abroad')}
         >
-          {ABROAD_LABEL}
+          {m.places.abroad}
         </button>
       </div>
 

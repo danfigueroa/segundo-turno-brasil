@@ -1,5 +1,6 @@
 import { STATE_CODES, STATES, isStateCode } from '@stb/domain';
-import { ABROAD, ABROAD_LABEL, COUNTRY, stateOf, type Selection } from '../../lib/selection';
+import { useI18n } from '../../i18n/i18n-context';
+import { ABROAD, COUNTRY, stateOf, type Selection } from '../../lib/selection';
 import styles from './BrazilMap.module.css';
 
 interface Props {
@@ -14,6 +15,7 @@ const ABROAD_VALUE = 'EX';
 
 /** Native select with every state and abroad: the quickest picker on a phone. */
 export function StateSelect({ selection, onSelect, label, className }: Props) {
+  const { m } = useI18n();
   const value = stateOf(selection) ?? (selection.kind === 'abroad' ? ABROAD_VALUE : '');
   return (
     <div className={`${styles.selectWrap} ${className ?? ''}`}>
@@ -37,7 +39,7 @@ export function StateSelect({ selection, onSelect, label, className }: Props) {
             {STATES[code].name}
           </option>
         ))}
-        <option value={ABROAD_VALUE}>{ABROAD_LABEL}</option>
+        <option value={ABROAD_VALUE}>{m.places.abroad}</option>
       </select>
     </div>
   );

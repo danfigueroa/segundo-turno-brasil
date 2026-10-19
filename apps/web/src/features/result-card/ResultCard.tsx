@@ -3,6 +3,7 @@ import type { CountryResult } from '@stb/domain';
 import type { ReactNode, Ref } from 'react';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
 import { CandidateAvatar } from '../../components/CandidateAvatar';
+import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
 import { formatPercent, formatVotes } from '../../lib/format';
 import {
@@ -44,8 +45,9 @@ export function ResultCard({
   children,
   ref,
 }: Props) {
-  const headline = headlineOf(data, selection, finalists, countries, cities);
-  const crumbs = breadcrumbsOf(selection, cities, countries);
+  const i18n = useI18n();
+  const headline = headlineOf(data, selection, finalists, i18n, countries, cities);
+  const crumbs = breadcrumbsOf(selection, i18n, cities, countries);
   const total = headline.bar.reduce((sum, s) => sum + s.weight, 0);
 
   return (

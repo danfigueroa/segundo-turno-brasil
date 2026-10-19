@@ -1,7 +1,8 @@
 import type { ResultsResponse } from '@stb/contracts';
 import { STATE_CODES, STATES, statesInRegion, type StateCode } from '@stb/domain';
 import { finalistResults, type Finalist } from '../../lib/finalists';
-import { ABROAD, ABROAD_LABEL, regionOf, type Selection } from '../../lib/selection';
+import type { I18n } from '../../i18n/i18n';
+import { ABROAD, regionOf, type Selection } from '../../lib/selection';
 
 export interface MarginRow {
   /** UF code, or `EXT` for abroad. */
@@ -35,6 +36,7 @@ export function netMargins(
   data: ResultsResponse,
   finalists: readonly Finalist[],
   selection: Selection,
+  i18n: I18n,
 ): NetMargins {
   const region = regionOf(selection);
   const codes = region ? statesInRegion(region) : STATE_CODES;
@@ -47,7 +49,7 @@ export function netMargins(
   if (!region) {
     rows.push({
       code: 'EXT',
-      name: ABROAD_LABEL,
+      name: i18n.m.places.abroad,
       target: ABROAD,
       margin: marginOf(data, finalists, 'ZZ'),
     });

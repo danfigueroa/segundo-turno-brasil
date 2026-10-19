@@ -1,4 +1,4 @@
-import { REGION_NAMES, STATES, type Round } from '@stb/domain';
+import { STATES, type Round } from '@stb/domain';
 import { useQuery } from '@tanstack/react-query';
 import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useAbroad } from './api/abroad';
@@ -17,6 +17,8 @@ import { StatesList } from './features/states-list/StatesList';
 import { PinButton } from './features/my-place/PinButton';
 import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
+import { useI18n } from './i18n/i18n-context';
+import type { I18n } from './i18n/i18n';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
@@ -25,7 +27,6 @@ import { fullSiteUrl, isEmbed } from './lib/embed';
 import { finalistsOf, type Finalist } from './lib/finalists';
 import { isPinnable, useMyPlace } from './lib/my-place';
 import {
-  ABROAD_LABEL,
   countryOf,
   isAbroad,
   resolveTally,
@@ -45,6 +46,7 @@ import styles from './App.module.css';
 /** What the share button names: "Compartilhar Bahia". */
 function shareLabel(
   selection: Selection,
+  i18n: I18n,
   cities: Municipalities,
   countries: Countries,
   winner: Finalist | undefined,
@@ -53,14 +55,14 @@ function shareLabel(
     case 'country':
       return winner ? `Compartilhar a vitória de ${winner.shortName}` : 'Compartilhar resultado';
     case 'region':
-      return `Compartilhar ${REGION_NAMES[selection.code]}`;
+      return `Compartilhar ${i18n.m.places.regions[selection.code]}`;
     case 'state':
       return `Compartilhar ${STATES[selection.code].name}`;
     case 'abroad':
-      return `Compartilhar ${ABROAD_LABEL}`;
+      return `Compartilhar ${i18n.m.places.abroad}`;
     case 'city':
     case 'abroadCountry':
-      return `Compartilhar ${selectionTitle(selection, cities, countries)}`;
+      return `Compartilhar ${selectionTitle(selection, i18n, cities, countries)}`;
   }
 }
 
@@ -83,6 +85,7 @@ const CountriesList = lazy(() =>
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export function App() {
+  const i18n = useI18n();
   const [view, navigate] = useView();
   // The runoff is always loaded: it is the live data and decides the default round.
   const runoff = useResults(2);
@@ -127,7 +130,7 @@ export function App() {
     ? documentTitle(
         resolveTally(data, view.selection, cities.data?.cities, abroad.data?.countries),
         finalists,
-        selectionTitle(view.selection, cities.data?.cities, abroad.data?.countries),
+        selectionTitle(view.selection, i18n, cities.data?.cities, abroad.data?.countries),
       )
     : SITE_TITLE;
   useEffect(() => {
@@ -197,7 +200,7 @@ export function App() {
     cities.data && stateMap.data ? { cities: cities.data.cities, map: stateMap.data } : undefined;
   const abroadDetail = abroad.data && { countries: abroad.data.countries, map: continentMap.data };
   const getShareContent = () =>
-    shareContentFrom(data, selection, finalists, SITE_HOST, detail, abroadDetail);
+    shareContentFrom(data, selection, finalists, i18n, SITE_HOST, detail, abroadDetail);
 
   return (
     <>
@@ -234,6 +237,7 @@ export function App() {
                 selection={selection}
                 label={shareLabel(
                   selection,
+                  i18n,
                   cities.data?.cities,
                   abroad.data?.countries,
                   winnerOf(data, finalists),
@@ -246,7 +250,12 @@ export function App() {
                   (selection.kind === 'abroadCountry' && abroad.data)) && (
                   <PinButton
                     selection={selection}
-                    label={selectionTitle(selection, cities.data?.cities, abroad.data?.countries)}
+                    label={selectionTitle(
+                      selection,
+                      i18n,
+                      cities.data?.cities,
+                      abroad.data?.countries,
+                    )}
                     place={myPlace}
                     onChange={setMyPlace}
                   />

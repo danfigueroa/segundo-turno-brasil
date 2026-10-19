@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_I18N as pt } from '../../i18n/i18n';
 import { resultsResponse } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
 import { netMargins } from './net-margins';
@@ -8,7 +9,7 @@ const finalists = finalistsOf(data.country);
 
 describe('netMargins', () => {
   it('lists every state and abroad nationally, widest margins first', () => {
-    const { rows, total, scale } = netMargins(data, finalists, { kind: 'country' });
+    const { rows, total, scale } = netMargins(data, finalists, { kind: 'country' }, pt);
     expect(rows).toHaveLength(28);
     // Lula (13) is the first finalist: +400 in the Northeast, −200 elsewhere, −10 abroad.
     expect(rows[0]).toMatchObject({ code: 'AL', margin: 400 });
@@ -18,7 +19,7 @@ describe('netMargins', () => {
   });
 
   it('lists the states of the region of a selected state', () => {
-    const { rows } = netMargins(data, finalists, { kind: 'state', code: 'PR' });
+    const { rows } = netMargins(data, finalists, { kind: 'state', code: 'PR' }, pt);
     expect(rows.map((r) => r.code)).toEqual(['PR', 'RS', 'SC']);
   });
 });

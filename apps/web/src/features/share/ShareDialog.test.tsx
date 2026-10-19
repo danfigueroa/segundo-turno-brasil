@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_I18N as pt } from '../../i18n/i18n';
 import { resultsResponse } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
 import type * as RenderShareImage from './render-share-image';
@@ -30,7 +31,7 @@ vi.mock('./encode-share-video', () => ({
 
 const data = resultsResponse();
 const selection = { kind: 'state', code: 'BA' } as const;
-const content = shareContentFrom(data, selection, finalistsOf(data.country), 'x');
+const content = shareContentFrom(data, selection, finalistsOf(data.country), pt, 'x');
 
 beforeAll(() => {
   URL.createObjectURL ??= () => 'blob:share';

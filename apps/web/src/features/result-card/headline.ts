@@ -7,6 +7,7 @@ import {
   type Round,
   type Tally,
 } from '@stb/domain';
+import type { I18n } from '../../i18n/i18n';
 import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
 import {
@@ -237,6 +238,7 @@ export function headlineOf(
   data: ResultsResponse,
   selection: Selection,
   finalists: readonly Finalist[],
+  i18n: I18n,
   /** Votes abroad by country, once loaded; only used for abroad and its countries. */
   countries?: readonly CountryResult[],
   /** Municipalities of the selected state, once loaded; only used for a city. */
@@ -248,7 +250,7 @@ export function headlineOf(
   const body = tallyHeadline(data, selection, finalists, tally, final, countries);
   return {
     eyebrow: eyebrowOf(data.round, selection),
-    title: selectionTitle(selection, cities, countries),
+    title: selectionTitle(selection, i18n, cities, countries),
     counted,
     ...body,
   };
