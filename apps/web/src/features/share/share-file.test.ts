@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { canShareFile, shareFile, shareText } from './share-file';
+import { canShareFile, downloadFile, shareFile, shareText } from './share-file';
 
 const file = new File(['png'], 'x.png', { type: 'image/png' });
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('canShareFile', () => {
@@ -68,5 +70,32 @@ describe('shareText', () => {
   it('reports when neither works', async () => {
     vi.stubGlobal('navigator', {});
     await expect(shareText('placar')).resolves.toBe('failed');
+  });
+});
+
+describe('downloadFile', () => {
+  it('clicks a link in the page and keeps the file alive for a minute', () => {
+    vi.useFakeTimers();
+    const revoke = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:share', revokeObjectURL: revoke });
+    const clicks: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      expect(document.body.contains(this)).toBe(true);
+      clicks.push(this);
+    });
+
+    downloadFile(file);
+    const [clicked] = clicks;
+    expect(clicked?.download).toBe('x.png');
+    expect(clicked?.getAttribute('href')).toBe('blob:share');
+    expect(document.body.contains(clicked ?? null)).toBe(false);
+
+    // Chrome on Android reads the file only after "Baixar arquivo?" is confirmed.
+    vi.advanceTimersByTime(30_000);
+    expect(revoke).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(30_000);
+    expect(revoke).toHaveBeenCalledWith('blob:share');
   });
 });
