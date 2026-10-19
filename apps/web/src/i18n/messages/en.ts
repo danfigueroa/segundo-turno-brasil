@@ -41,6 +41,7 @@ const messages: Messages = {
   round: {
     tabs: 'Election round',
     labels: { 1: '1st round', 2: 'Runoff' },
+    short: { 1: '1st round', 2: 'Runoff' },
   },
   result: {
     crumbs: 'You are in',

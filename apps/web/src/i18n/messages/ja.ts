@@ -40,6 +40,7 @@ const messages: Messages = {
   round: {
     tabs: '投票回',
     labels: { 1: '第1回投票', 2: '決選投票' },
+    short: { 1: '第1回', 2: '決選' },
   },
   result: {
     crumbs: '現在地',

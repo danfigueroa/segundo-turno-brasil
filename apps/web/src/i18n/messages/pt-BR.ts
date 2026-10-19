@@ -69,6 +69,8 @@ export const ptBR = {
   round: {
     tabs: 'Turno da eleição',
     labels: { 1: '1º turno', 2: '2º turno' },
+    /** Next to the bars that compare the rounds, where space is short. */
+    short: { 1: '1º turno', 2: '2º turno' },
   },
   /** The result card. */
   result: {

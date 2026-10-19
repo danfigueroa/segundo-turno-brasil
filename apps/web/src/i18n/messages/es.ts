@@ -41,6 +41,7 @@ const messages: Messages = {
   round: {
     tabs: 'Vuelta de la elección',
     labels: { 1: '1.ª vuelta', 2: '2.ª vuelta' },
+    short: { 1: '1.ª vuelta', 2: '2.ª vuelta' },
   },
   result: {
     crumbs: 'Estás en',

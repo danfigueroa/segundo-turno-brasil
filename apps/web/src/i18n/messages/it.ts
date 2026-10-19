@@ -42,6 +42,7 @@ const messages: Messages = {
   round: {
     tabs: 'Turno elettorale',
     labels: { 1: '1° turno', 2: 'Ballottaggio' },
+    short: { 1: '1° turno', 2: '2° turno' },
   },
   result: {
     crumbs: 'Sei qui',

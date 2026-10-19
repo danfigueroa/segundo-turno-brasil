@@ -40,6 +40,7 @@ const messages: Messages = {
   round: {
     tabs: 'Tour de l’élection',
     labels: { 1: '1er tour', 2: '2nd tour' },
+    short: { 1: '1er tour', 2: '2nd tour' },
   },
   result: {
     crumbs: 'Vous êtes ici',

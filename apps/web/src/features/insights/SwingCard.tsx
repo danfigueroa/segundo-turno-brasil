@@ -39,8 +39,8 @@ export function SwingCard({ firstRound, runoff, selection, finalists, place, onS
                 {f.pointsChange(row.change)}
               </span>
             </div>
-            <Bar label={m.round.labels[1]} value={row.before} muted />
-            <Bar label={m.round.labels[2]} value={row.now} />
+            <Bar label={m.round.short[1]} value={row.before} muted />
+            <Bar label={m.round.short[2]} value={row.now} />
           </div>
         ))}
       </div>
