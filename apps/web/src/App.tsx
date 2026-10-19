@@ -38,6 +38,7 @@ import {
 } from './lib/selection';
 import { SITE_HOST } from './lib/site';
 import { useMediaQuery } from './lib/use-media-query';
+import { usePageInViewport } from './lib/use-page-in-viewport';
 import { useView } from './lib/use-view';
 import { resolveRound } from './lib/view';
 import { winnerOf } from './lib/winner';
@@ -88,8 +89,11 @@ const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion:
 export function App() {
   const i18n = useI18n();
   const [view, navigate] = useView();
+  // An embed polls slowly, and not at all while scrolled out of view (ADR 0031).
+  const embed = isEmbed();
+  const live = { slow: embed, paused: !usePageInViewport(embed) };
   // The runoff is always loaded: it is the live data and decides the default round.
-  const runoff = useResults(2);
+  const runoff = useResults(2, live);
   const waitingForDefault = view.round === undefined && runoff.isPending;
   const round = resolveRound(view.round, runoff.data);
   const runoffStarted = (runoff.data?.country.sections.counted ?? 0) > 0;
@@ -100,11 +104,12 @@ export function App() {
   const { data, isPending, isError, refetch } = round === 1 ? firstRound : runoff;
   // The breakdown by country is heavier and only needed while abroad is on screen.
   const abroad = useAbroad(round, {
+    ...live,
     enabled: isAbroad(view.selection) && !waitingForDefault,
   });
   // Municipalities and their map: only for the state (or city) on screen.
   const uf = stateOf(view.selection);
-  const cities = useCities(round, uf, { enabled: !waitingForDefault });
+  const cities = useCities(round, uf, { ...live, enabled: !waitingForDefault });
   const stateMap = useQuery({
     queryKey: ['state-map', uf],
     queryFn: () => (uf ? loadStateMap(uf) : Promise.reject(new Error('No state selected'))),
@@ -173,7 +178,7 @@ export function App() {
   const waiting = data.round === 2 && data.country.sections.counted === 0;
 
   // Embedded in another site: only the result (or the countdown) and a link to the site.
-  if (isEmbed()) {
+  if (embed) {
     return (
       <main className={styles.embed}>
         {waiting ? (
