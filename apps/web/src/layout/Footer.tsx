@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useI18n } from '../i18n/i18n-context';
 import styles from './Layout.module.css';
 
 interface Props {
@@ -7,13 +8,14 @@ interface Props {
 }
 
 export function Footer({ children }: Props) {
+  const { m } = useI18n();
   return (
     <footer className={styles.footer}>
       <div className={`flag-stripe ${styles.footerStripe}`} />
       <div className={styles.footerText}>
         {children}
         <p>
-          Desenvolvido por{' '}
+          {m.site.credit}{' '}
           <a
             className={styles.credit}
             href="https://www.instagram.com/danmfigueroa/"

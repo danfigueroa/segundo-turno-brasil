@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useI18n } from '../i18n/i18n-context';
 import styles from './Layout.module.css';
 
 interface Props {
@@ -18,6 +19,7 @@ export function Logo({ className }: { readonly className?: string | undefined })
 }
 
 export function Header({ children }: Props) {
+  const { m } = useI18n();
   return (
     <header className={styles.header}>
       <div className="flag-stripe" />
@@ -25,10 +27,10 @@ export function Header({ children }: Props) {
         <div className={styles.brand}>
           <Logo className={styles.logo} />
           <div>
-            <div className={styles.title}>Segundo Turno</div>
+            <div className={styles.title}>{m.site.name}</div>
             <div className={styles.subtitle}>
-              Eleição presidencial 2026
-              <span className={styles.subtitleWide}> · apuração em tempo real</span>
+              {m.site.subtitle}
+              <span className={styles.subtitleWide}>{m.site.subtitleWide}</span>
             </div>
           </div>
         </div>

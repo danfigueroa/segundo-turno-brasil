@@ -22,7 +22,7 @@ import type { I18n } from './i18n/i18n';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
-import { documentTitle, SITE_TITLE } from './lib/document-title';
+import { documentTitle } from './lib/document-title';
 import { fullSiteUrl, isEmbed } from './lib/embed';
 import { finalistsOf, type Finalist } from './lib/finalists';
 import { isPinnable, useMyPlace } from './lib/my-place';
@@ -130,9 +130,12 @@ export function App() {
     ? documentTitle(
         resolveTally(data, view.selection, cities.data?.cities, abroad.data?.countries),
         finalists,
-        selectionTitle(view.selection, i18n, cities.data?.cities, abroad.data?.countries),
+        view.selection.kind === 'country'
+          ? undefined
+          : selectionTitle(view.selection, i18n, cities.data?.cities, abroad.data?.countries),
+        i18n,
       )
-    : SITE_TITLE;
+    : i18n.m.site.title;
   useEffect(() => {
     document.title = tabTitle;
   }, [tabTitle]);
@@ -155,9 +158,9 @@ export function App() {
       <>
         <Header />
         <main className={styles.message}>
-          <p>Não foi possível carregar os resultados agora.</p>
+          <p>{i18n.m.site.error}</p>
           <button type="button" className={styles.retry} onClick={() => void refetch()}>
-            Tentar novamente
+            {i18n.m.site.retry}
           </button>
         </main>
       </>
@@ -189,7 +192,7 @@ export function App() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Acompanhe ao vivo em {SITE_HOST}
+              {i18n.m.site.follow(SITE_HOST)}
             </a>
           </ResultCard>
         )}
