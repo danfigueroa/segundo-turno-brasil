@@ -9,7 +9,11 @@ import { readStoredLocale, resolveLocale } from './i18n/resolve-locale';
 import { Analytics } from './layout/Analytics';
 import './styles/global.css';
 
-const queryClient = new QueryClient();
+// One retry, a few seconds later: every attempt is an edge request (ADR 0031), and the
+// next poll tries again anyway.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, retryDelay: 5_000 } },
+});
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
