@@ -1,6 +1,6 @@
 # 0023 — Vídeo para os Stories gerado no cliente
 
-- Status: aceita
+- Status: aceita; geração do vídeo substituída pela ADR 0029
 - Data: 2026-10-12
 
 ## Contexto
