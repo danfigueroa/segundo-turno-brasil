@@ -25,7 +25,8 @@ export interface VideoTiming {
 
 export const VIDEO_TIMING: VideoTiming = { introMs: 2500, holdMs: 3500 };
 
-const FPS = 30;
+/** Frames per second of the share video. */
+export const VIDEO_FPS = 30;
 
 /** File name of the video: `apuracao-2026-bahia.mp4`. */
 export function videoFileName(title: string, mimeType: string): string {
@@ -50,7 +51,7 @@ export function recordShareVideo(
   canvas.height = layout.height;
   drawShareImage(canvas, content, format, 0);
 
-  const stream = canvas.captureStream(FPS);
+  const stream = canvas.captureStream(VIDEO_FPS);
   const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
   const chunks: Blob[] = [];
   recorder.ondataavailable = (event) => {
