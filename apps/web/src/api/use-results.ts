@@ -1,23 +1,24 @@
 import type { Round } from '@stb/domain';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { LIVE_STALE_TIME_MS, pollIntervalOf, type LiveOptions } from './polling';
 import { fetchResults } from './results';
 
-/** Longer than the CDN cache (s-maxage=15), so each poll can bring new data; 60s keeps edge requests low (ADR 0028). */
-export const POLL_INTERVAL_MS = 60_000;
-
 /**
- * Results of one round. The runoff is polled while the tab is visible; the first round
- * is final, so it is fetched once and kept.
+ * Results of one round. The runoff is polled while the tab is visible until the national
+ * count is complete; the first round is final, so it is fetched once and kept.
  */
-export function useResults(round: Round, { enabled = true } = {}) {
+export function useResults(
+  round: Round,
+  { enabled = true, slow = false, paused = false }: LiveOptions = {},
+) {
   const live = round === 2;
   return useQuery({
     queryKey: ['results', round],
     queryFn: ({ signal }) => fetchResults(round, signal),
-    enabled,
-    refetchInterval: live ? POLL_INTERVAL_MS : false,
+    enabled: enabled && !(live && paused),
+    refetchInterval: (query) =>
+      live && pollIntervalOf(query.state.data?.country.sections, { slow }),
     refetchIntervalInBackground: false,
-    staleTime: live ? 0 : Infinity,
-    placeholderData: keepPreviousData,
+    staleTime: live ? LIVE_STALE_TIME_MS : Infinity,
   });
 }
