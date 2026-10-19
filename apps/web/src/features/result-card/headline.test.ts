@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_I18N as pt } from '../../i18n/i18n';
+import { loadI18n } from '../../i18n/load';
 import { resultsResponse, tally } from '../../../test/fixtures';
 import { finalistsOf } from '../../lib/finalists';
 import { headlineOf, turnoutStats } from './headline';
@@ -30,6 +31,16 @@ describe('headlineOf', () => {
       value: '50,00%',
       note: '50 de 100',
     });
+  });
+
+  it('speaks the language on screen', async () => {
+    const en = await loadI18n('en');
+    const headline = headlineOf(data, { kind: 'region', code: 'NE' }, finalists, en);
+    expect(headline.title).toBe('Northeast region');
+    expect(headline.eyebrow).toBe('President · Runoff · votes in the region');
+    expect(headline.columns[0]?.note).toBe('PT · 6,300 votes');
+    expect(headline.columns[0]?.states).toBe('Leads in 9 states');
+    expect(headline.stats[0]).toEqual({ label: 'Margin', value: '40.00 pts', note: '3,600 votes' });
   });
 
   it('names the leader of a state', () => {
@@ -135,12 +146,15 @@ describe('turnoutStats', () => {
   it('measures valid, blank and null votes against the turnout', () => {
     const base = tally({ kind: 'country' }, 450, 470);
     expect(
-      turnoutStats({
-        ...base,
-        votes: { valid: 920, blank: 30, null: 50 },
-        turnout: 1000,
-        electorate: 1250,
-      }),
+      turnoutStats(
+        {
+          ...base,
+          votes: { valid: 920, blank: 30, null: 50 },
+          turnout: 1000,
+          electorate: 1250,
+        },
+        pt,
+      ),
     ).toEqual([
       { label: 'Votos válidos', value: '920', note: '92,00% do comparecimento' },
       { label: 'Comparecimento', value: '80,00%', note: '1.000 eleitores' },
@@ -151,7 +165,7 @@ describe('turnoutStats', () => {
   it('measures turnout against the sections counted so far', () => {
     const base = tally({ kind: 'country' }, 450, 470);
     const halfCounted = { ...base, electorate: 2500, countedElectorate: 1250, turnout: 1000 };
-    expect(turnoutStats(halfCounted)[1]).toEqual({
+    expect(turnoutStats(halfCounted, pt)[1]).toEqual({
       label: 'Comparecimento',
       value: '80,00%',
       note: '1.000 eleitores',
@@ -172,7 +186,7 @@ describe('turnoutStats', () => {
       turnout: 125_275_835,
       electorate: 158_000_000,
     };
-    expect(turnoutStats(country)[0]?.value).toBe('119,3 mi');
+    expect(turnoutStats(country, pt)[0]?.value).toBe('119,3 mi');
   });
 
   it('shows dashes before anyone has voted', () => {
@@ -182,7 +196,7 @@ describe('turnoutStats', () => {
       turnout: 0,
       votes: { valid: 0, blank: 0, null: 0 },
     };
-    expect(turnoutStats(empty).map((s) => [s.value, s.note])).toEqual([
+    expect(turnoutStats(empty, pt).map((s) => [s.value, s.note])).toEqual([
       ['0', ''],
       ['—', '0 eleitores'],
       ['—', '0 votos'],

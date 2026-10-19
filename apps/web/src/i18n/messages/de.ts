@@ -38,6 +38,35 @@ const messages: Messages = {
     updatedAt: (time: string) => `Aktualisiert um ${time} Uhr`,
     source: '(Ortszeit Brasília) · Quelle: TSE',
   },
+  round: {
+    tabs: 'Wahlgang',
+    labels: { 1: '1. Wahlgang', 2: 'Stichwahl' },
+  },
+  result: {
+    crumbs: 'Sie sind hier',
+    president: 'Präsident',
+    abroadVotes: 'Stimmen von Brasilianern im Ausland',
+    regionVotes: 'Stimmen in der Region',
+    leads: 'Führt',
+    mostVoted: 'Meiste Stimmen',
+    half: '50 % der gültigen Stimmen',
+    difference: 'Abstand',
+    ahead: (name: string) => `${name} vorn`,
+    sections: 'Wahllokale ausgezählt',
+    outOf: (part: string, whole: string) => `${part} von ${whole}`,
+    abstention: 'Nichtwähler',
+    others: 'Weitere Kandidaten',
+    countriesWithVotes: 'Länder mit Stimmen',
+    validVotes: 'Gültige Stimmen',
+    ofTurnout: (percent: string) => `${percent} der Wählenden`,
+    turnout: 'Wahlbeteiligung',
+    voters: (count: string) => `${count} Wähler`,
+    blankAndNull: 'Leer und ungültig',
+    statesWon: (count: number) =>
+      count === 1 ? 'Gewann 1 Bundesstaat' : `Gewann ${count} Bundesstaaten`,
+    statesLed: (count: number) =>
+      count === 1 ? 'Führt in 1 Bundesstaat' : `Führt in ${count} Bundesstaaten`,
+  },
   units: { points: 'Pp.' },
 };
 

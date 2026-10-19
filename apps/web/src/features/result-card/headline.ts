@@ -10,13 +10,7 @@ import {
 import type { I18n } from '../../i18n/i18n';
 import { countryRows, countryStandings } from '../../lib/countries';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
-import {
-  formatCompactVotes,
-  formatName,
-  formatPercent,
-  formatPoints,
-  formatVotes,
-} from '../../lib/format';
+import { formatName } from '../../lib/format';
 import {
   resolveTally,
   selectionTitle,
@@ -75,14 +69,12 @@ export interface Headline {
   readonly others: readonly OtherCandidate[];
 }
 
-const ROUND_LABELS: Readonly<Record<Round, string>> = { 1: '1º turno', 2: '2º turno' };
-
 function isFinal(round: Round, counted: number) {
   return round === 1 || counted >= 100;
 }
 
-function eyebrowOf(round: Round, selection: Selection): string {
-  const base = `Presidente · ${ROUND_LABELS[round]}`;
+function eyebrowOf(round: Round, selection: Selection, { m }: I18n): string {
+  const base = `${m.result.president} · ${m.round.labels[round]}`;
   switch (selection.kind) {
     case 'country':
       return base;
@@ -90,66 +82,66 @@ function eyebrowOf(round: Round, selection: Selection): string {
       return `${base} · ${selection.code}`;
     case 'abroad':
     case 'abroadCountry':
-      return `${base} · votos de brasileiros no exterior`;
+      return `${base} · ${m.result.abroadVotes}`;
     case 'city':
       return `${base} · ${selection.state}`;
     case 'region':
-      return `${base} · votos na região`;
+      return `${base} · ${m.result.regionVotes}`;
   }
 }
 
-function sectionsStat(tally: Tally, final: boolean): Stat {
+function sectionsStat(tally: Tally, final: boolean, { m, f }: I18n): Stat {
   const { total, counted } = tally.sections;
   return {
-    label: 'Seções apuradas',
-    value: formatPercent(countedPercentage(tally)),
-    note: final ? '' : `${formatVotes(counted)} de ${formatVotes(total)}`,
+    label: m.result.sections,
+    value: f.percent(countedPercentage(tally)),
+    note: final ? '' : m.result.outOf(f.votes(counted), f.votes(total)),
   };
 }
 
 /** `part` as a percentage of `whole`, or a dash before anyone has voted. */
-function percentOf(part: number, whole: number): string {
-  return whole > 0 ? formatPercent((part / whole) * 100) : '—';
+function percentOf(part: number, whole: number, { f }: I18n): string {
+  return whole > 0 ? f.percent((part / whole) * 100) : '—';
 }
 
 /** Second row of key figures: who voted and how, in every scope and round. */
-export function turnoutStats(tally: Tally): Stat[] {
+export function turnoutStats(tally: Tally, i18n: I18n): Stat[] {
+  const { m, f } = i18n;
   // Measured against the sections counted so far, so it holds during the count.
   const electorate = countedElectorateOf(tally);
   const { turnout, votes } = tally;
   const blankAndNull = votes.blank + votes.null;
   return [
     {
-      label: 'Votos válidos',
+      label: m.result.validVotes,
       // Compact ("119,3 mi"): the full count does not fit a third of a 360px card.
-      value: formatCompactVotes(votes.valid),
-      note: turnout > 0 ? `${percentOf(votes.valid, turnout)} do comparecimento` : '',
+      value: f.compactVotes(votes.valid),
+      note: turnout > 0 ? m.result.ofTurnout(percentOf(votes.valid, turnout, i18n)) : '',
     },
     {
-      label: 'Comparecimento',
-      value: percentOf(turnout, electorate),
-      note: `${formatVotes(turnout)} eleitores`,
+      label: m.result.turnout,
+      value: percentOf(turnout, electorate, i18n),
+      note: m.result.voters(f.votes(turnout)),
     },
     {
-      label: 'Brancos e nulos',
-      value: percentOf(blankAndNull, turnout),
-      note: `${formatVotes(blankAndNull)} votos`,
+      label: m.result.blankAndNull,
+      value: percentOf(blankAndNull, turnout, i18n),
+      note: m.common.votes(blankAndNull, f.votes(blankAndNull)),
     },
   ];
 }
-
-const statesText = (n: number) => (n === 1 ? '1 estado' : `${n} estados`);
 
 /** Third key figure abroad: in how many countries anyone voted, and who won where. */
 function countriesStat(
   countries: readonly CountryResult[] | undefined,
   finalists: readonly Finalist[],
+  { m }: I18n,
 ): Stat {
-  if (!countries) return { label: 'Países com votos', value: '—', note: '' };
+  if (!countries) return { label: m.result.countriesWithVotes, value: '—', note: '' };
   const rows = countryRows(countries, finalists);
   const { wins } = countryStandings(rows, finalists);
   return {
-    label: 'Países com votos',
+    label: m.result.countriesWithVotes,
     value: String(rows.length),
     note: finalists.map((f) => `${wins[f.number] ?? 0} ${f.shortName}`).join(' · '),
   };
@@ -166,8 +158,10 @@ function tallyHeadline(
   tally: Tally,
   final: boolean,
   countries: readonly CountryResult[] | undefined,
+  i18n: I18n,
 ): Pick<Headline, 'columns' | 'badge' | 'bar' | 'barLabel' | 'stats' | 'turnoutStats' | 'others'> {
   const { round } = data;
+  const { m, f } = i18n;
   const regionLeads =
     selection.kind === 'region'
       ? stateLeads(data, finalists, statesInRegion(selection.code)).counts
@@ -184,11 +178,11 @@ function tallyHeadline(
   const abstention = Math.max(countedElectorateOf(tally) - tally.turnout, 0);
   const secondStat: Stat =
     round === 1
-      ? { label: 'Demais candidatos', value: formatPercent(othersShare), note: '' }
+      ? { label: m.result.others, value: f.percent(othersShare), note: '' }
       : {
-          label: 'Abstenção',
-          value: percentOf(abstention, countedElectorateOf(tally)),
-          note: `${formatVotes(abstention)} eleitores`,
+          label: m.result.abstention,
+          value: percentOf(abstention, countedElectorateOf(tally), i18n),
+          note: m.result.voters(f.votes(abstention)),
         };
 
   return {
@@ -202,35 +196,35 @@ function tallyHeadline(
     columns: results.map(({ votes, share, ...finalist }) => ({
       finalist,
       value: share,
-      note: `${finalist.party} · ${formatVotes(votes)} votos`,
+      note: `${finalist.party} · ${m.common.votes(votes, f.votes(votes))}`,
       states: regionLeads
-        ? `${final ? 'Venceu' : 'Lidera'} em ${statesText(regionLeads[finalist.number] ?? 0)}`
+        ? (final ? m.result.statesWon : m.result.statesLed)(regionLeads[finalist.number] ?? 0)
         : undefined,
       leads: lead?.leader.number === finalist.number,
     })),
-    badge: final ? 'Mais votado' : 'Lidera',
+    badge: final ? m.result.mostVoted : m.result.leads,
     bar: [
       { key: 'first', tone: first?.hue ?? 'red', weight: first?.votes ?? 0 },
       { key: 'others', tone: 'others', weight: othersVotes },
       { key: 'second', tone: second?.hue ?? 'blue', weight: second?.votes ?? 0 },
     ],
-    barLabel: '50% dos votos válidos',
+    barLabel: m.result.half,
     stats: [
       {
-        label: 'Diferença',
-        value: lead ? formatPoints(lead.margin) : '—',
+        label: m.result.difference,
+        value: lead ? f.points(lead.margin) : '—',
         note: !lead
           ? ''
           : selection.kind === 'state' || selection.kind === 'city'
-            ? `${lead.leader.shortName} à frente`
-            : `${formatVotes(gap)} votos`,
+            ? m.result.ahead(lead.leader.shortName)
+            : m.common.votes(gap, f.votes(gap)),
       },
       secondStat,
       selection.kind === 'abroad'
-        ? countriesStat(countries, finalists)
-        : sectionsStat(tally, final),
+        ? countriesStat(countries, finalists, i18n)
+        : sectionsStat(tally, final, i18n),
     ],
-    turnoutStats: turnoutStats(tally),
+    turnoutStats: turnoutStats(tally, i18n),
   };
 }
 
@@ -247,9 +241,9 @@ export function headlineOf(
   const tally = resolveTally(data, selection, cities, countries);
   const counted = countedPercentage(tally);
   const final = isFinal(data.round, counted);
-  const body = tallyHeadline(data, selection, finalists, tally, final, countries);
+  const body = tallyHeadline(data, selection, finalists, tally, final, countries, i18n);
   return {
-    eyebrow: eyebrowOf(data.round, selection),
+    eyebrow: eyebrowOf(data.round, selection, i18n),
     title: selectionTitle(selection, i18n, cities, countries),
     counted,
     ...body,

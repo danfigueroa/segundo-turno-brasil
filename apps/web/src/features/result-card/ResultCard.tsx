@@ -5,7 +5,6 @@ import { AnimatedNumber } from '../../components/AnimatedNumber';
 import { CandidateAvatar } from '../../components/CandidateAvatar';
 import { useI18n } from '../../i18n/i18n-context';
 import type { Finalist } from '../../lib/finalists';
-import { formatPercent, formatVotes } from '../../lib/format';
 import {
   breadcrumbsOf,
   isSameSelection,
@@ -29,8 +28,6 @@ interface Props {
   readonly ref?: Ref<HTMLElement>;
 }
 
-const formatCounted = (value: number) => (value >= 100 ? '100%' : formatPercent(value));
-
 /**
  * Headline of the selection: where we are (breadcrumbs), both finalists side by side, the
  * vote bar with the 50% marker, three key figures and the share action.
@@ -53,7 +50,7 @@ export function ResultCard({
   return (
     <section ref={ref} className={`card ${styles.card}`} aria-labelledby="result-title">
       <div className={styles.top}>
-        <nav aria-label="Você está em" className={styles.crumbs}>
+        <nav aria-label={i18n.m.result.crumbs} className={styles.crumbs}>
           {crumbs.map((crumb, index) => {
             const current = isSameSelection(crumb.target, selection);
             return (
@@ -76,7 +73,9 @@ export function ResultCard({
             );
           })}
         </nav>
-        <span className={styles.counted}>{formatCounted(headline.counted)} apurado</span>
+        <span className={styles.counted}>
+          {i18n.m.common.counted(i18n.f.counted(headline.counted))}
+        </span>
       </div>
 
       <div className={styles.heading}>
@@ -124,15 +123,17 @@ export function ResultCard({
 
       {headline.others.length > 0 && (
         <div className={styles.others}>
-          <h2 className={styles.othersTitle}>Demais candidatos</h2>
+          <h2 className={styles.othersTitle}>{i18n.m.result.others}</h2>
           <ol className={styles.othersList}>
             {headline.others.map((c) => (
               <li key={c.number} className={styles.other}>
                 <span className={styles.otherName}>
                   {c.name} <span className={styles.otherParty}>{c.party}</span>
                 </span>
-                <span className={styles.otherShare}>{formatPercent(c.share)}</span>
-                <span className={styles.otherVotes}>{formatVotes(c.votes)} votos</span>
+                <span className={styles.otherShare}>{i18n.f.percent(c.share)}</span>
+                <span className={styles.otherVotes}>
+                  {i18n.m.common.votes(c.votes, i18n.f.votes(c.votes))}
+                </span>
               </li>
             ))}
           </ol>
@@ -145,6 +146,7 @@ export function ResultCard({
 }
 
 function Column({ column, badge }: { readonly column: HeadlineColumn; readonly badge: string }) {
+  const { f } = useI18n();
   const { finalist, value, note, states, leads } = column;
   return (
     <div className={styles.column} data-hue={finalist.hue}>
@@ -155,7 +157,7 @@ function Column({ column, badge }: { readonly column: HeadlineColumn; readonly b
           {leads && <span className={styles.badge}>{badge}</span>}
         </span>
       </div>
-      <AnimatedNumber className={styles.value} value={value} format={formatPercent} />
+      <AnimatedNumber className={styles.value} value={value} format={f.percent} />
       <div className={styles.note}>{note}</div>
       {states && <div className={styles.states}>{states}</div>}
     </div>

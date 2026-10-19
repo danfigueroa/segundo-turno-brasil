@@ -65,6 +65,41 @@ export const ptBR = {
     updatedAt: (time: string) => `Atualizado às ${time}`,
     source: '(horário de Brasília) · Fonte: TSE',
   },
+  /** The two rounds. */
+  round: {
+    tabs: 'Turno da eleição',
+    labels: { 1: '1º turno', 2: '2º turno' },
+  },
+  /** The result card. */
+  result: {
+    crumbs: 'Você está em',
+    president: 'Presidente',
+    abroadVotes: 'votos de brasileiros no exterior',
+    regionVotes: 'votos na região',
+    leads: 'Lidera',
+    mostVoted: 'Mais votado',
+    /** The 50% marker of the vote bar. */
+    half: '50% dos votos válidos',
+    difference: 'Diferença',
+    /** Margin note in a state or a city: "Lula à frente". */
+    ahead: (name: string) => `${name} à frente`,
+    sections: 'Seções apuradas',
+    /** Sections counted out of all: "50 de 100". */
+    outOf: (part: string, whole: string) => `${part} de ${whole}`,
+    abstention: 'Abstenção',
+    others: 'Demais candidatos',
+    countriesWithVotes: 'Países com votos',
+    validVotes: 'Votos válidos',
+    ofTurnout: (percent: string) => `${percent} do comparecimento`,
+    turnout: 'Comparecimento',
+    voters: (count: string) => `${count} eleitores`,
+    blankAndNull: 'Brancos e nulos',
+    /** States a finalist won in a region, or leads in while counting. */
+    statesWon: (count: number) =>
+      count === 1 ? 'Venceu em 1 estado' : `Venceu em ${count} estados`,
+    statesLed: (count: number) =>
+      count === 1 ? 'Lidera em 1 estado' : `Lidera em ${count} estados`,
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 

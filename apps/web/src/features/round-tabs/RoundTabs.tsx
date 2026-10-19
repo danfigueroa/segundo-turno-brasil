@@ -1,4 +1,5 @@
 import type { Round } from '@stb/domain';
+import { useI18n } from '../../i18n/i18n-context';
 import styles from './RoundTabs.module.css';
 
 interface Props {
@@ -8,19 +9,21 @@ interface Props {
   readonly compact?: boolean;
 }
 
-const TABS: { round: Round; label: string; date: string; shortDate: string }[] = [
-  { round: 2, label: '2º turno', date: '25 de outubro', shortDate: '25/10' },
-  { round: 1, label: '1º turno', date: '4 de outubro', shortDate: '04/10' },
+/** Election days, at noon in Brasília. */
+const TABS: { round: Round; day: string }[] = [
+  { round: 2, day: '2026-10-25T12:00:00-03:00' },
+  { round: 1, day: '2026-10-04T12:00:00-03:00' },
 ];
 
 /** Switches between the live runoff and the final first-round results. */
 export function RoundTabs({ round, onChange, compact = false }: Props) {
+  const { m, f } = useI18n();
   return (
     <div
       className={styles.tabs}
       data-compact={compact || undefined}
       role="tablist"
-      aria-label="Turno da eleição"
+      aria-label={m.round.tabs}
     >
       {TABS.map((tab) => (
         <button
@@ -31,8 +34,8 @@ export function RoundTabs({ round, onChange, compact = false }: Props) {
           className={styles.tab}
           onClick={() => onChange(tab.round)}
         >
-          <span className={styles.label}>{tab.label}</span>
-          <span className={styles.date}>{compact ? tab.shortDate : tab.date}</span>
+          <span className={styles.label}>{m.round.labels[tab.round]}</span>
+          <span className={styles.date}>{compact ? f.date(tab.day) : f.dayMonth(tab.day)}</span>
         </button>
       ))}
     </div>

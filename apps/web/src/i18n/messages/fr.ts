@@ -37,6 +37,35 @@ const messages: Messages = {
     updatedAt: (time: string) => `Mis à jour à ${time}`,
     source: '(heure de Brasília) · Source : TSE',
   },
+  round: {
+    tabs: 'Tour de l’élection',
+    labels: { 1: '1er tour', 2: '2nd tour' },
+  },
+  result: {
+    crumbs: 'Vous êtes ici',
+    president: 'Président',
+    abroadVotes: 'votes des Brésiliens à l’étranger',
+    regionVotes: 'votes dans la région',
+    leads: 'En tête',
+    mostVoted: 'Le plus voté',
+    half: '50 % des suffrages exprimés',
+    difference: 'Écart',
+    ahead: (name: string) => `${name} en tête`,
+    sections: 'Bureaux dépouillés',
+    outOf: (part: string, whole: string) => `${part} sur ${whole}`,
+    abstention: 'Abstention',
+    others: 'Autres candidats',
+    countriesWithVotes: 'Pays avec des votes',
+    validVotes: 'Suffrages exprimés',
+    ofTurnout: (percent: string) => `${percent} des votants`,
+    turnout: 'Participation',
+    voters: (count: string) => `${count} électeurs`,
+    blankAndNull: 'Blancs et nuls',
+    statesWon: (count: number) =>
+      count < 2 ? `Gagné dans ${count} État` : `Gagné dans ${count} États`,
+    statesLed: (count: number) =>
+      count < 2 ? `En tête dans ${count} État` : `En tête dans ${count} États`,
+  },
   units: { points: 'pts' },
 };
 
