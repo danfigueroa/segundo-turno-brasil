@@ -33,7 +33,7 @@ const font = readFileSync(
 const states = STATE_CODES.map(
   (code) => `<path d="${brazilMap.states[code].d}" fill="${REGION_FILLS[STATES[code].region]}" />`,
 ).join('');
-const scopes = ['Brasil', 'Regiões', 'Estados', 'Cidades', 'Exterior']
+const scopes = ['Brasil', 'Regiões', 'Estados', 'Cidades', 'Outros países']
   .map((scope) => `<span class="chip">${scope}</span>`)
   .join('');
 
