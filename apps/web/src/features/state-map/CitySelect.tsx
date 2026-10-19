@@ -1,4 +1,5 @@
 import type { StateCode } from '@stb/domain';
+import { useI18n } from '../../i18n/i18n-context';
 import { formatName } from '../../lib/format';
 import type { Municipalities, Selection } from '../../lib/selection';
 import mapStyles from '../map/BrazilMap.module.css';
@@ -15,9 +16,10 @@ interface Props {
 
 /** Native select with every municipality of the state, in alphabetical order. */
 export function CitySelect({ uf, selection, cities, onSelect, label, className }: Props) {
+  const { m, locale } = useI18n();
   const options = (cities ?? [])
     .map((city) => ({ ibge: city.ibge, name: formatName(city.name) }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
   const value = selection.kind === 'city' ? selection.ibge : '';
   return (
     <div className={`${mapStyles.selectWrap} ${className ?? ''}`}>
@@ -34,7 +36,7 @@ export function CitySelect({ uf, selection, cities, onSelect, label, className }
           onSelect(ibge ? { kind: 'city', state: uf, ibge } : { kind: 'state', code: uf });
         }}
       >
-        <option value="">{cities ? 'Todas as cidades' : 'Carregando cidades…'}</option>
+        <option value="">{cities ? m.map.allCities : m.map.loadingCities}</option>
         {options.map((city) => (
           <option key={city.ibge} value={city.ibge}>
             {city.name}

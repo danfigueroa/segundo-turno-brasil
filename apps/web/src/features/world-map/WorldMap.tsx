@@ -1,7 +1,8 @@
 import type { AbroadResponse } from '@stb/contracts';
-import { CONTINENT_CODES, CONTINENT_NAMES, type ContinentCode } from '@stb/domain';
+import { CONTINENT_CODES, type ContinentCode } from '@stb/domain';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useI18n } from '../../i18n/i18n-context';
 import { leadOfVotes, type Finalist } from '../../lib/finalists';
 import { abroadCountry, countryOf, COUNTRY, type Selection } from '../../lib/selection';
 import { useMediaQuery } from '../../lib/use-media-query';
@@ -39,6 +40,7 @@ const MARKER_RADIUS = 9;
  * a state; the list by country below is the keyboard and screen reader path.
  */
 export default function WorldMap({ abroad, finalists, selection, onSelect }: Props) {
+  const { m, country: countryName } = useI18n();
   const wide = useMediaQuery('(min-width: 960px)');
   const [continent, setContinent] = useState<ContinentCode>(FIRST_CONTINENT);
   // A country picked anywhere (list, link, map) brings its continent on screen.
@@ -72,7 +74,12 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
     return country?.continent === continent ? [{ shape, country, x, y }] : [];
   });
   const labels = countryLabels(
-    own.map(({ country, x, y }) => ({ name: country.name, x, y, weight: country.sections.total })),
+    own.map(({ country, x, y }) => ({
+      name: countryName(country.name),
+      x,
+      y,
+      weight: country.sections.total,
+    })),
     { count: wide ? LABELS.wide : LABELS.phone, fontSize, width: MAP_WIDTH },
   );
   const brazil = shapes.find((shape) => shape.brazil);
@@ -80,7 +87,7 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
   const summary = finalists
     .map((f) => {
       const count = ofContinent.filter((c) => leads.get(c.name)?.leader.number === f.number).length;
-      return `${f.name} lidera em ${count === 1 ? '1 país' : `${count} países`}`;
+      return m.map.leadsInCountries(f.name, count);
     })
     .join(', ');
 
@@ -88,19 +95,17 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
     <section className={`card ${mapStyles.card} ${styles.layout}`} aria-labelledby="map-title">
       <div className={mapStyles.head}>
         <h2 id="map-title" className={mapStyles.title}>
-          Quem lidera em cada país
+          {m.map.leadByCountry}
         </h2>
         <p className={mapStyles.subtitle}>
-          {!anyLead
-            ? 'Os países com seção eleitoral ganham cor conforme as urnas são apuradas.'
-            : `${wide ? 'Clique' : 'Toque'} em um país para ver o resultado. Os sem seção eleitoral ficam em cinza claro.`}
+          {!anyLead ? m.map.countriesFill : wide ? m.map.clickCountry : m.map.tapCountry}
         </p>
       </div>
 
       <div
         className={`${filterStyles.filters} ${styles.continents}`}
         role="group"
-        aria-label="Continente do mapa"
+        aria-label={m.map.continents}
       >
         {CONTINENT_CODES.map((code) => (
           <button
@@ -110,7 +115,7 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
             aria-pressed={continent === code}
             onClick={() => setContinent(code)}
           >
-            {CONTINENT_NAMES[code]}
+            {m.places.continents[code]}
           </button>
         ))}
       </div>
@@ -123,8 +128,8 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
             role="img"
             aria-label={
               anyLead
-                ? `${CONTINENT_NAMES[continent]}: ${summary}.`
-                : `Mapa: ${CONTINENT_NAMES[continent]}`
+                ? `${m.places.continents[continent]}: ${summary}.`
+                : m.map.mapOf(m.places.continents[continent])
             }
           >
             {shapes.map((shape, index) => {
@@ -169,7 +174,7 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
                 className={styles.label}
                 aria-hidden="true"
               >
-                Brasil
+                {m.places.brazil}
               </text>
             )}
             {labels.map((label) => (
@@ -191,7 +196,7 @@ export default function WorldMap({ abroad, finalists, selection, onSelect }: Pro
       </div>
 
       <button type="button" className={styles.back} onClick={() => onSelect(COUNTRY)}>
-        Voltar ao Brasil
+        {m.map.backToBrazil}
       </button>
       <MapLegend
         className={mapStyles.legend}

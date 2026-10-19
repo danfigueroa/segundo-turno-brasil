@@ -1,5 +1,6 @@
 import { ABSTENTION_BINS } from '../../lib/abstention';
 import { MARGIN_BINS, type Finalist } from '../../lib/finalists';
+import { useI18n } from '../../i18n/i18n-context';
 import styles from './BrazilMap.module.css';
 
 const STEPS = [1, 2, 3, 4, 5] as const;
@@ -22,11 +23,12 @@ interface Props {
 
 /** One row of five margin bins per finalist, in percentage points. */
 export function MapLegend({ finalists, showEmpty, className }: Props) {
+  const { m } = useI18n();
   return (
     <div className={`${styles.legendBox} ${className ?? ''}`}>
       {finalists.length > 0 && (
         <>
-          <div className={styles.legendTitle}>Vantagem de quem lidera (pontos percentuais)</div>
+          <div className={styles.legendTitle}>{m.map.legendLead}</div>
           <div className={styles.legendGrid}>
             {finalists.map((f) => (
               <div key={f.number} className={styles.legendRow} data-hue={f.hue}>
@@ -50,7 +52,7 @@ export function MapLegend({ finalists, showEmpty, className }: Props) {
       {showEmpty && (
         <div className={styles.legendEmpty}>
           <span className={styles.legendStep} data-intensity="0" />
-          {finalists.length > 0 ? 'Sem votos apurados ou empate' : 'Sem votos apurados'}
+          {finalists.length > 0 ? m.map.noVotesOrTie : m.common.noVotes}
         </div>
       )}
     </div>
@@ -59,12 +61,13 @@ export function MapLegend({ finalists, showEmpty, className }: Props) {
 
 /** Five abstention bins on the neutral ramp, for the abstention map. */
 export function AbstentionLegend({ className }: { readonly className?: string | undefined }) {
+  const { m } = useI18n();
   return (
     <div className={`${styles.legendBox} ${className ?? ''}`}>
-      <div className={styles.legendTitle}>Abstenção nas seções apuradas (%)</div>
+      <div className={styles.legendTitle}>{m.map.legendAbstention}</div>
       <div className={styles.legendGrid}>
         <div className={styles.legendRow} data-hue="abstention">
-          <span className={styles.legendName}>Abstenção</span>
+          <span className={styles.legendName}>{m.map.abstention}</span>
           {STEPS.map((step) => (
             <span key={step} className={styles.legendStep} data-intensity={step} />
           ))}

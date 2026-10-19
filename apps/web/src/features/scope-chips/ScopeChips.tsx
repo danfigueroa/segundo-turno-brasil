@@ -34,13 +34,13 @@ const chipsOf = ({ places }: Messages): { label: string; target: Selection }[] =
  * the abroad chip does. A place the viewer pinned comes first, with a star.
  */
 export function ScopeChips({ selection, onSelect, myPlace }: Props) {
-  const { m } = useI18n();
+  const { m, country } = useI18n();
   const parent = selection.kind === 'state' ? regionOf(selection) : undefined;
   const inAbroad = selection.kind === 'abroadCountry';
   const pinned = myPlace && parseSelectionPath(myPlace.path);
   return (
     <div className={styles.bar}>
-      <div className={styles.chips} role="group" aria-label="Ver resultado de">
+      <div className={styles.chips} role="group" aria-label={m.myPlace.chips}>
         {myPlace && pinned && (
           <button
             type="button"
@@ -50,7 +50,7 @@ export function ScopeChips({ selection, onSelect, myPlace }: Props) {
             onClick={() => onSelect(pinned)}
           >
             <span aria-hidden="true">★ </span>
-            {myPlace.label}
+            {pinned.kind === 'abroadCountry' ? country(myPlace.label) : myPlace.label}
           </button>
         )}
         {chipsOf(m).map(({ label, target }) => {

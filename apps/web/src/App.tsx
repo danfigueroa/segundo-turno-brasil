@@ -18,7 +18,7 @@ import { PinButton } from './features/my-place/PinButton';
 import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { useI18n } from './i18n/i18n-context';
-import type { I18n } from './i18n/i18n';
+import { DEFAULT_I18N, type I18n } from './i18n/i18n';
 import { Footer } from './layout/Footer';
 import { Header } from './layout/Header';
 import { LoadingScreen } from './layout/LoadingScreen';
@@ -255,7 +255,8 @@ export function App() {
                     selection={selection}
                     label={selectionTitle(
                       selection,
-                      i18n,
+                      // Kept in Portuguese, the TSE's names: the chip translates it on screen.
+                      DEFAULT_I18N,
                       cities.data?.cities,
                       abroad.data?.countries,
                     )}

@@ -68,6 +68,61 @@ const messages: Messages = {
     statesLed: (count: number) =>
       count === 1 ? 'In testa in 1 stato' : `In testa in ${count} stati`,
   },
+  map: {
+    leadByState: 'Chi è in testa in ogni stato',
+    abstentionByState: 'Astensione in ogni stato',
+    statesFill: 'Gli stati si colorano man mano che le schede vengono scrutinate.',
+    clickState: (abroad: string) => `Clicca su uno stato o su ${abroad}.`,
+    tapState: (abroad: string) => `Tocca uno stato o ${abroad} per vedere il risultato.`,
+    modes: 'Mostra sulla mappa',
+    lead: 'Chi è in testa',
+    abstention: 'Astensione',
+    states: 'Stati',
+    noVotes: 'nessun voto scrutinato',
+    leadsWith: (name: string, share: string) => `${name} in testa con il ${share}`,
+    abstentionOf: (share: string) => `astensione del ${share}`,
+    goToState: 'Vai a uno stato',
+    pickState: 'Oppure scegli uno stato',
+    allStates: 'Tutti gli stati',
+    legendLead: 'Vantaggio di chi è in testa (punti percentuali)',
+    noVotesOrTie: 'Nessun voto scrutinato o pareggio',
+    legendAbstention: 'Astensione nelle sezioni scrutinate (%)',
+    leadByCity: 'Chi è in testa in ogni città',
+    citiesFill: (state: string) =>
+      `I comuni di ${state} si colorano man mano che le schede vengono scrutinate.`,
+    clickCity: 'Clicca su una città per vedere il risultato.',
+    tapCity: 'Tocca una città per vedere il risultato.',
+    citiesOf: (state: string) => `Mappa dei comuni di ${state}`,
+    goToCity: 'Vai a una città',
+    pickCity: 'Oppure scegli una città',
+    allCities: 'Tutte le città',
+    loadingCities: 'Caricamento delle città…',
+    leadByCountry: 'Chi è in testa in ogni paese',
+    countriesFill:
+      'I paesi con seggi elettorali si colorano man mano che le schede vengono scrutinate.',
+    clickCountry:
+      'Clicca su un paese per vedere il risultato. Quelli senza seggi elettorali restano in grigio chiaro.',
+    tapCountry:
+      'Tocca un paese per vedere il risultato. Quelli senza seggi elettorali restano in grigio chiaro.',
+    continents: 'Continente della mappa',
+    leadsInCountries: (name: string, count: number) =>
+      `${name} in testa in ${count === 1 ? '1 paese' : `${count} paesi`}`,
+    mapOf: (place: string) => `Mappa: ${place}`,
+    backToBrazil: 'Torna al Brasile',
+  },
+  myPlace: {
+    pin: {
+      state: 'Fissa come il mio stato',
+      city: 'Fissa come la mia città',
+      country: 'Fissa come il mio paese',
+    },
+    pinned: {
+      state: 'Fissato come il mio stato',
+      city: 'Fissata come la mia città',
+      country: 'Fissato come il mio paese',
+    },
+    chips: 'Vedi il risultato di',
+  },
   units: { points: 'p.p.' },
 };
 

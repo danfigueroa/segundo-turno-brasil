@@ -1,4 +1,5 @@
 import { STATES, type StateCode } from '@stb/domain';
+import { useI18n } from '../../i18n/i18n-context';
 import { leadOfVotes, type Finalist } from '../../lib/finalists';
 import { formatName } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
@@ -32,6 +33,7 @@ const LABEL_SIZE = { phone: 46, wide: 30 };
  * selected city is named on the map, and the selects jump to another state or city.
  */
 export default function StateMap({ uf, map, selection, cities, finalists, onSelect }: Props) {
+  const { m } = useI18n();
   const wide = useMediaQuery('(min-width: 960px)');
   const byIbge = new Map(cities?.map((c) => [c.ibge, c]));
   const leads = new Map(cities?.map((c) => [c.ibge, leadOfVotes(c.votes, finalists)]));
@@ -52,14 +54,10 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
     <section className={`card ${mapStyles.card} ${styles.layout}`} aria-labelledby="map-title">
       <div className={mapStyles.head}>
         <h2 id="map-title" className={mapStyles.title}>
-          Quem lidera em cada cidade
+          {m.map.leadByCity}
         </h2>
         <p className={mapStyles.subtitle}>
-          {!anyLead
-            ? `Os municípios de ${STATES[uf].name} ganham cor conforme as urnas são apuradas.`
-            : wide
-              ? 'Clique em uma cidade para ver o resultado.'
-              : 'Toque em uma cidade para ver o resultado.'}
+          {!anyLead ? m.map.citiesFill(STATES[uf].name) : wide ? m.map.clickCity : m.map.tapCity}
         </p>
       </div>
 
@@ -69,7 +67,7 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
             className={mapStyles.map}
             viewBox={map.viewBox}
             role="img"
-            aria-label={`Mapa dos municípios de ${STATES[uf].name}`}
+            aria-label={m.map.citiesOf(STATES[uf].name)}
           >
             {shapes.map(([ibge, d]) => {
               const lead = leads.get(ibge);
@@ -106,13 +104,13 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
 
       <div className={`${mapStyles.select} ${styles.selects}`}>
         <StateSelect
-          label={wide ? 'Ir para um estado' : 'Ou escolha um estado'}
+          label={wide ? m.map.goToState : m.map.pickState}
           selection={selection}
           onSelect={onSelect}
         />
         <CitySelect
           uf={uf}
-          label={wide ? 'Ir para uma cidade' : 'Ou escolha uma cidade'}
+          label={wide ? m.map.goToCity : m.map.pickCity}
           selection={selection}
           cities={cities}
           onSelect={onSelect}

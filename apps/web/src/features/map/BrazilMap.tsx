@@ -3,7 +3,6 @@ import { countedPercentage, STATE_CODES, STATES, type StateCode, type Tally } fr
 import { useState, type KeyboardEvent } from 'react';
 import { abstentionOf, abstentionStep } from '../../lib/abstention';
 import { finalistResults, leadOf, type Finalist } from '../../lib/finalists';
-import { formatPercent } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
 import { useI18n } from '../../i18n/i18n-context';
 import { ABROAD, type Selection } from '../../lib/selection';
@@ -34,7 +33,7 @@ type MapMode = 'lead' | 'abstention';
  * count starts, it can switch to abstention, on a neutral ramp.
  */
 export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
-  const { m } = useI18n();
+  const { m, f } = useI18n();
   const wide = useMediaQuery('(min-width: 960px)');
   const [chosenMode, setMode] = useState<MapMode>('lead');
 
@@ -60,11 +59,11 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
   const abstentionLook = (area: Area) => {
     const abstention = abstentionOf(tallyOf(area));
     return abstention === undefined
-      ? { hue: 'none', intensity: 0, status: 'sem votos apurados' }
+      ? { hue: 'none', intensity: 0, status: m.map.noVotes }
       : {
           hue: 'abstention',
           intensity: abstentionStep(abstention),
-          status: `abstenção de ${formatPercent(abstention)}`,
+          status: m.map.abstentionOf(f.percent(abstention)),
         };
   };
 
@@ -78,12 +77,12 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
             hue: lead?.hue ?? 'none',
             intensity: lead?.intensity ?? 0,
             status: lead
-              ? `${lead.leader.name} lidera com ${formatPercent(lead.leader.share)}`
-              : 'sem votos apurados',
+              ? m.map.leadsWith(lead.leader.name, f.percent(lead.leader.share))
+              : m.map.noVotes,
           };
     return {
       'aria-pressed': isSelected(area),
-      'aria-label': `${areaName(area)}: ${look.status}, ${formatPercent(counted)} apurado`,
+      'aria-label': `${areaName(area)}: ${look.status}, ${m.common.counted(f.percent(counted))}`,
       'data-hue': look.hue,
       'data-intensity': look.intensity,
       'data-selected': isSelected(area) || undefined,
@@ -110,24 +109,24 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
     <section className={`card ${styles.card}`} aria-labelledby="map-title">
       <div className={styles.head}>
         <h2 id="map-title" className={styles.title}>
-          {mode === 'abstention' ? 'Abstenção em cada estado' : 'Quem lidera em cada estado'}
+          {mode === 'abstention' ? m.map.abstentionByState : m.map.leadByState}
         </h2>
         <p className={styles.subtitle}>
           {!anyLead
-            ? 'Os estados ganham cor conforme as urnas são apuradas.'
+            ? m.map.statesFill
             : wide
-              ? `Clique em um estado ou em ${m.places.abroad}.`
-              : `Toque em um estado ou em ${m.places.abroad} para ver o resultado.`}
+              ? m.map.clickState(m.places.abroad)
+              : m.map.tapState(m.places.abroad)}
         </p>
         {anyLead && (
-          <div className={styles.modes} role="group" aria-label="Mostrar no mapa">
+          <div className={styles.modes} role="group" aria-label={m.map.modes}>
             <button
               type="button"
               className={styles.mode}
               aria-pressed={mode === 'lead'}
               onClick={() => setMode('lead')}
             >
-              Quem lidera
+              {m.map.lead}
             </button>
             <button
               type="button"
@@ -135,14 +134,19 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
               aria-pressed={mode === 'abstention'}
               onClick={() => setMode('abstention')}
             >
-              Abstenção
+              {m.map.abstention}
             </button>
           </div>
         )}
       </div>
 
       <div className={styles.container}>
-        <svg className={styles.map} viewBox={BRAZIL_MAP.viewBox} role="group" aria-label="Estados">
+        <svg
+          className={styles.map}
+          viewBox={BRAZIL_MAP.viewBox}
+          role="group"
+          aria-label={m.map.states}
+        >
           {STATE_CODES.map((code) => (
             <path
               key={code}
@@ -171,7 +175,7 @@ export function BrazilMap({ data, finalists, selection, onSelect }: Props) {
 
       <StateSelect
         className={styles.select}
-        label={wide ? 'Ir para um estado' : 'Ou escolha um estado'}
+        label={wide ? m.map.goToState : m.map.pickState}
         selection={selection}
         onSelect={onSelect}
       />

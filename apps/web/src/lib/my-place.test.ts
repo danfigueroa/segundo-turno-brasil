@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isPinnable, myPlaceNoun, myPlaceOf, readMyPlace, writeMyPlace } from './my-place';
+import { isPinnable, myPlaceKind, myPlaceOf, readMyPlace, writeMyPlace } from './my-place';
 
 afterEach(() => {
   localStorage.clear();
@@ -35,8 +35,8 @@ describe('my place', () => {
   it('pins states, cities and countries abroad, each with its noun', () => {
     expect(isPinnable({ kind: 'country' })).toBe(false);
     expect(isPinnable({ kind: 'region', code: 'NE' })).toBe(false);
-    expect(myPlaceNoun({ kind: 'state', code: 'BA' })).toBe('meu estado');
-    expect(myPlaceNoun({ kind: 'city', state: 'BA', ibge: '2927408' })).toBe('minha cidade');
-    expect(myPlaceNoun({ kind: 'abroadCountry', slug: 'portugal' })).toBe('meu país');
+    expect(myPlaceKind({ kind: 'state', code: 'BA' })).toBe('state');
+    expect(myPlaceKind({ kind: 'city', state: 'BA', ibge: '2927408' })).toBe('city');
+    expect(myPlaceKind({ kind: 'abroadCountry', slug: 'portugal' })).toBe('country');
   });
 });

@@ -67,6 +67,61 @@ const messages: Messages = {
     statesLed: (count: number) =>
       count === 1 ? 'Führt in 1 Bundesstaat' : `Führt in ${count} Bundesstaaten`,
   },
+  map: {
+    leadByState: 'Wer in jedem Bundesstaat führt',
+    abstentionByState: 'Nichtwähler in jedem Bundesstaat',
+    statesFill: 'Die Bundesstaaten färben sich, sobald ausgezählt wird.',
+    clickState: (abroad: string) => `Klicken Sie auf einen Bundesstaat oder auf ${abroad}.`,
+    tapState: (abroad: string) =>
+      `Tippen Sie auf einen Bundesstaat oder auf ${abroad}, um das Ergebnis zu sehen.`,
+    modes: 'Auf der Karte zeigen',
+    lead: 'Wer führt',
+    abstention: 'Nichtwähler',
+    states: 'Bundesstaaten',
+    noVotes: 'keine Stimmen ausgezählt',
+    leadsWith: (name: string, share: string) => `${name} führt mit ${share}`,
+    abstentionOf: (share: string) => `${share} Nichtwähler`,
+    goToState: 'Zu einem Bundesstaat',
+    pickState: 'Oder einen Bundesstaat wählen',
+    allStates: 'Alle Bundesstaaten',
+    legendLead: 'Vorsprung des Führenden (Prozentpunkte)',
+    noVotesOrTie: 'Keine Stimmen ausgezählt oder Gleichstand',
+    legendAbstention: 'Nichtwähler in ausgezählten Wahllokalen (%)',
+    leadByCity: 'Wer in jeder Stadt führt',
+    citiesFill: (state: string) =>
+      `Die Gemeinden von ${state} färben sich, sobald ausgezählt wird.`,
+    clickCity: 'Klicken Sie auf eine Stadt, um das Ergebnis zu sehen.',
+    tapCity: 'Tippen Sie auf eine Stadt, um das Ergebnis zu sehen.',
+    citiesOf: (state: string) => `Karte der Gemeinden von ${state}`,
+    goToCity: 'Zu einer Stadt',
+    pickCity: 'Oder eine Stadt wählen',
+    allCities: 'Alle Städte',
+    loadingCities: 'Städte werden geladen…',
+    leadByCountry: 'Wer in jedem Land führt',
+    countriesFill: 'Länder mit Wahllokalen färben sich, sobald ausgezählt wird.',
+    clickCountry:
+      'Klicken Sie auf ein Land, um das Ergebnis zu sehen. Länder ohne Wahllokal bleiben hellgrau.',
+    tapCountry:
+      'Tippen Sie auf ein Land, um das Ergebnis zu sehen. Länder ohne Wahllokal bleiben hellgrau.',
+    continents: 'Kontinent der Karte',
+    leadsInCountries: (name: string, count: number) =>
+      `${name} führt in ${count === 1 ? '1 Land' : `${count} Ländern`}`,
+    mapOf: (place: string) => `Karte: ${place}`,
+    backToBrazil: 'Zurück zu Brasilien',
+  },
+  myPlace: {
+    pin: {
+      state: 'Als meinen Bundesstaat merken',
+      city: 'Als meine Stadt merken',
+      country: 'Als mein Land merken',
+    },
+    pinned: {
+      state: 'Als mein Bundesstaat gemerkt',
+      city: 'Als meine Stadt gemerkt',
+      country: 'Als mein Land gemerkt',
+    },
+    chips: 'Ergebnis anzeigen für',
+  },
   units: { points: 'Pp.' },
 };
 

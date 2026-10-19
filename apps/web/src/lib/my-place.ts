@@ -16,11 +16,11 @@ export function isPinnable(selection: Selection): boolean {
   );
 }
 
-/** "minha cidade", "meu estado" or "meu país", by what is pinned. */
-export function myPlaceNoun(selection: Selection): string {
-  if (selection.kind === 'city') return 'minha cidade';
-  if (selection.kind === 'abroadCountry') return 'meu país';
-  return 'meu estado';
+/** What is pinned: "minha cidade", "meu estado" or "meu país". */
+export function myPlaceKind(selection: Selection): 'city' | 'country' | 'state' {
+  if (selection.kind === 'city') return 'city';
+  if (selection.kind === 'abroadCountry') return 'country';
+  return 'state';
 }
 
 export function myPlaceOf(selection: Selection, label: string): MyPlace {

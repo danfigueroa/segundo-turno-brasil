@@ -66,6 +66,61 @@ const messages: Messages = {
     statesLed: (count: number) =>
       count === 1 ? 'Lidera en 1 estado' : `Lidera en ${count} estados`,
   },
+  map: {
+    leadByState: 'Quién lidera en cada estado',
+    abstentionByState: 'Abstención en cada estado',
+    statesFill: 'Los estados se colorean a medida que se escrutan las urnas.',
+    clickState: (abroad: string) => `Haz clic en un estado o en ${abroad}.`,
+    tapState: (abroad: string) => `Toca un estado o ${abroad} para ver el resultado.`,
+    modes: 'Mostrar en el mapa',
+    lead: 'Quién lidera',
+    abstention: 'Abstención',
+    states: 'Estados',
+    noVotes: 'sin votos escrutados',
+    leadsWith: (name: string, share: string) => `${name} lidera con ${share}`,
+    abstentionOf: (share: string) => `abstención del ${share}`,
+    goToState: 'Ir a un estado',
+    pickState: 'O elige un estado',
+    allStates: 'Todos los estados',
+    legendLead: 'Ventaja de quien lidera (puntos porcentuales)',
+    noVotesOrTie: 'Sin votos escrutados o empate',
+    legendAbstention: 'Abstención en las urnas escrutadas (%)',
+    leadByCity: 'Quién lidera en cada ciudad',
+    citiesFill: (state: string) =>
+      `Los municipios de ${state} se colorean a medida que se escrutan las urnas.`,
+    clickCity: 'Haz clic en una ciudad para ver el resultado.',
+    tapCity: 'Toca una ciudad para ver el resultado.',
+    citiesOf: (state: string) => `Mapa de los municipios de ${state}`,
+    goToCity: 'Ir a una ciudad',
+    pickCity: 'O elige una ciudad',
+    allCities: 'Todas las ciudades',
+    loadingCities: 'Cargando ciudades…',
+    leadByCountry: 'Quién lidera en cada país',
+    countriesFill:
+      'Los países con mesas de votación se colorean a medida que se escrutan las urnas.',
+    clickCountry:
+      'Haz clic en un país para ver el resultado. Los que no tienen mesas de votación quedan en gris claro.',
+    tapCountry:
+      'Toca un país para ver el resultado. Los que no tienen mesas de votación quedan en gris claro.',
+    continents: 'Continente del mapa',
+    leadsInCountries: (name: string, count: number) =>
+      `${name} lidera en ${count === 1 ? '1 país' : `${count} países`}`,
+    mapOf: (place: string) => `Mapa: ${place}`,
+    backToBrazil: 'Volver a Brasil',
+  },
+  myPlace: {
+    pin: {
+      state: 'Fijar como mi estado',
+      city: 'Fijar como mi ciudad',
+      country: 'Fijar como mi país',
+    },
+    pinned: {
+      state: 'Fijado como mi estado',
+      city: 'Fijada como mi ciudad',
+      country: 'Fijado como mi país',
+    },
+    chips: 'Ver resultado de',
+  },
   units: { points: 'p.p.' },
 };
 

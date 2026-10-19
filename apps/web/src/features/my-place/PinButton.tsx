@@ -1,10 +1,11 @@
+import { useI18n } from '../../i18n/i18n-context';
 import { isSameSelection, parseSelectionPath, type Selection } from '../../lib/selection';
-import { myPlaceNoun, myPlaceOf, type MyPlace } from '../../lib/my-place';
+import { myPlaceKind, myPlaceOf, type MyPlace } from '../../lib/my-place';
 import styles from './PinButton.module.css';
 
 interface Props {
   readonly selection: Selection;
-  /** Name of the selection: "Salvador". */
+  /** Name of the selection, as kept in the pin: "Salvador" (a country by its TSE name). */
   readonly label: string;
   readonly place: MyPlace | undefined;
   readonly onChange: (place: MyPlace | undefined) => void;
@@ -13,7 +14,8 @@ interface Props {
 /** Pins the state, city or country on screen as the viewer's, for a shortcut in the chips. */
 export function PinButton({ selection, label, place, onChange }: Props) {
   const pinned = place !== undefined && isSameSelection(parseSelectionPath(place.path), selection);
-  const noun = myPlaceNoun(selection);
+  const { m } = useI18n();
+  const kind = myPlaceKind(selection);
   return (
     <button
       type="button"
@@ -30,7 +32,7 @@ export function PinButton({ selection, label, place, onChange }: Props) {
           strokeLinejoin="round"
         />
       </svg>
-      {pinned ? `Fixado como ${noun}` : `Fixar como ${noun}`}
+      {pinned ? m.myPlace.pinned[kind] : m.myPlace.pin[kind]}
     </button>
   );
 }

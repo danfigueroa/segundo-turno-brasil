@@ -10,12 +10,11 @@ interface Props {
   readonly className?: string | undefined;
 }
 
-const SORTED_STATES = STATE_CODES.toSorted((a, b) => STATES[a].name.localeCompare(STATES[b].name));
 const ABROAD_VALUE = 'EX';
 
 /** Native select with every state and abroad: the quickest picker on a phone. */
 export function StateSelect({ selection, onSelect, label, className }: Props) {
-  const { m } = useI18n();
+  const { m, locale } = useI18n();
   const value = stateOf(selection) ?? (selection.kind === 'abroad' ? ABROAD_VALUE : '');
   return (
     <div className={`${styles.selectWrap} ${className ?? ''}`}>
@@ -33,12 +32,14 @@ export function StateSelect({ selection, onSelect, label, className }: Props) {
           else onSelect(COUNTRY);
         }}
       >
-        <option value="">Todos os estados</option>
-        {SORTED_STATES.map((code) => (
-          <option key={code} value={code}>
-            {STATES[code].name}
-          </option>
-        ))}
+        <option value="">{m.map.allStates}</option>
+        {STATE_CODES.toSorted((a, b) => STATES[a].name.localeCompare(STATES[b].name, locale)).map(
+          (code) => (
+            <option key={code} value={code}>
+              {STATES[code].name}
+            </option>
+          ),
+        )}
         <option value={ABROAD_VALUE}>{m.places.abroad}</option>
       </select>
     </div>
