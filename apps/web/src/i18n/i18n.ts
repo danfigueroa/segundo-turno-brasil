@@ -1,4 +1,3 @@
-import { COUNTRY_CODES } from '../lib/country-codes';
 import { createFormat, type Format } from './format';
 import { DEFAULT_LOCALE, type Locale } from './locales';
 import { ptBR, type Messages } from './messages/pt-BR';
@@ -14,22 +13,33 @@ export interface I18n {
   readonly country: (name: string) => string;
 }
 
-function countryNames(locale: Locale): (name: string) => string {
+function countryNames(
+  locale: Locale,
+  codes: Readonly<Record<string, string>>,
+): (name: string) => string {
   // TSE names are already Portuguese, and Brazilian ("Holanda", not "Países Baixos").
   if (locale === 'pt-BR') return (name) => name;
   const names = new Intl.DisplayNames(locale, { type: 'region', fallback: 'none' });
   return (name) => {
-    const code = COUNTRY_CODES[name];
+    const code = codes[name];
     return (code && names.of(code)) || name;
   };
 }
 
-export function createI18n(locale: Locale, messages: Messages): I18n {
+/**
+ * The language's texts and formats. Other languages than pt-BR name the countries abroad
+ * by their ISO code (`COUNTRY_CODES`), which only they download.
+ */
+export function createI18n(
+  locale: Locale,
+  messages: Messages,
+  countryCodes: Readonly<Record<string, string>> = {},
+): I18n {
   return {
     locale,
     m: messages,
     f: createFormat(locale, messages.units),
-    country: countryNames(locale),
+    country: countryNames(locale, countryCodes),
   };
 }
 

@@ -15,6 +15,9 @@ const LOADERS: Readonly<Record<Exclude<Locale, 'pt-BR'>, () => Promise<{ default
 /** The language's texts and formats; pt-BR is already in the bundle. */
 export async function loadI18n(locale: Locale): Promise<I18n> {
   if (locale === 'pt-BR') return DEFAULT_I18N;
-  const { default: messages } = await LOADERS[locale]();
-  return createI18n(locale, messages);
+  const [{ default: messages }, { COUNTRY_CODES }] = await Promise.all([
+    LOADERS[locale](),
+    import('../lib/country-codes'),
+  ]);
+  return createI18n(locale, messages, COUNTRY_CODES);
 }
