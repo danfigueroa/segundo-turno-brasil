@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 interface Props {
   readonly value: number;
@@ -19,7 +19,8 @@ export function AnimatedNumber({ value, format, className }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const previous = useRef(value);
 
-  useEffect(() => {
+  // Before paint, so the new value never flashes ahead of the count from the old one.
+  useLayoutEffect(() => {
     const from = previous.current;
     previous.current = value;
     const node = ref.current;
@@ -29,6 +30,7 @@ export function AnimatedNumber({ value, format, className }: Props) {
       return;
     }
 
+    node.textContent = format(from);
     let frame = 0;
     const start = performance.now();
     const tick = (now: number) => {
