@@ -1,7 +1,7 @@
 import { historyResponseSchema, type HistoryResponse } from '@stb/contracts';
 import { useQuery } from '@tanstack/react-query';
 import type { Selection } from '../lib/selection';
-import { ResultsUnavailableError } from './results';
+import { createJsonFetcher } from './fetch-json';
 
 /** `scope` parameter of `/api/history`: `br`, `zz`, `sp` or `regiao-ne`. */
 export function historyScopeOf(selection: Selection): string {
@@ -22,14 +22,11 @@ export function historyScopeOf(selection: Selection): string {
   }
 }
 
+const getHistory = createJsonFetcher((value) => historyResponseSchema.parse(value));
+
 /** Fetches and validates the runoff count curve of one scope. */
-export async function fetchHistory(scope: string, signal?: AbortSignal): Promise<HistoryResponse> {
-  const response = await fetch(`/api/history?scope=${scope}`, {
-    headers: { accept: 'application/json' },
-    ...(signal ? { signal } : {}),
-  });
-  if (!response.ok) throw new ResultsUnavailableError(response.status);
-  return historyResponseSchema.parse(await response.json());
+export function fetchHistory(scope: string, signal?: AbortSignal): Promise<HistoryResponse> {
+  return getHistory(`/api/history?scope=${scope}`, signal);
 }
 
 /**

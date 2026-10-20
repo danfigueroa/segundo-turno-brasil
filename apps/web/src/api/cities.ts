@@ -2,20 +2,17 @@ import { citiesResponseSchema, type CitiesResponse } from '@stb/contracts';
 import type { Round, StateCode } from '@stb/domain';
 import { useQuery } from '@tanstack/react-query';
 import { LIVE_STALE_TIME_MS, pollIntervalOf, sectionsOf, type LiveOptions } from './polling';
-import { ResultsUnavailableError } from './results';
+import { createJsonFetcher } from './fetch-json';
+
+const getCities = createJsonFetcher((value) => citiesResponseSchema.parse(value));
 
 /** Fetches and validates the municipalities of one state in one round. */
-export async function fetchCities(
+export function fetchCities(
   round: Round,
   uf: StateCode,
   signal?: AbortSignal,
 ): Promise<CitiesResponse> {
-  const response = await fetch(`/api/cities?uf=${uf.toLowerCase()}&round=${round}`, {
-    headers: { accept: 'application/json' },
-    ...(signal ? { signal } : {}),
-  });
-  if (!response.ok) throw new ResultsUnavailableError(response.status);
-  return citiesResponseSchema.parse(await response.json());
+  return getCities(`/api/cities?uf=${uf.toLowerCase()}&round=${round}`, signal);
 }
 
 /**
