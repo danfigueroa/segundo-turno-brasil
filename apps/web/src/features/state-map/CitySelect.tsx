@@ -1,4 +1,5 @@
 import type { StateCode } from '@stb/domain';
+import { useMemo } from 'react';
 import { useI18n } from '../../i18n/i18n-context';
 import { formatName } from '../../lib/format';
 import type { Municipalities, Selection } from '../../lib/selection';
@@ -17,9 +18,13 @@ interface Props {
 /** Native select with every municipality of the state, in alphabetical order. */
 export function CitySelect({ uf, selection, cities, onSelect, label, className }: Props) {
   const { m, locale } = useI18n();
-  const options = (cities ?? [])
-    .map((city) => ({ ibge: city.ibge, name: formatName(city.name) }))
-    .sort((a, b) => a.name.localeCompare(b.name, locale));
+  // Sorted once per poll and language: hundreds of names (853 in Minas Gerais).
+  const options = useMemo(() => {
+    const { compare } = new Intl.Collator(locale);
+    return (cities ?? [])
+      .map((city) => ({ ibge: city.ibge, name: formatName(city.name) }))
+      .sort((a, b) => compare(a.name, b.name));
+  }, [cities, locale]);
   const value = selection.kind === 'city' ? selection.ibge : '';
   return (
     <div className={`${mapStyles.selectWrap} ${className ?? ''}`}>
