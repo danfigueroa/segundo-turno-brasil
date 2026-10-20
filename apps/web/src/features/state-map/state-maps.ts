@@ -19,8 +19,11 @@ export function loadStateMap(uf: StateCode): Promise<StateMapShape> {
 
 /**
  * Starts downloading a state's municipal map ahead of a likely selection (a finger down
- * on the state), so the chunk is already on its way when the click lands.
+ * on the state), so the chunk is already on its way when the click lands. The components
+ * that draw the state (its map and its list of cities) come along, also lazy chunks.
  */
 export function prefetchStateMap(uf: StateCode): void {
   loadStateMap(uf).catch(() => undefined);
+  import('./StateMap').catch(() => undefined);
+  import('../cities/CitiesList').catch(() => undefined);
 }
