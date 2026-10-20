@@ -1,6 +1,7 @@
 import { STATES, type StateCode } from '@stb/domain';
+import { memo, useMemo, type MouseEvent } from 'react';
 import { useI18n } from '../../i18n/i18n-context';
-import { leadOfVotes, type Finalist } from '../../lib/finalists';
+import { leadOfVotes, type Finalist, type StateLead } from '../../lib/finalists';
 import { formatName } from '../../lib/format';
 import { useMediaQuery } from '../../lib/use-media-query';
 import type { Municipalities, Selection } from '../../lib/selection';
@@ -26,6 +27,41 @@ interface Props {
 /** Font size of the selected city's name, in viewBox units (the maps are ~1000 wide). */
 const LABEL_SIZE = { phone: 46, wide: 30 };
 
+interface CityShapeProps {
+  readonly ibge: string;
+  readonly d: string;
+  readonly lead: StateLead | undefined;
+  readonly selected?: boolean;
+}
+
+/**
+ * One municipality. Memoized and kept in a fixed order: a poll or a new selection only
+ * touches the shapes whose color changed, out of hundreds (853 in Minas Gerais).
+ */
+const CityShape = memo(function CityShape({ ibge, d, lead, selected }: CityShapeProps) {
+  return (
+    <path
+      d={d}
+      className={`${mapStyles.state} ${styles.city}`}
+      data-ibge={ibge}
+      data-hue={lead?.hue ?? 'none'}
+      data-intensity={lead?.intensity ?? 0}
+      data-selected={selected || undefined}
+    />
+  );
+}, sameShape);
+
+/** Same shape and same color: a new lead object with the same hue and intensity counts too. */
+function sameShape(a: CityShapeProps, b: CityShapeProps): boolean {
+  return (
+    a.ibge === b.ibge &&
+    a.d === b.d &&
+    a.selected === b.selected &&
+    a.lead?.hue === b.lead?.hue &&
+    a.lead?.intensity === b.lead?.intensity
+  );
+}
+
 /**
  * The selected state's municipalities, each in the color of its leader (same margins and
  * legend as the states). Tapping one selects it; the list of cities below is the
@@ -35,13 +71,19 @@ const LABEL_SIZE = { phone: 46, wide: 30 };
 export default function StateMap({ uf, map, selection, cities, finalists, onSelect }: Props) {
   const { m } = useI18n();
   const wide = useMediaQuery('(min-width: 960px)');
-  const byIbge = new Map(cities?.map((c) => [c.ibge, c]));
-  const leads = new Map(cities?.map((c) => [c.ibge, leadOfVotes(c.votes, finalists)]));
+  const byIbge = useMemo(() => new Map(cities?.map((c) => [c.ibge, c])), [cities]);
+  const leads = useMemo(
+    () => new Map(cities?.map((c) => [c.ibge, leadOfVotes(c.votes, finalists)])),
+    [cities, finalists],
+  );
   const anyLead = [...leads.values()].some(Boolean);
   const selectedIbge = selection.kind === 'city' ? selection.ibge : undefined;
-  const shapes = Object.entries(map?.cities ?? {});
-  // The selected municipality goes last so its outline is drawn on top of its neighbors.
-  shapes.sort(([a], [b]) => Number(a === selectedIbge) - Number(b === selectedIbge));
+  const shapes = useMemo(() => Object.entries(map?.cities ?? {}), [map]);
+  // One click handler for every shape; a shape with no results is not selectable.
+  const pick = (event: MouseEvent<SVGSVGElement>) => {
+    const ibge = event.target instanceof Element ? event.target.getAttribute('data-ibge') : null;
+    if (ibge && byIbge.has(ibge)) onSelect({ kind: 'city', state: uf, ibge });
+  };
   const selectedCity = selectedIbge ? byIbge.get(selectedIbge) : undefined;
   const selectedShape = selectedIbge ? map?.cities[selectedIbge] : undefined;
   const fontSize = wide ? LABEL_SIZE.wide : LABEL_SIZE.phone;
@@ -68,22 +110,22 @@ export default function StateMap({ uf, map, selection, cities, finalists, onSele
             viewBox={map.viewBox}
             role="img"
             aria-label={m.map.citiesOf(STATES[uf].name)}
+            onClick={pick}
           >
-            {shapes.map(([ibge, d]) => {
-              const lead = leads.get(ibge);
-              const known = byIbge.has(ibge);
-              return (
-                <path
-                  key={ibge}
-                  d={d}
-                  className={`${mapStyles.state} ${styles.city}`}
-                  data-hue={lead?.hue ?? 'none'}
-                  data-intensity={lead?.intensity ?? 0}
-                  data-selected={ibge === selectedIbge || undefined}
-                  onClick={known ? () => onSelect({ kind: 'city', state: uf, ibge }) : undefined}
+            {shapes.map(([ibge, d]) => (
+              <CityShape key={ibge} ibge={ibge} d={d} lead={leads.get(ibge)} />
+            ))}
+            {/* The selected municipality again, on top, so its outline covers its neighbors'. */}
+            {selectedIbge && selectedShape && (
+              <g className={styles.outline} aria-hidden="true">
+                <CityShape
+                  ibge={selectedIbge}
+                  d={selectedShape}
+                  lead={leads.get(selectedIbge)}
+                  selected
                 />
-              );
-            })}
+              </g>
+            )}
             {label && selectedCity && (
               <text
                 className={styles.cityLabel}
