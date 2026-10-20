@@ -44,3 +44,14 @@ Ler os 5.571 arquivos a cada atualização é inviável num proxy que roda pouca
 - Banda: abrir um estado custa a malha (até cerca de 61 KB, uma vez por navegador) mais os dados (até cerca de 47 KB no 1º turno e menos no 2º), atualizados a cada minuto só enquanto o estado está aberto.
 - Malhas e fixtures (AC, AP e RR, nos dois turnos) entram no repositório. Se o IBGE criar municípios, é preciso rodar `map:cities --download` de novo.
 - É uma exceção ao design pedida pelo dono do projeto. Falta levá-la ao Claude Design.
+
+_Atualização (20/10/2026, ADRs 0005 e 0031):_
+
+- **Malhas menores:** as malhas usam comandos relativos (`scripts/compact-path.ts`). MG caiu para ~31 KB gzip.
+- **Mapa municipal:**
+  - cada município é um `CityShape` memoizado, em ordem fixa;
+  - o selecionado é desenhado de novo numa camada por cima (`.outline`, sem eventos), em vez de ir para o fim da lista;
+  - um único `onClick` no `svg` lê o `data-ibge`;
+  - sem transição de cor, por serem centenas de formas.
+- **Pré-carga:** tocar numa UF baixa também os componentes do mapa municipal e da lista de cidades.
+- **API:** cada arquivo de município tem uma nova tentativa. Se o arquivo de andamento da UF falhar, vale o último lido.
