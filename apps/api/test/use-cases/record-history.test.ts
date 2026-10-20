@@ -39,13 +39,50 @@ describe('RecordHistory', () => {
     expect(onError).toHaveBeenCalledOnce();
     expect(append).toHaveBeenCalledTimes(2);
   });
+
+  it('writes one snapshot at a time', async () => {
+    let writing = 0;
+    let overlapped = false;
+    const append = vi.fn(async () => {
+      writing += 1;
+      overlapped ||= writing > 1;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      writing -= 1;
+    });
+    const record = new RecordHistory({ read: vi.fn(), append });
+    const snapshot = await source.fetchSnapshot();
+    const later = {
+      ...snapshot,
+      country: {
+        ...snapshot.country,
+        sections: { ...snapshot.country.sections, counted: snapshot.country.sections.counted + 1 },
+      },
+    };
+    await Promise.all([record.execute(snapshot), record.execute(later)]);
+    expect(append).toHaveBeenCalledTimes(2);
+    expect(overlapped).toBe(false);
+  });
 });
 
 describe('recordingSource', () => {
-  it('returns the snapshot and records it', async () => {
+  it('returns the snapshot and hands its recording to the scheduler', async () => {
     const store = new MemoryHistoryStore();
-    const snapshot = await recordingSource(source, new RecordHistory(store)).fetchSnapshot();
+    const tasks: Promise<void>[] = [];
+    const recording = recordingSource(source, new RecordHistory(store), (task) => tasks.push(task));
+    const snapshot = await recording.fetchSnapshot();
     expect(snapshot.country.candidates.length).toBeGreaterThan(0);
+    expect(tasks).toHaveLength(1);
+    await Promise.all(tasks);
     expect(await store.read()).toHaveLength(1);
+  });
+
+  it('does not wait for a slow store', async () => {
+    const append = vi.fn(() => new Promise<void>(() => undefined));
+    const recording = recordingSource(
+      source,
+      new RecordHistory({ read: vi.fn(), append }),
+      () => undefined,
+    );
+    await expect(recording.fetchSnapshot()).resolves.toBeDefined();
   });
 });
