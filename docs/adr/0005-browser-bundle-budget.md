@@ -16,3 +16,10 @@ O primeiro build tinha 159 KB gzip de JS. A maioria do público acessa pelo celu
 ## Consequências
 
 JS inicial ≈ 138 KB gzip, dominado pelo React DOM. Próximos passos possíveis: servir o mapa como asset estático separado para cache independente entre deploys.
+
+_Atualização (20/10/2026):_
+
+- **Orçamento verificado no CI.** `pnpm size` (`scripts/check-bundle-size.mjs`), depois de `pnpm build`, soma o gzip do script de entrada do `index.html` e dos `modulepreload` dele. Falha acima de 124 KiB.
+- **Malhas menores.** Os scripts de mapa gravam os caminhos com comandos relativos (`m`/`l`), sem os pontos que o arredondamento repete (`scripts/compact-path.ts`). O mapa do Brasil caiu de ~14 para ~7 KB gzip, e as malhas municipais e por continente a cerca de metade (MG: ~60 → ~31 KB). A geometria é idêntica.
+- **Compartilhamento sob demanda.** O conteúdo da imagem compartilhada (`share-content.ts`) carrega no toque, como o diálogo.
+- **Resultado:** JS inicial ≈ 116 KiB gzip.
