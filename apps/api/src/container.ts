@@ -15,6 +15,7 @@ import { createCitiesHandler } from './http/cities-handler';
 import { createHistoryHandler } from './http/history-handler';
 import { currentOidcToken } from './http/request-context';
 import { createResultsHandler, type Handler } from './http/results-handler';
+import { waitUntil } from './http/wait-until';
 import type { AbroadSource } from './ports/abroad-source';
 import type { CitiesSource } from './ports/cities-source';
 import type { HistoryStore } from './ports/history-store';
@@ -161,7 +162,7 @@ export function createRoutes(config: Config): Routes {
   });
   const resultSources: Record<Round, ResultsSource> = {
     1: sources[1],
-    2: recordingSource(sources[2], recorder),
+    2: recordingSource(sources[2], recorder, waitUntil),
   };
   const results = (round: Round) =>
     new GetResults(resultSources[round], { onError: logError('results_fetch_failed', round) });
