@@ -37,7 +37,7 @@ O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é val
 ## Resiliência
 
 1. **CDN:** `stale-while-revalidate=30` evita que usuários esperem a revalidação; `stale-if-error=600` mantém a última resposta se a função falhar.
-2. **Função:** se o TSE falhar, `GetResults` devolve o último snapshot bom da instância com `stale: true` e cache curto (`s-maxage=5`), e a UI avisa o horário dos dados.
+2. **Função:** se o TSE falhar, `GetResults` devolve o último snapshot bom da instância com `stale: true` e cache curto (`s-maxage=5`, revalidado em segundo plano), e a UI avisa o horário dos dados.
 3. **Sem snapshot nenhum:** responde `503` com `no-store` e `retry-after: 15`; a UI mostra "Tentar novamente".
 4. **Timeout:** cada arquivo do TSE tem limite de 8s (`TSE_TIMEOUT_MS`).
 5. **Histórico:** gravar no Blob é best-effort (5s de timeout, erro só logado); `/api/results` nunca falha por causa dele (ADR 0011).
@@ -49,7 +49,7 @@ O formato do TSE só é conhecido por `adapters/tse`. Todo arquivo do TSE é val
 - `static/` — build do Vite; `/assets/*` com cache imutável de 1 ano.
 - `functions/api/results.func/`, `functions/api/abroad.func/` e `functions/api/history.func/` — funções empacotadas pelo esbuild (`index.mjs`, Node 22).
 - Cada função roda em `gru1` (São Paulo), perto do TSE (`regions` no `.vc-config.json`, ver [ADR 0015](adr/0015-functions-in-sao-paulo.md)). O CDN atende o público do ponto de presença mais próximo de qualquer forma.
-- `config.json` — cabeçalhos de segurança, fallback SPA para `index.html` e 404 para `/api/*` desconhecido.
+- `config.json` — cabeçalhos de segurança, fallback SPA para `index.html` 404 em JSON para `/api/*` desconhecido (`api-404.json`) e um dia de cache no navegador para os arquivos públicos sem hash (fotos, favicon, `og.png`; ADR 0031).
 
 Dependências CommonJS (o `undici`, que vem com o `@vercel/blob`) chamam `require()`, que não existe em módulos ES: o build injeta um `require` com `createRequire` no topo de cada função. `pnpm smoke` (também no CI) executa cada função empacotada contra uma requisição real, em processos separados, e falha se alguma cair; os testes unitários rodam o TypeScript e não pegam problemas que só existem no pacote.
 

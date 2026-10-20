@@ -12,7 +12,7 @@ React 19 + Vite, organizado por funcionalidade em `apps/web/src/features`.
 
 ## Dados e estado
 
-- `api/use-results.ts`: TanStack Query por turno; o 2º turno tem polling de 60s (ADR 0028), pausado com a aba oculta, e `keepPreviousData` para não piscar.
+- `api/use-results.ts`: TanStack Query por turno; o 2º turno tem polling de 60s (ADR 0028), pausado com a aba oculta. `api/polling.ts` (`pollIntervalOf`, ADR 0031) para o polling quando a abrangência buscada fica 100% apurada e o deixa em 120s antes das 17h de 25/10. O `staleTime` de 45s evita nova consulta ao voltar à aba ou a uma abrangência vista há pouco, e cada consulta que falha tem uma nova tentativa só.
 - Resposta validada com o schema de `@stb/contracts` (zod/mini, ~9 KB gzip).
 - Turno e seleção (Brasil / região / UF / cidade / exterior / país) vivem no hash da URL (`lib/use-view.ts`: `#/sp`, `#/regiao/ne`, `#/exterior`, `#/sp/3550308`, `#/exterior/portugal`): links compartilháveis e botão voltar funcionam. A cidade é o código do IBGE dentro da UF (ADR 0014); um código que não começa pelo da UF cai no estado. O país é o nome sem acentos (`countrySlug`, ADR 0019); um slug malformado cai no Exterior. Na tela, o Exterior se chama "Outros países" (`ABROAD_LABEL`, em chip, botão do mapa, seletor, migalhas, título do card, compartilhamento e análise); o card mantém a linha "votos de brasileiros no exterior".
 
@@ -56,7 +56,7 @@ Escolher uma abrangência em qualquer lugar rola até o card de resultado, se el
 
 O **título da aba** traz o placar da abrangência na tela ("Bahia: Lula 70,00% × 30,00% Flávio · 87,40% apurado", `lib/document-title.ts`), para quem deixa a aba aberta em segundo plano.
 
-**Visão incorporável** (ADR 0025): `/?embed#/ba` mostra só o card de resultado, com polling, e um botão para o site completo, para blogs e portais incorporarem num `<iframe>`.
+**Visão incorporável** (ADR 0025): `/?embed#/ba` mostra só o card de resultado, com polling a cada 120s e pausado enquanto o iframe está fora da tela (`usePageInViewport`, ADR 0031), e um botão para o site completo, para blogs e portais incorporarem num `<iframe>`.
 
 ## Finalistas e cores
 

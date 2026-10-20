@@ -2,6 +2,8 @@
 
 Toda resposta 200 traz um `etag` fraco (hash dos dados, sem `fetchedAt`). Com `If-None-Match` igual, a API e o CDN respondem `304` sem corpo e com os mesmos cabeçalhos de cache: quem faz polling só baixa o JSON quando os dados mudam (ADR 0020).
 
+Os parâmetros são estritos (ADR 0031): parâmetro desconhecido ou repetido responde `400` com `no-store` (exceto os `x-vercel-*` da própria Vercel), e `uf`/`scope` vão em minúsculas. Assim cada abrangência tem uma única chave no cache do CDN, e ninguém fura o cache com `?x=123`. Um caminho `/api/*` desconhecido responde `404` em JSON.
+
 ## `GET /api/results?round=1|2`
 
 Snapshot consistente de todas as abrangências de um turno. `round` é opcional (padrão `2`, o 2º turno ao vivo); `round=1` traz o resultado final do 1º turno (eleição 6257). Schema: [`packages/contracts/src/results.ts`](../packages/contracts/src/results.ts).
@@ -38,7 +40,7 @@ Regiões não vêm na resposta: são agregadas no cliente com `aggregateRegion` 
 | ------ | ----------------------------------------- | --------------------------------------------------------------------------- |
 | 200    | 2º turno, dados frescos                   | `public, s-maxage=15, stale-while-revalidate=30, stale-if-error=600`        |
 | 200    | 1º turno (resultado final)                | `public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400` |
-| 200    | `stale: true` (TSE fora, snapshot antigo) | `public, s-maxage=5`                                                        |
+| 200    | `stale: true` (TSE fora, snapshot antigo) | `public, s-maxage=5, stale-while-revalidate=30, stale-if-error=600`         |
 | 503    | TSE fora e nenhum snapshot em memória     | `no-store` + `retry-after: 15`                                              |
 | 400    | `round` diferente de 1 ou 2               | `no-store`                                                                  |
 | 405    | Método diferente de GET/HEAD              | `no-store`                                                                  |
@@ -87,13 +89,13 @@ Votos no exterior **por país e por cidade** (ADR 0008, 0013 e 0019). O TSE só 
 | ------ | --------------------------------- | --------------------------------------------------------------------------- |
 | 200    | 2º turno, dados frescos           | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600`        |
 | 200    | 1º turno (resultado final)        | `public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400` |
-| 200    | `stale: true`                     | `public, s-maxage=5`                                                        |
+| 200    | `stale: true`                     | `public, s-maxage=5, stale-while-revalidate=30, stale-if-error=600`         |
 | 503    | TSE fora e nenhum dado em memória | `no-store` + `retry-after: 60`                                              |
 | 400    | `round` diferente de 1 ou 2       | `no-store`                                                                  |
 
 ## `GET /api/cities?uf=xx&round=1|2`
 
-Votos de **cada município de um estado** (ADR 0014). `uf` é a sigla da UF (sem diferenciar maiúsculas) e é obrigatória; `round` é opcional e vale 2 por padrão. O front só busca com um estado ou uma cidade aberta. Schema: [`packages/contracts/src/cities.ts`](../packages/contracts/src/cities.ts).
+Votos de **cada município de um estado** (ADR 0014). `uf` é a sigla da UF em minúsculas e é obrigatória; `round` é opcional e vale 2 por padrão. O front só busca com um estado ou uma cidade aberta. Schema: [`packages/contracts/src/cities.ts`](../packages/contracts/src/cities.ts).
 
 ```jsonc
 {
@@ -120,7 +122,7 @@ Votos de **cada município de um estado** (ADR 0014). `uf` é a sigla da UF (sem
 | ------ | --------------------------------------- | --------------------------------------------------------------------------- |
 | 200    | 2º turno, dados frescos                 | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600`        |
 | 200    | 1º turno (resultado final)              | `public, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400` |
-| 200    | `stale: true`                           | `public, s-maxage=5`                                                        |
+| 200    | `stale: true`                           | `public, s-maxage=5, stale-while-revalidate=30, stale-if-error=600`         |
 | 503    | TSE fora e nenhum dado em memória       | `no-store` + `retry-after: 60`                                              |
 | 400    | `uf` ausente ou inválida, `round` ≠ 1/2 | `no-store`                                                                  |
 
@@ -151,7 +153,7 @@ O front usa `paceOf` (`packages/domain`) para o ritmo (seções/min e previsão 
 | Status | Quando                                      | `cache-control`                                                      |
 | ------ | ------------------------------------------- | -------------------------------------------------------------------- |
 | 200    | Histórico lido                              | `public, s-maxage=60, stale-while-revalidate=60, stale-if-error=600` |
-| 200    | `stale: true` (Blob fora, cópia em memória) | `public, s-maxage=5`                                                 |
+| 200    | `stale: true` (Blob fora, cópia em memória) | `public, s-maxage=5, stale-while-revalidate=30, stale-if-error=600`  |
 | 503    | Blob fora e nenhuma cópia em memória        | `no-store` + `retry-after: 60`                                       |
 | 400    | `scope` desconhecido                        | `no-store`                                                           |
 | 405    | Método diferente de GET/HEAD                | `no-store`                                                           |
