@@ -14,6 +14,7 @@ import { geoMercator, geoPath } from 'd3-geo';
 import type { FeatureCollection, Geometry } from 'geojson';
 import { feature } from 'topojson-client';
 import type { GeometryCollection, Topology } from 'topojson-specification';
+import { compactPath } from './compact-path';
 
 const SIZE = 1000;
 const IBGE = 'https://servicodados.ibge.gov.br/api/v3/malhas/estados';
@@ -49,7 +50,7 @@ for (const uf of STATE_CODES) {
   const path = geoPath(projection).digits(0);
   const [[minX, minY], [maxX, maxY]] = path.bounds(municipalities);
   const cities = Object.fromEntries(
-    municipalities.features.map((f) => [f.properties.codarea, path(f)]),
+    municipalities.features.map((f) => [f.properties.codarea, compactPath(path(f) ?? '')]),
   );
   const json = JSON.stringify({
     viewBox: `${Math.floor(minX)} ${Math.floor(minY)} ${Math.ceil(maxX - minX)} ${Math.ceil(maxY - minY)}`,

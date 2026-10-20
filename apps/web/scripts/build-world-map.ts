@@ -16,6 +16,7 @@ import { feature } from 'topojson-client';
 import { presimplify, simplify } from 'topojson-simplify';
 import type { GeometryCollection, Topology } from 'topojson-specification';
 import { ABROAD_CITIES } from '../../api/src/adapters/tse/abroad-cities';
+import { compactPath } from './compact-path';
 
 const WIDTH = 1000;
 /** Countries smaller than this (in square viewBox units) also get a marker to be seen. */
@@ -227,8 +228,9 @@ for (const continent of CONTINENT_CODES) {
   const areas = areasOf(simplify(world, SIMPLIFY_AREA / degree ** 2) as Countries);
 
   const countries = areas.flatMap((area) => {
-    const d = path(area);
-    if (!d) return [];
+    const raw = path(area);
+    if (!raw) return [];
+    const d = compactPath(raw);
     const name = nameOf(area);
     const [x, y] = path.centroid(area).map(Math.round);
     const tiny = path.area(area) < TINY_AREA;

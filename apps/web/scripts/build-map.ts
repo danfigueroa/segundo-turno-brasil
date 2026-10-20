@@ -10,6 +10,7 @@ import { geoMercator, geoPath } from 'd3-geo';
 import type { FeatureCollection, Geometry } from 'geojson';
 import { feature } from 'topojson-client';
 import type { GeometryCollection, Topology } from 'topojson-specification';
+import { compactPath } from './compact-path';
 
 const WIDTH = 1000;
 const HEIGHT = 1000;
@@ -34,8 +35,10 @@ const paths = Object.fromEntries(
   states.features.map((f) => {
     const code = byIbgeCode.get(f.properties.codarea);
     if (!code) throw new Error(`Unknown IBGE code ${f.properties.codarea}`);
+    const d = path(f);
+    if (!d) throw new Error(`No shape for ${code}`);
     const [x, y] = path.centroid(f);
-    return [code, { d: path(f), label: [Math.round(x), Math.round(y)] }];
+    return [code, { d: compactPath(d), label: [Math.round(x), Math.round(y)] }];
   }),
 );
 
