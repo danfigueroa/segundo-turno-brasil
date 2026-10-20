@@ -19,3 +19,5 @@ O front consulta `/api/results` a cada 20s, e `/api/cities` e `/api/abroad` a ca
 - Polling sem novidade custa só cabeçalhos. O CDN guarda o ETag e responde às revalidações sem chamar a função.
 - Num 304, o `fetchedAt` visto pelo cliente é o da primeira resposta com aqueles dados. Ele só aparece no aviso de dados antigos, onde esse horário é o certo.
 - O hash custa um `JSON.stringify` a mais por resposta, desprezível perto do fetch ao TSE.
+
+_Atualização (20/10/2026):_ depois de um `304`, o `fetch` entrega o mesmo corpo guardado. Por isso o front guarda o ETag da última resposta de cada URL (`createJsonFetcher` em `api/fetch-json.ts`). Se o ETag não mudou, ele devolve os dados já validados, sem ler o JSON nem passá-lo pelo zod, e o TanStack Query não renderiza nada.
