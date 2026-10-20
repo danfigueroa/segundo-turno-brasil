@@ -43,4 +43,31 @@ describe('GetResults', () => {
     await Promise.all([useCase.execute(), useCase.execute()]);
     expect(source.fetchSnapshot).toHaveBeenCalledOnce();
   });
+
+  it('reuses a recent good snapshot without asking the source', async () => {
+    let time = Date.parse('2026-10-25T21:00:00Z');
+    const clock = () => new Date(time);
+    const source = sourceFrom(snapshot, snapshot);
+    const useCase = new GetResults(source, { now: clock, reuseForMs: 10_000 });
+    await useCase.execute();
+    time += 9_999;
+    expect((await useCase.execute()).fetchedAt).toBe('2026-10-25T21:00:00.000Z');
+    expect(source.fetchSnapshot).toHaveBeenCalledOnce();
+    time += 1;
+    expect((await useCase.execute()).fetchedAt).toBe('2026-10-25T21:00:10.000Z');
+    expect(source.fetchSnapshot).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not reuse a stale snapshot', async () => {
+    let time = Date.parse('2026-10-25T21:00:00Z');
+    const clock = () => new Date(time);
+    const source = sourceFrom(snapshot, new Error('TSE down'), snapshot);
+    const useCase = new GetResults(source, { now: clock, reuseForMs: 10_000 });
+    await useCase.execute();
+    time += 10_000;
+    expect((await useCase.execute()).stale).toBe(true);
+    time += 1;
+    expect((await useCase.execute()).stale).toBe(false);
+    expect(source.fetchSnapshot).toHaveBeenCalledTimes(3);
+  });
 });
