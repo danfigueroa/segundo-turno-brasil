@@ -1,10 +1,20 @@
-/* Hundreds of shapes: thinner borders than the states, and a bolder one when selected. */
+/*
+ * Hundreds of shapes: thinner borders than the states, and a bolder one when selected.
+ * No fill transition: hundreds of shapes fading at once (when the results arrive after
+ * the map) is a long repaint on a phone.
+ */
 .city {
   stroke-width: 0.8;
+  transition: opacity 200ms ease;
 }
 
 .city[data-selected] {
   stroke-width: 4;
+}
+
+/* The selected city's copy on top: taps go through to the shape below. */
+.outline {
+  pointer-events: none;
 }
 
 .placeholder {
