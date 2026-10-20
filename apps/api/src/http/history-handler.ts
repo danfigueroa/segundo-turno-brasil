@@ -11,7 +11,7 @@ import {
 import type { Latest } from '../use-cases/get-latest';
 import { STALE_CACHE } from './results-handler';
 import { jsonResponse } from './json-response';
-import { noStore, type Handler } from './round';
+import { noStore, unexpectedParam, type Handler } from './round';
 
 /**
  * The history only grows and the client appends the live points it polls, so a minute
@@ -28,9 +28,14 @@ interface HistoryScope {
   readonly series: (entries: readonly HistoryEntry[]) => CountPoint[];
 }
 
-/** `?scope=br|zz|<uf>|regiao-<n|ne|co|se|s>` (default `br`); `undefined` for anything else. */
+/**
+ * `?scope=br|zz|<uf>|regiao-<n|ne|co|se|s>` (default `br`), in lower case (one CDN cache
+ * key per scope); `undefined` for anything else.
+ */
 export function parseHistoryScope(request: Request): HistoryScope | undefined {
-  const value = (new URL(request.url).searchParams.get('scope') ?? 'br').toUpperCase();
+  const raw = new URL(request.url).searchParams.get('scope') ?? 'br';
+  if (raw !== raw.toLowerCase()) return undefined;
+  const value = raw.toUpperCase();
   if (value === 'BR') return { scope: { kind: 'country' }, series: (e) => seriesOf(e, 'BR') };
   if (value === 'ZZ') return { scope: { kind: 'abroad' }, series: (e) => seriesOf(e, 'ZZ') };
   if (isStateCode(value)) {
@@ -49,6 +54,8 @@ export function createHistoryHandler(history: History): Handler {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return noStore(405, 'Method not allowed', { allow: 'GET, HEAD' });
     }
+    const unexpected = unexpectedParam(request, ['scope']);
+    if (unexpected) return noStore(400, unexpected);
 
     const selected = parseHistoryScope(request);
     if (!selected) return noStore(400, 'scope must be br, zz, a state or regiao-<region>');

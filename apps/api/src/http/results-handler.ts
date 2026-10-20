@@ -2,7 +2,7 @@ import type { ResultsResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
 import type { ResultsSnapshot } from '../use-cases/get-results';
 import { jsonResponse } from './json-response';
-import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
+import { FINAL_ROUNDS, noStore, parseRound, unexpectedParam, type Handler } from './round';
 
 export type { Handler } from './round';
 
@@ -27,6 +27,8 @@ export function createResultsHandler(rounds: Readonly<Record<Round, RoundResults
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return noStore(405, 'Method not allowed', { allow: 'GET, HEAD' });
     }
+    const unexpected = unexpectedParam(request, ['round']);
+    if (unexpected) return noStore(400, unexpected);
 
     const round = parseRound(request);
     if (!round) return noStore(400, 'round must be 1 or 2');

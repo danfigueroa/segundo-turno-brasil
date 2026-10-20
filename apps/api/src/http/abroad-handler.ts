@@ -3,7 +3,7 @@ import type { Round } from '@stb/domain';
 import type { AbroadSnapshot } from '../use-cases/get-abroad';
 import { FINAL_CACHE, STALE_CACHE } from './results-handler';
 import { jsonResponse } from './json-response';
-import { FINAL_ROUNDS, noStore, parseRound, type Handler } from './round';
+import { FINAL_ROUNDS, noStore, parseRound, unexpectedParam, type Handler } from './round';
 
 /**
  * Live breakdown by country and city: each refresh reads 186 TSE files, so the CDN keeps it for a
@@ -22,6 +22,8 @@ export function createAbroadHandler(rounds: Readonly<Record<Round, RoundAbroad>>
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return noStore(405, 'Method not allowed', { allow: 'GET, HEAD' });
     }
+    const unexpected = unexpectedParam(request, ['round']);
+    if (unexpected) return noStore(400, unexpected);
 
     const round = parseRound(request);
     if (!round) return noStore(400, 'round must be 1 or 2');
