@@ -56,6 +56,8 @@ function parse<S extends z.ZodType>(scope: string, schema: S, value: unknown): z
 export class TseCitiesSource implements CitiesSource {
   private municipalities: Promise<ReadonlyMap<string, readonly Municipality[]>> | undefined;
   private readonly cache = new Map<string, CachedCity>();
+  /** Last progress read of each state, for when the progress file fails to load. */
+  private readonly lastProgress = new Map<string, ReadonlyMap<string, Progress>>();
   private readonly concurrency: number;
 
   constructor(
@@ -111,20 +113,24 @@ export class TseCitiesSource implements CitiesSource {
   }
 
   /**
-   * Version of each municipality's count. Some progress files are only published once the
-   * count starts: without one, every municipality is downloaded again.
+   * Version of each municipality's count. When the progress file fails, the last one read
+   * stands in (the municipalities already loaded are kept rather than downloaded again).
+   * Some progress files are only published once the count starts: without any, every
+   * municipality is downloaded again.
    */
   private async progressOf(state: string): Promise<ReadonlyMap<string, Progress>> {
     let value: unknown;
     try {
       value = await this.files.progress(state);
     } catch {
-      return new Map();
+      return this.lastProgress.get(state) ?? new Map();
     }
     const file = parse(`${state}-ab`, tseProgressFileSchema, value);
-    return new Map(
+    const progress = new Map(
       file.abr.map((m) => [m.cdabr, { version: `${m.dt} ${m.ht} ${m.s.st}`, counted: m.s.st }]),
     );
+    this.lastProgress.set(state, progress);
+    return progress;
   }
 
   /** The municipality list never changes during an election: read it once. */
