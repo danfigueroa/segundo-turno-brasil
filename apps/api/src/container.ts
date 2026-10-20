@@ -5,6 +5,7 @@ import { SimulatedCitiesSource } from './adapters/simulation/simulated-cities-so
 import { SimulatedResultsSource } from './adapters/simulation/simulated-results-source';
 import { createFixtureCityFiles, createFixtureLoader } from './adapters/tse/fixture-loader';
 import { createHttpCityFiles, createHttpLoader } from './adapters/tse/http-loader';
+import { createLimiter } from './adapters/tse/limiter';
 import { TseAbroadSource } from './adapters/tse/tse-abroad-source';
 import { TseCitiesSource } from './adapters/tse/tse-cities-source';
 import { TseResultsSource } from './adapters/tse/tse-results-source';
@@ -26,11 +27,18 @@ import { GetHistory } from './use-cases/get-history';
 import { GetResults } from './use-cases/get-results';
 import { RecordHistory, recordingSource } from './use-cases/record-history';
 
+/**
+ * Simultaneous TSE requests of an instance, across every loader: a cold refresh of
+ * several states at once queues instead of opening hundreds of connections.
+ */
+const TSE_REQUESTS = createLimiter(64);
+
 function tseLoader(config: Config, electionCode: string) {
   return createHttpLoader({
     baseUrl: config.TSE_BASE_URL,
     electionCode,
     timeoutMs: config.TSE_TIMEOUT_MS,
+    limit: TSE_REQUESTS,
   });
 }
 
@@ -97,6 +105,7 @@ export function createCitiesSources(
         baseUrl: config.TSE_BASE_URL,
         electionCode,
         timeoutMs: config.TSE_TIMEOUT_MS,
+        limit: TSE_REQUESTS,
       });
     return {
       1: new TseCitiesSource(files(config.TSE_FIRST_ROUND_ELECTION_CODE)),
