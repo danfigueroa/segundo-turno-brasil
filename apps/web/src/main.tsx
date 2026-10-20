@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { resultsQuery } from './api/use-results';
 import { I18nProvider } from './i18n/context';
 import type { I18n } from './i18n/i18n';
 import { loadI18n } from './i18n/load';
 import { readStoredLocale, resolveLocale } from './i18n/resolve-locale';
 import { Analytics } from './layout/Analytics';
+import { parseHash } from './lib/view';
 import './styles/global.css';
 
 // One retry, a few seconds later: every attempt is an edge request (ADR 0031), and the
@@ -32,6 +34,12 @@ const render = (i18n: I18n) =>
       </Suspense>
     </StrictMode>,
   );
+
+// The results start downloading now, alongside the language and React's first render,
+// instead of after them. The first round too, unless the link asks for the runoff: it is
+// the default before the count and the comparison after.
+void queryClient.prefetchQuery(resultsQuery(2));
+if (parseHash(window.location.hash).round !== 2) void queryClient.prefetchQuery(resultsQuery(1));
 
 // The language comes first, so the site never flashes Portuguese at who reads another one.
 const locale = resolveLocale({
