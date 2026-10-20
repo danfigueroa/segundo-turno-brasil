@@ -17,3 +17,8 @@ Blogs e portais podem mostrar o placar ao vivo e levar leitores ao site.
 
 - Cada visualização embutida carrega o mesmo JS (~113 KB gzip, depois em cache) e faz polling como o site. Um portal grande pode pesar na banda do plano Hobby: acompanhar no painel da Vercel e, se preciso, remover o botão.
 - O Vercel Analytics conta essas visualizações.
+
+_Atualização (20/10/2026, ADR 0031):_
+
+- O embed consulta a cada 120s e pausa o polling enquanto o iframe está fora da tela (`usePageInViewport`).
+- O JS inicial é de ~116 KB gzip.
