@@ -58,6 +58,22 @@ describe('TseCitiesSource', () => {
     expect(files.municipalities).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the last progress when the progress file fails', async () => {
+    const files = spiedFiles(FIRST_ROUND_2026);
+    let reads = 0;
+    const progress = async (state: string) => {
+      reads += 1;
+      if (reads === 2) throw new Error('TSE busy');
+      return files.progress(state);
+    };
+    const source = new TseCitiesSource({ ...files, progress });
+    const first = await source.fetchCities('AP');
+    expect(files.results).toHaveBeenCalledTimes(16);
+    expect(await source.fetchCities('AP')).toEqual(first);
+    expect(reads).toBe(2);
+    expect(files.results).toHaveBeenCalledTimes(16);
+  });
+
   it('downloads a municipality again once its count moves', async () => {
     const files = createFixtureCityFiles(FIRST_ROUND_2026);
     let moved = false;
