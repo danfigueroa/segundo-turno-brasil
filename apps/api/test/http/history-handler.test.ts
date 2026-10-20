@@ -65,4 +65,10 @@ describe('history handler', () => {
     expect((await createHistoryHandler(ok)(request('?scope=regiao-xx'))).status).toBe(400);
     expect((await createHistoryHandler(ok)(request('', 'POST'))).status).toBe(405);
   });
+
+  it('rejects scopes in upper case and unknown parameters', async () => {
+    for (const query of ['?scope=SP', '?scope=regiao-NE', '?scope=br&x=1']) {
+      expect((await createHistoryHandler(ok)(request(query))).status, query).toBe(400);
+    }
+  });
 });

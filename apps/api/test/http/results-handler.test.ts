@@ -61,4 +61,12 @@ describe('results handler', () => {
     const response = await handler(new Request(request(), { method: 'POST' }));
     expect(response.status).toBe(405);
   });
+
+  it('rejects unknown or repeated parameters, which would skip the CDN cache', async () => {
+    const handler = createResultsHandler({ 1: firstRound, 2: live });
+    for (const query of ['?x=1', '?round=2&round=2', '?round=2&cachebust=123']) {
+      expect((await handler(request(query))).status, query).toBe(400);
+    }
+    expect((await handler(request('?round=2&x-vercel-protection-bypass=1'))).status).toBe(200);
+  });
 });

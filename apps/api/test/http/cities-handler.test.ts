@@ -20,7 +20,7 @@ describe('cities handler', () => {
   });
 
   it('caches the final first round for long', async () => {
-    const response = await createCitiesHandler({ 1: ok, 2: ok })(request('?uf=AC&round=1'));
+    const response = await createCitiesHandler({ 1: ok, 2: ok })(request('?uf=ac&round=1'));
     expect(response.headers.get('cache-control')).toBe(FINAL_CACHE);
   });
 
@@ -41,6 +41,13 @@ describe('cities handler', () => {
   it('rejects missing or unknown states and rounds', async () => {
     const handler = createCitiesHandler({ 1: ok, 2: ok });
     for (const query of ['', '?uf=xx', '?uf=br', '?uf=sp&round=3']) {
+      expect((await handler(request(query))).status, query).toBe(400);
+    }
+  });
+
+  it('rejects states in upper case and unknown parameters', async () => {
+    const handler = createCitiesHandler({ 1: ok, 2: ok });
+    for (const query of ['?uf=SP', '?uf=Sp', '?uf=sp&x=1']) {
       expect((await handler(request(query))).status, query).toBe(400);
     }
   });

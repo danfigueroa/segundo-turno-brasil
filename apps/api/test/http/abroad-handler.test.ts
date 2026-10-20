@@ -41,4 +41,8 @@ describe('abroad handler', () => {
   it('rejects unknown rounds', async () => {
     expect((await createAbroadHandler({ 1: ok, 2: ok })(request('?round=9'))).status).toBe(400);
   });
+
+  it('rejects unknown parameters', async () => {
+    expect((await createAbroadHandler({ 1: ok, 2: ok })(request('?round=2&x=1'))).status).toBe(400);
+  });
 });
