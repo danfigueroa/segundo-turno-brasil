@@ -116,7 +116,7 @@ Regras:
 
 ## Frontend
 
-- Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~14 KB gzip, sem d3/topojson no navegador.
+- Mapa SVG **pré-projetado em build** (`pnpm --filter @stb/web map:build`) a partir da malha do IBGE; ~7 KB gzip (comandos relativos, `scripts/compact-path.ts`), sem d3/topojson no navegador.
 - **Votação por cidade (ADR 0014):** com um estado aberto, o mapa vira o **mapa municipal** (malha do IBGE pré-projetada por UF com `pnpm --filter @stb/web map:cities`, um chunk por estado) com o nome da cidade selecionada e o seletor "Ir para uma cidade" ao lado de "Ir para um estado", e a lista de estados vira **"Votação por cidade"** (busca; cada linha seleciona a cidade). A cidade tem card completo, migalhas e compartilhamento com o mapa municipal; sem análise da apuração. Inspirado no seuimposto.com, exceção pedida ao design (falta levar ao Claude Design).
 - **Mapa do Exterior por país (ADR 0017):** substitui o mapa do Brasil com o Exterior aberto: um continente por vez (chips; a Europa abre primeiro), cada país com seção eleitoral na cor e intensidade de quem lidera, os demais em cinza claro. Uma malha por continente, pré-projetada e simplificada (`pnpm --filter @stb/web map:world`), em chunk sob demanda; nomes do TSE → código ISO no script. Tocar num país (ou na linha dele na lista) abre o card completo do país, como num estado (ADR 0019). Exceção pedida ao design (falta levar ao Claude Design).
 - **Representação visual:** cada UF na cor de quem lidera; intensidade por **margem em p.p.** em 5 faixas (`<2`, `2–5`, `5–10`, `10–20`, `20+`). Cores validadas para daltonismo; a cor segue o candidato (ordem fixa por número de urna), nunca a posição. Detalhes em `docs/frontend.md`.
@@ -138,7 +138,7 @@ Regras:
 - **% de seções apuradas** sempre visível no card de resultado ("100% apurado" ao lado das migalhas e o número-chave "Seções apuradas"), como no design.
 - Polling via TanStack Query (60s, ADR 0028), pausado quando a aba está oculta. Ele para com a abrangência 100% apurada e fica em 120s antes das 17h de 25/10 e no embed, que também pausa fora da tela. Consultas ao vivo têm `staleTime` de 45s e uma nova tentativa só (`api/polling.ts`, ADR 0031).
 - Acessibilidade: paleta segura para daltônicos, contraste AA, sempre exibir rótulos/percentuais (nunca só cor), mapa navegável por teclado, lista por estado, `prefers-reduced-motion` respeitado. Só tema claro, com as cores exatas do desenho (ADR 0007).
-- **Orçamento:** JS inicial ≈ 120 KB gzip (≈ 124 KB com os textos em pt-BR, ADR 0030), somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Verificar o tamanho após mudanças de dependências (ADR 0005); nada de bibliotecas pesadas no bundle inicial.
+- **Orçamento:** JS inicial ≈ 120 KB gzip (≈ 124 KB com os textos em pt-BR, ADR 0030), somando o `index` e os chunks que ele importa estaticamente (malhas municipais e mapas por continente ficam em chunks sob demanda). Hoje ≈ 116 KB; `pnpm size` falha acima de 124 KiB, também no CI (ADR 0005). Nada de bibliotecas pesadas no bundle inicial.
 - **Primeiro paint (ADR 0021):** o build pré-renderiza a tela de carregamento (`layout/LoadingScreen.tsx`, via `src/shell.tsx` e `scripts/prerender-shell.ts`) no `index.html` e faz preload da fonte; listas por cidade e por país e o Vercel Analytics carregam sob demanda; tocar numa UF já baixa a malha municipal dela.
 
 ## Mobile first (requisito crítico)
@@ -191,6 +191,7 @@ pnpm typecheck                     # tsc em todos os pacotes
 pnpm test                          # Vitest em todos os pacotes
 pnpm build                         # build da web + .vercel/output
 pnpm smoke                         # executa as funções empacotadas (rodar após o build)
+pnpm size                          # orçamento do JS inicial (rodar após o build; falha acima de 124 KiB)
 pnpm --filter @stb/web map:build   # regera o mapa a partir do IBGE
 pnpm --filter @stb/web map:world   # regera os mapas por continente do Exterior (world-atlas)
 pnpm --filter @stb/web map:cities  # regera as malhas municipais (--download baixa de novo do IBGE)

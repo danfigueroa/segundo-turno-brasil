@@ -73,7 +73,7 @@ Imagem e vídeo vão pela folha de compartilhamento nativa (Instagram, WhatsApp�
   - o placar se atualiza sozinho a cada 60 segundos, e o navegador não baixa nada quando os dados não mudaram;
   - o CDN absorve o tráfego, e a API só consulta o TSE quando o cache expira;
   - se o TSE oscilar, o site continua mostrando o último dado bom com o horário dele.
-- **Leve e acessível:** cerca de 124 KB de JS inicial (gzip). Os mapas carregam sob demanda, o mapa navega por teclado, há contraste AA e o site respeita `prefers-reduced-motion`.
+- **Leve e acessível:** cerca de 116 KB de JS inicial (gzip), com orçamento verificado no CI. Os mapas carregam sob demanda, o mapa navega por teclado, há contraste AA e o site respeita `prefers-reduced-motion`.
 
 ## Como funciona
 
