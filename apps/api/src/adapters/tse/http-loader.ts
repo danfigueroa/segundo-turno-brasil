@@ -1,3 +1,4 @@
+import type { Limiter } from './limiter';
 import type { TseCityFiles } from './tse-cities-source';
 import type { TseFileLoader } from './tse-results-source';
 
@@ -8,6 +9,10 @@ export interface HttpLoaderOptions {
   readonly electionCode: string;
   readonly timeoutMs: number;
   readonly fetch?: typeof fetch;
+  /** Shared cap on simultaneous TSE requests (each attempt takes a slot). */
+  readonly limit?: Limiter;
+  /** Extra attempts after a network error, timeout or 5xx (default 1). */
+  readonly retries?: number;
 }
 
 export class TseRequestError extends Error {
@@ -40,15 +45,31 @@ export function tseProgressUrl(baseUrl: string, electionCode: string, state: str
   return `${baseUrl}/${electionCode}/dados/${state}/${state}-e${electionCode.padStart(6, '0')}-ab.json`;
 }
 
+/** A missing or forbidden file (4xx) stays so on a second try; anything else may not. */
+const isRetryable = (error: unknown) => !(error instanceof TseRequestError && error.status < 500);
+
 function jsonFetcher(options: HttpLoaderOptions): (url: string) => Promise<unknown> {
   const fetchFn = options.fetch ?? fetch;
-  return async (url) => {
-    const response = await fetchFn(url, {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(options.timeoutMs),
+  const limit: Limiter = options.limit ?? ((task) => task());
+  const retries = options.retries ?? 1;
+  const attempt = (url: string) =>
+    limit(async () => {
+      const response = await fetchFn(url, {
+        headers: { accept: 'application/json' },
+        signal: AbortSignal.timeout(options.timeoutMs),
+      });
+      if (!response.ok) throw new TseRequestError(url, response.status);
+      const body: unknown = await response.json();
+      return body;
     });
-    if (!response.ok) throw new TseRequestError(url, response.status);
-    return response.json();
+  return async (url) => {
+    for (let tries = 0; ; tries += 1) {
+      try {
+        return await attempt(url);
+      } catch (error) {
+        if (tries >= retries || !isRetryable(error)) throw error;
+      }
+    }
   };
 }
 
