@@ -16,10 +16,12 @@ const FUNCTIONS = {
 };
 
 /**
- * Seconds a function may run, when the default is not enough: with a cold instance,
- * `/api/cities` downloads every municipality of a state (853 files in Minas Gerais).
+ * Seconds a function may run, explicit for the ones that read many TSE files: with a
+ * cold instance, `/api/cities` downloads every municipality of a state (853 files in
+ * Minas Gerais) and `/api/abroad` 186 cities; `/api/results` reads 29 files, each with a
+ * timeout and one retry.
  */
-const MAX_DURATION = { 'api/cities': 60 };
+const MAX_DURATION = { 'api/results': 30, 'api/abroad': 60, 'api/cities': 60 };
 
 /**
  * Region the functions run in: São Paulo, next to the TSE servers. The CDN serves
@@ -41,8 +43,18 @@ const SECURITY_HEADERS = {
   'permissions-policy': 'camera=(), microphone=(), geolocation=()',
 };
 
+/**
+ * Public files without a hash in the name (candidate photos, favicon, link preview): a
+ * day in the browser, so a returning visitor does not revalidate them (ADR 0031).
+ */
+const PUBLIC_FILE_CACHE = 'public, max-age=86400';
+
+/** Body of an unknown `/api/*` path. */
+const API_NOT_FOUND = 'api-404.json';
+
 await rm(OUTPUT, { recursive: true, force: true });
 await cp('apps/web/dist', `${OUTPUT}/static`, { recursive: true });
+await writeJson(`${OUTPUT}/static/${API_NOT_FOUND}`, { error: 'Not found' });
 
 for (const [route, entry] of Object.entries(FUNCTIONS)) {
   const dir = `${OUTPUT}/functions/${route}.func`;
@@ -77,8 +89,18 @@ await writeJson(`${OUTPUT}/config.json`, {
       headers: { 'cache-control': 'public, max-age=31536000, immutable' },
       continue: true,
     },
+    {
+      src: '/(candidates/.*|favicon\\.svg|og\\.png)',
+      headers: { 'cache-control': PUBLIC_FILE_CACHE },
+      continue: true,
+    },
     { handle: 'filesystem' },
-    { src: '/api/(.*)', status: 404, dest: '/404.html' },
+    {
+      src: '/api/(.*)',
+      status: 404,
+      dest: `/${API_NOT_FOUND}`,
+      headers: { 'cache-control': 'no-store' },
+    },
     { src: '/(.*)', dest: '/index.html' },
   ],
 });
