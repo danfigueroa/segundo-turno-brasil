@@ -25,3 +25,9 @@ Cada visita nova soma ainda de 15 a 25 requisições de arquivos estáticos (HTM
 - Metade das requisições ao CDN por pessoa: o mesmo mês de cota aguenta cerca do dobro de público.
 - A defasagem em relação ao TSE vai de ~15–50s para ~15–80s no pior caso.
 - Ainda não resolve dezenas de milhares de pessoas ao mesmo tempo: para isso, um CDN sem limite de requisições na frente (ex.: Cloudflare) ou o plano Pro no mês da eleição.
+
+_Atualização (20/10/2026, ADR 0031):_
+
+- O intervalo passou a ser adaptativo (`pollIntervalOf` em `api/polling.ts`): o polling para quando a abrangência está 100% apurada e fica em 120s antes das 17h de 25/10 enquanto nada foi apurado. No resto do tempo continua em 60s.
+- As consultas ao vivo têm `staleTime` de 45s, e cada falha tem uma nova tentativa só. Assim, voltar à aba não gera requisição, e um surto de erros não multiplica a conta.
+- O piso de ~180 requisições por pessoa em 3h continua o mesmo.
