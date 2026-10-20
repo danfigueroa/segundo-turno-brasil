@@ -27,14 +27,19 @@ describe('StateMap', () => {
     );
     expect(screen.getByRole('img', { name: 'Mapa dos municípios de Bahia' })).toBeInTheDocument();
     const paths = [...container.querySelectorAll('path')];
-    // The selected municipality is drawn last, on top of its neighbors.
-    expect(paths.map((p) => [p.getAttribute('data-hue'), p.hasAttribute('data-selected')])).toEqual(
-      [
-        ['none', false],
-        ['blue', false],
-        ['red', true],
-      ],
-    );
+    // Shapes keep their order; the selected one is drawn again last, on top of its neighbors.
+    expect(
+      paths.map((p) => [
+        p.getAttribute('data-ibge'),
+        p.getAttribute('data-hue'),
+        p.hasAttribute('data-selected'),
+      ]),
+    ).toEqual([
+      ['2900108', 'none', false],
+      ['2903201', 'blue', false],
+      ['2927408', 'red', false],
+      ['2927408', 'red', true],
+    ]);
 
     await userEvent.click(paths[1] as Element);
     expect(onSelect).toHaveBeenCalledWith({ kind: 'city', state: 'BA', ibge: '2903201' });
