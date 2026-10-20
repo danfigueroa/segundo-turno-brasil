@@ -74,7 +74,7 @@ Produção em **`eleicao.danielfigueroa.dev`** ([ADR 0027](adr/0027-production-d
 ## Limites do plano Hobby
 
 - **Banda de 100 GB/mês** é o principal risco: a resposta tem ~40 KB sem compressão no 1º turno (12 candidatos) e bem menos no 2º turno; o JS inicial tem ~116 KB gzip.
-- **Votação por cidade (ADR 0014):** abrir um estado custa a malha municipal (até ~61 KB gzip em MG, uma vez por navegador, cache imutável) mais `/api/cities` (até ~47 KB gzip em MG no 1º turno), atualizado a cada minuto só enquanto o estado está aberto. No dia da eleição, acompanhar no painel a banda de `/api/cities` e dos chunks `*.generated-*.js`. A função fria baixa todos os municípios do estado (MG: 853 arquivos, ~4–7 s, `maxDuration` 60 s); a quente, só os que mudaram.
+- **Votação por cidade (ADR 0014):** abrir um estado custa a malha municipal (até ~31 KB gzip em MG, uma vez por navegador, cache imutável) mais `/api/cities` (até ~47 KB gzip em MG no 1º turno), atualizado a cada minuto só enquanto o estado está aberto. No dia da eleição, acompanhar no painel a banda de `/api/cities` e dos chunks `*.generated-*.js`. A função fria baixa todos os municípios do estado (MG: 853 arquivos, ~4–7 s, `maxDuration` 60 s); a quente, só os que mudaram.
 - **Vercel Blob** (histórico da apuração, ADR 0011): 2.000 operações avançadas e 10.000 simples por mês; a noite da eleição usa algumas centenas.
 - Uso **não comercial**.
 - Plano B: upgrade para Pro apenas no mês da eleição.

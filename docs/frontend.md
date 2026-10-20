@@ -70,7 +70,7 @@ O **título da aba** traz o placar da abrangência na tela ("Bahia: Lula 70,00% 
 ## Mapa
 
 - Malha das UFs do IBGE (qualidade "mínima") em `data/br-uf.topo.json`.
-- `scripts/build-map.ts` projeta (Mercator) e grava caminhos SVG em `brazil-map.generated.json` (~14 KB gzip): o navegador não carrega d3 nem topojson.
+- `scripts/build-map.ts` projeta (Mercator) e grava caminhos SVG em `brazil-map.generated.json` (~7 KB gzip, comandos relativos via `compactPath`): o navegador não carrega d3 nem topojson.
 - Estados são botões acessíveis por teclado (Enter/Espaço). Sem tooltip nem efeito de hover, como no design.
 - **Votos no exterior** (escopo `zz` do TSE, já somados ao total do Brasil) aparecem como um botão "Outros países" sobre o Atlântico, na mesma escala de cores e com ≥ 44px. Também há chip na barra de abrangência e opção no seletor.
 - Siglas dos estados só no desktop.
@@ -117,11 +117,13 @@ O site fala sete idiomas (ADR 0030): português (padrão), inglês, espanhol, fr
 
 ## Orçamento de performance
 
-JS inicial ≈ 124 KB gzip, somando o `index` e os chunks que ele importa de início (React DOM ≈ 62 KB, mapa ≈ 14 KB, TanStack Query ≈ 10 KB, zod/mini ≈ 8 KB, textos em pt-BR e formatadores ≈ 5 KB), CSS ≈ 6 KB, fonte ≈ 47 KB (woff2, subconjunto latino). Ficam em chunks separados, carregados só quando aparecem: as traduções (~4 KB cada) e a tabela de países para elas, diálogo de compartilhamento, análise da apuração (~5,5 KB), listas "Votação por cidade" e "Votação por país", mapas municipais e por continente e o Vercel Analytics (ADR 0010), que carrega depois do primeiro paint.
+JS inicial ≈ 116 KB gzip (orçamento de 124 KiB verificado no CI com `pnpm size`), somando o `index` e os chunks que ele importa de início (React DOM ≈ 62 KB, mapa ≈ 7 KB, TanStack Query ≈ 10 KB, zod/mini ≈ 8 KB, textos em pt-BR e formatadores ≈ 5 KB), CSS ≈ 6 KB, fonte ≈ 47 KB (woff2, subconjunto latino). Ficam em chunks separados, carregados só quando aparecem: as traduções (~4 KB cada) e a tabela de países para elas, diálogo de compartilhamento, análise da apuração (~5,5 KB), listas "Votação por cidade" e "Votação por país", mapas municipais e por continente e o Vercel Analytics (ADR 0010), que carrega depois do primeiro paint.
 
 Para o primeiro paint (ADR 0021):
 
 - **Tela de carregamento pré-renderizada:** o build (`vite build --ssr src/shell.tsx` + `scripts/prerender-shell.ts`) escreve o cabeçalho e "Carregando resultados…" (`layout/LoadingScreen.tsx`) dentro do `#root` do `index.html`. O celular pinta a página antes de baixar o JS, e o React substitui esse conteúdo ao iniciar. As classes dos CSS Modules saem iguais nos dois builds.
 - **Fonte pré-carregada:** um plugin do Vite (`preloadFont`) põe `<link rel="preload">` para o woff2 latino, que o navegador só descobriria depois do CSS.
-- **Prefetch da malha municipal:** encostar o dedo numa UF (no mapa ou na lista) já baixa o chunk do mapa dela (`prefetchStateMap`), antes de o toque terminar.
-- **Polling sem re-render:** as respostas da API têm ETag (ADR 0020). Sem novidade, o navegador recebe 304, o structural sharing do TanStack mantém as mesmas referências e nada é renderizado de novo.
+- **Resultados em paralelo:** `main.tsx` dispara a busca de `/api/results` (`resultsQuery`) antes de carregar o idioma e de renderizar, em vez de esperar o React montar.
+- **Prefetch da malha municipal:** encostar o dedo numa UF (no mapa ou na lista) já baixa o chunk do mapa dela (`prefetchStateMap`) e os componentes do mapa municipal e da lista de cidades, antes de o toque terminar.
+- **Polling sem re-render:** as respostas da API têm ETag (ADR 0020). Sem novidade, o navegador recebe 304 e entrega ao `fetch` o corpo guardado. `createJsonFetcher` (`api/fetch-json.ts`) reconhece o mesmo ETag e devolve o objeto já validado, sem parse de JSON nem do zod. Nada é renderizado de novo.
+- **Mapa municipal leve:** cada município é um `CityShape` memoizado, em ordem fixa. O selecionado é desenhado de novo por cima, num `<g>` sem eventos, em vez de ir para o fim da lista, o que movia centenas de nós. As cores mudam sem transição, porque centenas de formas animando ao mesmo tempo pesam no celular. A "Votação por cidade" monta e ordena as linhas uma vez por poll e filtra com `useDeferredValue`; a busca normaliza cada nome uma vez só (`matchesSearch`).
