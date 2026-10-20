@@ -10,7 +10,6 @@ import { ResultCard } from './features/result-card/ResultCard';
 import { RoundTabs } from './features/round-tabs/RoundTabs';
 import { ScopeChips } from './features/scope-chips/ScopeChips';
 import { ShareButton } from './features/share/ShareButton';
-import { shareContentFrom } from './features/share/share-content';
 import { loadStateMap } from './features/state-map/state-maps';
 import { loadContinentMap } from './features/world-map/continent-maps';
 import { StatesList } from './features/states-list/StatesList';
@@ -208,8 +207,11 @@ export function App() {
   const detail =
     cities.data && stateMap.data ? { cities: cities.data.cities, map: stateMap.data } : undefined;
   const abroadDetail = abroad.data && { countries: abroad.data.countries, map: continentMap.data };
+  // Loaded on tap, like the share dialog: building the image content is not needed before.
   const getShareContent = () =>
-    shareContentFrom(data, selection, finalists, i18n, SITE_HOST, detail, abroadDetail);
+    import('./features/share/share-content').then(({ shareContentFrom }) =>
+      shareContentFrom(data, selection, finalists, i18n, SITE_HOST, detail, abroadDetail),
+    );
 
   return (
     <>

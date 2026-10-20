@@ -7,8 +7,11 @@ import styles from './Share.module.css';
 const ShareDialog = lazy(() => import('./ShareDialog'));
 
 interface Props {
-  /** Built lazily, when the user taps, from the data on screen at that moment. */
-  readonly getContent: () => ShareContent;
+  /**
+   * Built when the user taps, from the data on screen at that moment; async so the code
+   * that builds it loads on demand too.
+   */
+  readonly getContent: () => Promise<ShareContent>;
   readonly label: string;
   readonly selection: Selection;
 }
@@ -18,7 +21,11 @@ export function ShareButton({ getContent, label, selection }: Props) {
 
   return (
     <>
-      <button type="button" className={styles.button} onClick={() => setContent(getContent())}>
+      <button
+        type="button"
+        className={styles.button}
+        onClick={() => void getContent().then(setContent)}
+      >
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path
             d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"
