@@ -1,5 +1,5 @@
 import { STATES, type StateCode } from '@stb/domain';
-import { useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useI18n } from '../../i18n/i18n-context';
 import { cityRows, cityWins, sortCityRows, type CityOrder } from '../../lib/cities';
 import { matchesSearch } from '../../lib/countries';
@@ -34,8 +34,10 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
   const [expanded, setExpanded] = useState(false);
   const [order, setOrder] = useState<CityOrder>('electorate');
 
-  const rows = cities ? cityRows(cities, finalists) : [];
-  const wins = cityWins(rows, finalists);
+  // Hundreds of rows (853 in Minas Gerais): built and ranked once per poll and order, not
+  // on every keystroke, and filtered with the query React can defer while typing.
+  const rows = useMemo(() => (cities ? cityRows(cities, finalists) : []), [cities, finalists]);
+  const wins = useMemo(() => cityWins(rows, finalists), [rows, finalists]);
   const anyLead = Object.values(wins).some((n) => n > 0);
   const summary = cities
     ? anyLead
@@ -52,9 +54,13 @@ export function CitiesList({ uf, selection, cities, failed, finalists, onSelect 
       ? lists.citiesFailed
       : lists.citiesLoading;
 
-  const searching = query.trim() !== '';
-  const ranked = sortCityRows(rows, order);
-  const filtered = searching ? ranked.filter((row) => matchesSearch(row.name, query)) : ranked;
+  const deferredQuery = useDeferredValue(query);
+  const searching = deferredQuery.trim() !== '';
+  const ranked = useMemo(() => sortCityRows(rows, order), [rows, order]);
+  const filtered = useMemo(
+    () => (searching ? ranked.filter((row) => matchesSearch(row.name, deferredQuery)) : ranked),
+    [ranked, searching, deferredQuery],
+  );
   const limit = wide ? 20 : 12;
   const shown = expanded || searching ? filtered : filtered.slice(0, limit);
   const selectedIbge = selection.kind === 'city' ? selection.ibge : undefined;
