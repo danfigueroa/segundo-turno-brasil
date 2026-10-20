@@ -25,3 +25,5 @@ O mapa-múndi com um ponto por cidade (ADR 0013), mesmo com zoom por continente 
 - Não há mais cidades no mapa. As coordenadas de `abroad-cities.ts` continuam na API (`cities` em `/api/abroad`), mas a web não as usa.
 - O JS inicial não muda: o componente e as malhas são carregados sob demanda.
 - Continua sendo uma exceção ao Claude Design; falta levá-la ao desenho.
+
+_Atualização (20/10/2026, ADR 0005):_ com comandos relativos (`scripts/compact-path.ts`), as malhas por continente ficaram com 9–16 KB gzip.
