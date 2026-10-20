@@ -124,6 +124,13 @@ export function App() {
     enabled: continent !== undefined,
     staleTime: Infinity,
   });
+  // Every polled runoff snapshot feeds the count curve, whatever is on screen (a city or a
+  // country abroad has no analysis, but the curve of its state or of abroad goes on).
+  useEffect(() => {
+    const snapshot = runoff.data;
+    if (!snapshot) return;
+    void import('./features/insights/live-history').then(({ recordLive }) => recordLive(snapshot));
+  }, [runoff.data]);
   const resultRef = useRef<HTMLElement>(null);
   const [myPlace, setMyPlace] = useMyPlace();
   // Wide screens put the round tabs in the header; phones give them a row of their own.

@@ -1,6 +1,5 @@
 import type { ResultsResponse } from '@stb/contracts';
 import type { Round } from '@stb/domain';
-import { useEffect } from 'react';
 import type { Finalist } from '../../lib/finalists';
 import { useI18n } from '../../i18n/i18n-context';
 import { resolveTally, selectionTitle, type Selection } from '../../lib/selection';
@@ -10,7 +9,6 @@ import { CountCurve } from './CountCurve';
 import { NetMarginCard } from './NetMarginCard';
 import { OutlookCard } from './OutlookCard';
 import { SwingCard } from './SwingCard';
-import { recordLive } from './live-history';
 import shell from './Insights.module.css';
 
 interface Props {
@@ -37,9 +35,6 @@ export default function Insights({
   finalists,
   onSelect,
 }: Props) {
-  // Every polled runoff snapshot feeds the count curve, whatever is on screen.
-  useEffect(() => recordLive(runoff), [runoff]);
-
   const i18n = useI18n();
   const place = selectionTitle(selection, i18n);
 
