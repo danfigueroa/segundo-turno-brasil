@@ -57,12 +57,27 @@ export function countryStandings(
   return { wins, ties };
 }
 
-/** Accent- and case-insensitive match: "japao" finds "Japão". */
-export function matchesSearch(name: string, query: string): boolean {
-  const normalize = (value: string) =>
-    value
+/**
+ * Names and queries without accents, in lower case. Kept: a search goes through hundreds
+ * of names on every keystroke (853 municipalities in Minas Gerais), always the same ones.
+ */
+const normalized = new Map<string, string>();
+
+function normalize(value: string): string {
+  let result = normalized.get(value);
+  if (result === undefined) {
+    result = value
       .normalize('NFD')
       .replace(/\p{Diacritic}/gu, '')
       .toLocaleLowerCase('pt-BR');
+    // Bounded, should the queries typed over a long night pile up.
+    if (normalized.size > 20_000) normalized.clear();
+    normalized.set(value, result);
+  }
+  return result;
+}
+
+/** Accent- and case-insensitive match: "japao" finds "Japão". */
+export function matchesSearch(name: string, query: string): boolean {
   return normalize(name).includes(normalize(query.trim()));
 }
