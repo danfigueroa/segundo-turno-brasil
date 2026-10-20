@@ -95,6 +95,6 @@ describe('StateMap', () => {
   it('ships a municipal map for every state, keyed by IBGE code', async () => {
     const { cities } = await loadStateMap('BA');
     expect(Object.keys(cities)).toHaveLength(417);
-    expect(cities['2927408']).toMatch(/^M/);
+    expect(cities['2927408']).toMatch(/^m/);
   });
 });
