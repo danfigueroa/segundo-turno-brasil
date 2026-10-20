@@ -164,18 +164,31 @@ export function createRoutes(config: Config): Routes {
     1: sources[1],
     2: recordingSource(sources[2], recorder, waitUntil),
   };
+  // How long an instance reuses what it fetched: below each endpoint's CDN cache (ADR 0031).
   const results = (round: Round) =>
-    new GetResults(resultSources[round], { onError: logError('results_fetch_failed', round) });
+    new GetResults(resultSources[round], {
+      onError: logError('results_fetch_failed', round),
+      reuseForMs: 10_000,
+    });
   const abroad = (round: Round) =>
-    new GetAbroad(abroadSources[round], { onError: logError('abroad_fetch_failed', round) });
+    new GetAbroad(abroadSources[round], {
+      onError: logError('abroad_fetch_failed', round),
+      reuseForMs: 20_000,
+    });
   const cities = (round: Round) =>
-    new GetCities(citiesSources[round], { onError: logError('cities_fetch_failed', round) });
+    new GetCities(citiesSources[round], {
+      onError: logError('cities_fetch_failed', round),
+      reuseForMs: 20_000,
+    });
   return {
     '/api/results': createResultsHandler({ 1: results(1), 2: results(2) }),
     '/api/abroad': createAbroadHandler({ 1: abroad(1), 2: abroad(2) }),
     '/api/cities': createCitiesHandler({ 1: cities(1), 2: cities(2) }),
     '/api/history': createHistoryHandler(
-      new GetHistory(historyStore, { onError: logError('history_read_failed', 2) }),
+      new GetHistory(historyStore, {
+        onError: logError('history_read_failed', 2),
+        reuseForMs: 30_000,
+      }),
     ),
   };
 }
