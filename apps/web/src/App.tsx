@@ -14,6 +14,7 @@ import { loadStateMap } from './features/state-map/state-maps';
 import { loadContinentMap } from './features/world-map/continent-maps';
 import { StatesList } from './features/states-list/StatesList';
 import { PinButton } from './features/my-place/PinButton';
+import { RecommendedApp } from './features/recommended/RecommendedApp';
 import { LiveBadge } from './features/status/LiveBadge';
 import { StaleWarning, UpdateNote } from './features/status/UpdateStatus';
 import { useI18n } from './i18n/i18n-context';
@@ -348,6 +349,7 @@ export function App() {
             />
           </Suspense>
         )}
+        <RecommendedApp />
       </main>
 
       <Footer>
