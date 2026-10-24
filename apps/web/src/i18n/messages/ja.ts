@@ -277,6 +277,11 @@ const messages: Messages = {
     label: '言語',
     current: (name: string) => `言語:${name}`,
   },
+  recommended: {
+    label: 'おすすめアプリ',
+    text: '草サッカーのチーム分けを、数秒で公平に。',
+    cta: (name: string) => `${name}を見る`,
+  },
   units: { points: 'pt' },
 };
 

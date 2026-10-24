@@ -302,6 +302,11 @@ const messages: Messages = {
     label: 'Sprache',
     current: (name: string) => `Sprache: ${name}`,
   },
+  recommended: {
+    label: 'Empfohlene App',
+    text: 'Ausgeglichene Teams für euren Freizeitkick, in Sekunden.',
+    cta: (name: string) => `${name} entdecken`,
+  },
   units: { points: 'Pp.' },
 };
 

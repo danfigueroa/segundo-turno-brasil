@@ -358,6 +358,12 @@ export const ptBR = {
     /** The picker button: "Idioma: Português". */
     current: (name: string) => `Idioma: ${name}`,
   },
+  /** The friend's app recommended at the end of the page. */
+  recommended: {
+    label: 'App recomendado',
+    text: 'Os times do racha, equilibrados em segundos.',
+    cta: (name: string) => `Conhecer o ${name}`,
+  },
   units: { points: 'p.p.' } satisfies Units,
 };
 
