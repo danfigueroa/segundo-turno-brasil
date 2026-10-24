@@ -69,7 +69,7 @@ apps/
       i18n/               # idiomas: mensagens tipadas (pt-BR é a fonte), formatos, contexto, escolha do idioma
       lib/                # nomes de urna, seleção (hash da URL), finalistas e faixas de margem
       components/         # peças genéricas (AnimatedNumber, ProgressBar)
-      features/           # result-card, map, state-map, world-map, cities, scope-chips, states-list, countries, countdown, status, share, language
+      features/           # result-card, map, state-map, world-map, cities, scope-chips, states-list, countries, countdown, status, share, language, recommended
       layout/
   api/
     src/
@@ -124,12 +124,13 @@ Regras:
 - Navegação: **Brasil / Região / Estado / Cidade / Exterior / País**, persistida no hash da URL junto com o turno (`#/sp`, `#/1turno/regiao/ne`, `#/2turno/exterior`, `#/sp/3550308` com o código do IBGE, `#/exterior/portugal` com o nome sem acentos). Os votos no exterior já estão somados no total do Brasil e também aparecem separados (botão no mapa, chip, seletor, compartilhamento). Na tela, o Exterior se chama **"Outros países"** (`ABROAD_LABEL` em `lib/selection.ts`; pedido para deixar claro do que se trata, falta levar ao Claude Design); a URL continua `#/exterior`.
 - **Idiomas (ADR 0030):** português (padrão), inglês, espanhol, francês, italiano, alemão e japonês, escolhidos pela bandeira no cabeçalho (`features/language`, exceção pedida ao design; falta levar ao Claude Design). Escolha: `?lang=xx` > `localStorage` (`stb:locale`) > navegador > pt-BR. Componentes usam `useI18n()` (`m` textos, `f` formatos); funções puras recebem o `I18n`. Imagem, vídeo, texto, título da aba e embed saem no idioma da tela, e os links compartilhados levam `?lang`; prévia de links e tela pré-renderizada ficam em pt-BR. Estados, cidades, candidatos, partidos e slugs da URL não se traduzem; países do exterior via `Intl.DisplayNames`. `%` colado ao número em todos os idiomas; horário sempre de Brasília.
 - **Identidade (ADR 0007):** verde `#00843D` e amarelo `#FFD60A`, fundo `#F5F6F1`, fonte Schibsted Grotesk auto-hospedada; desenho de referência no Claude Design.
-- Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → análise da apuração → lista de estados. Antes da apuração do 2º turno: contagem regressiva.
+- Página: cabeçalho com selo de status → abas de turno → barra de abrangência fixa → card de resultado (migalhas, placar, números-chave, compartilhar) → mapa → análise da apuração → lista de estados → app recomendado. Antes da apuração do 2º turno: contagem regressiva.
 - **Percentual e total de votos SEMPRE visíveis** — informação mais relevante do site, em qualquer abrangência (Brasil, região, estado, exterior, país). Nenhuma tela pode substituí-los por outra métrica; contagens extras (estados vencidos numa região, países no exterior) vêm **junto**, nunca no lugar.
 - **Análise da apuração (ADR 0012):** seção carregada sob demanda (`features/insights`) com "Ainda dá virada?", curva da apuração com ritmo e previsão, saldo de votos por estado e comparação com o 1º turno (no 1º turno, só o saldo). Criada a pedido seguindo a identidade do site; ainda falta levá-la ao Claude Design.
 - **Avatares:** foto oficial de urna do TSE, servida de `apps/web/public/candidates/{número}.jpeg` (`pnpm --filter @stb/web photos:fetch`), num anel da cor do candidato; iniciais como fallback (ADR 0009). Exceção pedida ao design, como a análise da apuração.
 - **Acompanhar e compartilhar (exceções pedidas ao design; falta levar ao Claude Design):** placar no título da aba (`lib/document-title.ts`); "Fixar como minha cidade/meu estado/meu país" no card, com atalho "★" na barra de abrangência (`lib/my-place.ts`, `localStorage`); mapa "Quem lidera / Abstenção" (`lib/abstention.ts`, ADR 0022); ordenação da "Votação por cidade" (eleitorado, vantagem, urnas a apurar); card "Comparação com 2022" na análise (ADR 0024); visão incorporável `/?embed#/ba` (ADR 0025); no diálogo de compartilhamento, vídeo animado (ADR 0023; codificado com WebCodecs + Mediabunny sob demanda, `MediaRecorder` como reserva, ADR 0029), texto para WhatsApp e código do iframe (desktop); com o 2º turno decidido, "Compartilhar a vitória de …" e imagem "Lula vence" (`lib/winner.ts`).
 - **Eleitorado das seções apuradas (ADR 0022):** `Tally.countedElectorate` (TSE `e.est`, opcional no contrato) é a base da abstenção e do comparecimento durante a apuração e do "Decidido" (`countedElectorateOf`).
+- **App recomendado (exceção pedida ao design; falta levar ao Claude Design):** card no fim da página, antes do rodapé e fora do embed, recomendando o WeRacha (https://weracha.app), de um amigo (`features/recommended`).
 - **Rodapé:** linha de atualização (fonte TSE) e o crédito "Desenvolvido por @danmfigueroa", com link para https://www.instagram.com/danmfigueroa/.
 - 1º turno: além dos finalistas, o card de resultado lista os **demais candidatos** com % e votos, em qualquer abrangência.
 - Região: % e votos de cada finalista na região + em quantos estados cada um venceu/lidera. Exterior: seção "Votação por país" (busca, continentes) com os votos de cada finalista por país.
@@ -210,7 +211,7 @@ Implementado: domínio, contrato, API (TSE ao vivo, fixtures, simulação, fallb
 Pendente:
 
 - Blob store conectado por OIDC (10/10): conferir em produção que `/api/history` ganha pontos quando a apuração do 2º turno começar (ADR 0011).
-- Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país, a votação por cidade e os recursos de acompanhamento e compartilhamento (título da aba, fixar lugar, mapa de abstenção, ordenação por cidade, comparação com 2022, vídeo, texto, embed, vitória) e o nome "Outros países" no lugar de "Exterior" para o Claude Design.
+- Levar a seção de análise da apuração, a segunda linha de números-chave, o mapa do exterior por país, a votação por cidade e os recursos de acompanhamento e compartilhamento (título da aba, fixar lugar, mapa de abstenção, ordenação por cidade, comparação com 2022, vídeo, texto, embed, vitória), o card de app recomendado e o nome "Outros países" no lugar de "Exterior" para o Claude Design.
 - Conferir no Preview: `304` com `If-None-Match`, `x-vercel-cache` e compressão (checklist em `docs/architecture.md`); vídeo MP4 dos Stories no iPhone e no Android.
 
 - Revisão das traduções por falantes nativos (em especial o japonês) e levar o seletor de idioma ao Claude Design.
